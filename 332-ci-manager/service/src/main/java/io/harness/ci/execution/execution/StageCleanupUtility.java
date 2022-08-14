@@ -23,6 +23,7 @@ import io.harness.beans.sweepingoutputs.VmStageInfraDetails;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.K8sDirectInfraYaml;
 import io.harness.ci.buildstate.ConnectorUtils;
+import  io.harness.delegate.beans.ci.InfraInfo;
 import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ci.CICleanupTaskParams;
 import io.harness.delegate.beans.ci.k8s.CIK8CleanupTaskParams;
@@ -71,10 +72,11 @@ public class StageCleanupUtility {
       stageInfraDetails = (StageInfraDetails) optionalSweepingOutput.getOutput();
     }
 
-    if (stageInfraDetails.getType() == StageInfraDetails.Type.K8) {
+    StageInfraDetails.Type type = stageInfraDetails.getType();
+    if (type == StageInfraDetails.Type.K8) {
       K8StageInfraDetails k8StageInfraDetails = (K8StageInfraDetails) stageInfraDetails;
       return buildK8CleanupParameters(k8StageInfraDetails, ambiance);
-    } else if (stageInfraDetails.getType() == StageInfraDetails.Type.VM) {
+    } else if (type == StageInfraDetails.Type.VM || type == StageInfraDetails.Type.DOCKER) {
       VmStageInfraDetails vmStageInfraDetails = (VmStageInfraDetails) stageInfraDetails;
       return buildVmCleanupParameters(ambiance, vmStageInfraDetails);
     } else if (stageInfraDetails.getType() == StageInfraDetails.Type.DLITE_VM) {
@@ -129,9 +131,13 @@ public class StageCleanupUtility {
     }
 
     StageDetails stageDetails = (StageDetails) optionalSweepingOutput.getOutput();
+    InfraInfo infraInfo = vmStageInfraDetails.getInfraInfo();
+    String poolId = infraInfo.getPoolId();
+
     return CIVmCleanupTaskParams.builder()
         .stageRuntimeId(stageDetails.getStageRuntimeID())
-        .poolId(vmStageInfraDetails.getPoolId())
+        .poolId(poolId)
+        .infraInfo(infraInfo)
         .build();
   }
 

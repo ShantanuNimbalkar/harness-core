@@ -8,13 +8,17 @@
 package io.harness.delegate.beans.ci.vm.dlite;
 
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
+import io.harness.delegate.beans.ci.InfraInfo;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest;
 import io.harness.delegate.beans.ci.vm.runner.SetupVmRequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import javax.validation.constraints.NotNull;
+
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
 @Value
@@ -25,8 +29,15 @@ public class DliteVmInitializeTaskParams implements CIInitializeTaskParams {
   @JsonProperty("services") List<ExecuteStepRequest> services;
 
   @Builder.Default private static final CIInitializeTaskParams.Type type = Type.DLITE_VM;
+  @NotNull @Getter private InfraInfo infraInfo;
+
   @Override
   public CIInitializeTaskParams.Type getType() {
     return type;
+  }
+
+  @Override
+  public InfraInfo getInfraInfo() {
+    return infraInfo;
   }
 }

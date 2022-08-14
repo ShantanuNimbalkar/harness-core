@@ -12,6 +12,8 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.build.BuildStatusUpdateParameter;
 import io.harness.beans.dependencies.DependencyElement;
+import io.harness.beans.yaml.extended.infrastrucutre.DockerInfraYaml;
+import io.harness.beans.yaml.extended.infrastrucutre.DockerInfraYaml.DockerInfraSpec;
 import io.harness.beans.yaml.extended.infrastrucutre.HostedVmInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.HostedVmInfraYaml.HostedVmInfraSpec;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
@@ -33,12 +35,12 @@ import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Value
 @Builder
@@ -76,20 +78,44 @@ public class IntegrationStageStepParametersPMS implements SpecParameters, StepPa
         .build();
   }
 
+  private static Infrastructure getInfrastructureFromRuntime(Infrastructure infrastructure,
+                                                             IntegrationStageConfig integrationStageConfig) {
+    Runtime runtime = integrationStageConfig.getRuntime();
+    boolean isValidRuntime = true;
+    Runtime.Type runtimeType;
+
+    if (runtime != null) {
+      runtimeType = runtime.getType();
+      if (runtimeType == Runtime.Type.DOCKER) {
+        infrastructure = DockerInfraYaml.builder()
+                .spec(DockerInfraSpec.builder().platform(integrationStageConfig.getPlatform()).build())
+                .build();
+      } else if (runtimeType == Runtime.Type.CLOUD) {
+        infrastructure = HostedVmInfraYaml.builder()
+                .spec(HostedVmInfraSpec.builder().platform(integrationStageConfig.getPlatform()).build())
+                .build();
+      } else {
+        isValidRuntime = false;
+      }
+    } else {
+      isValidRuntime = false;
+    }
+
+    if (!isValidRuntime)
+    {
+      throw new CIStageExecutionException(
+              "Infrastructure or runtime field with type Cloud (for vm) or type Docker (for docker) is mandatory for execution");
+    }
+
+    return infrastructure;
+  }
+
   public static Infrastructure getInfrastructure(StageElementConfig stageElementConfig, PlanCreationContext ctx) {
     IntegrationStageConfig integrationStageConfig = (IntegrationStageConfig) stageElementConfig.getStageType();
 
     Infrastructure infrastructure = integrationStageConfig.getInfrastructure();
     if (infrastructure == null) {
-      Runtime runtime = integrationStageConfig.getRuntime();
-      if (runtime == null || runtime.getType() != Runtime.Type.CLOUD) {
-        throw new CIStageExecutionException(
-            "Infrastructure or runtime field with Cloud type is mandatory for execution");
-      }
-
-      infrastructure = HostedVmInfraYaml.builder()
-                           .spec(HostedVmInfraSpec.builder().platform(integrationStageConfig.getPlatform()).build())
-                           .build();
+      infrastructure = getInfrastructureFromRuntime(infrastructure, integrationStageConfig);
     } else if (integrationStageConfig.getInfrastructure().getType() == Type.USE_FROM_STAGE) {
       UseFromStageInfraYaml useFromStageInfraYaml = (UseFromStageInfraYaml) integrationStageConfig.getInfrastructure();
       if (useFromStageInfraYaml.getUseFromStage() != null) {

@@ -29,6 +29,7 @@ import io.harness.beans.steps.CIStepInfo;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.steps.stepinfo.RunTestsStepInfo;
+import io.harness.beans.yaml.extended.infrastrucutre.DockerInfraYaml;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
 import io.harness.beans.yaml.extended.infrastrucutre.OSType;
 import io.harness.beans.yaml.extended.infrastrucutre.VmInfraSpec;
@@ -133,21 +134,35 @@ public class VmInitializeStepUtils {
   }
 
   public static OSType getVmOS(Infrastructure infrastructure) {
-    if (infrastructure.getType() != Infrastructure.Type.VM) {
-      throw new CIStageExecutionException(format("Invalid infrastructure type: %s", infrastructure.getType()));
+    Infrastructure.Type infraType = infrastructure.getType();
+    if (infraType != Infrastructure.Type.VM && infraType != Infrastructure.Type.DOCKER) {
+      throw new CIStageExecutionException(format("Invalid infrastructure type: %s", infraType));
     }
 
-    VmInfraYaml vmInfraYaml = (VmInfraYaml) infrastructure;
-    if (vmInfraYaml.getSpec() == null) {
-      throw new CIStageExecutionException("Infrastructure spec should not be empty");
-    }
+    if (infraType == Infrastructure.Type.VM) {
+      VmInfraYaml vmInfraYaml = (VmInfraYaml) infrastructure;
+      if (vmInfraYaml.getSpec() == null) {
+        throw new CIStageExecutionException("Vm infrastructure spec should not be empty");
+      }
 
-    if (vmInfraYaml.getSpec().getType() != VmInfraSpec.Type.POOL) {
-      throw new CIStageExecutionException(format("Invalid VM type: %s", vmInfraYaml.getSpec().getType()));
-    }
+      if (vmInfraYaml.getSpec().getType() != VmInfraSpec.Type.POOL) {
+        throw new CIStageExecutionException(format("Invalid VM type: %s", vmInfraYaml.getSpec().getType()));
+      }
 
-    VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
-    return resolveOSType(vmPoolYaml.getSpec().getOs());
+      VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
+      return resolveOSType(vmPoolYaml.getSpec().getOs());
+    } else {
+      DockerInfraYaml dockerInfraYaml = (DockerInfraYaml) infrastructure;
+      if (dockerInfraYaml.getSpec() == null) {
+        throw new CIStageExecutionException("Docker infrastructure spec should not be empty");
+      }
+
+      if (dockerInfraYaml.getType() != Infrastructure.Type.DOCKER) {
+        throw new CIStageExecutionException(format("Invalid DOCKER type: %s", dockerInfraYaml.getType()));
+      }
+
+      return resolveOSType(dockerInfraYaml.getSpec().getPlatform().getValue().getOs());
+    }
   }
 
   private void validateStepConfig(StepElementConfig stepElementConfig) {

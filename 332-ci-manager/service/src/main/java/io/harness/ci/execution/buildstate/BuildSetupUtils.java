@@ -14,7 +14,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.stepinfo.InitializeStepInfo;
 import io.harness.ci.integrationstage.K8InitializeTaskParamsBuilder;
 import io.harness.ci.integrationstage.VmInitializeTaskParamsBuilder;
+import io.harness.cimanager.stages.IntegrationStageConfig;
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
+import io.harness.beans.yaml.extended.runtime.Runtime;
 import io.harness.pms.contracts.ambiance.Ambiance;
 
 import com.google.inject.Inject;
@@ -36,6 +38,8 @@ public class BuildSetupUtils {
         return k8InitializeTaskParamsBuilder.getK8InitializeTaskParams(initializeStepInfo, ambiance, logPrefix);
       case VM:
         return vmInitializeTaskParamsBuilder.getDirectVmInitializeTaskParams(initializeStepInfo, ambiance);
+      case DOCKER:
+        return vmInitializeTaskParamsBuilder.getDockerInitializeTaskParams(initializeStepInfo, ambiance);
       case HOSTED_VM:
         return vmInitializeTaskParamsBuilder.getHostedVmInitializeTaskParams(initializeStepInfo, ambiance);
       default:

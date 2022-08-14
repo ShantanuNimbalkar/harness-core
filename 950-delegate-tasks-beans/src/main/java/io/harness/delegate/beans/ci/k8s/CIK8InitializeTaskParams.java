@@ -10,6 +10,7 @@ package io.harness.delegate.beans.ci.k8s;
 import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
+import io.harness.delegate.beans.ci.InfraInfo;
 import io.harness.delegate.beans.ci.pod.CIK8ContainerParams;
 import io.harness.delegate.beans.ci.pod.CIK8PodParams;
 import io.harness.delegate.beans.ci.pod.CIK8ServicePodParams;
@@ -27,6 +28,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Data
@@ -40,10 +42,16 @@ public class CIK8InitializeTaskParams
   @NotNull
   private int podMaxWaitUntilReadySecs; // Max time for pod to reach running state after its creation in seconds
   @Builder.Default private static final Type type = Type.GCP_K8;
+  @NotNull @Getter private InfraInfo infraInfo;
 
   @Override
   public Type getType() {
     return type;
+  }
+
+  @Override
+  public InfraInfo getInfraInfo() {
+    return infraInfo;
   }
 
   @Override

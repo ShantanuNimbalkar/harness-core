@@ -7,18 +7,12 @@
 
 package io.harness.vm;
 
-import static io.harness.data.encoding.EncodingUtils.decodeBase64;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.vm.CIVMConstants.JUNIT_REPORT_KIND;
-import static io.harness.vm.CIVMConstants.RUNTEST_STEP_KIND;
-import static io.harness.vm.CIVMConstants.RUN_STEP_KIND;
-
-import static org.apache.commons.lang3.CharUtils.isAsciiAlphanumeric;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.harness.connector.ImageCredentials;
 import io.harness.connector.ImageSecretBuilder;
 import io.harness.connector.SecretSpecBuilder;
+import io.harness.delegate.beans.ci.InfraInfo;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.pod.ImageDetailsWithConnector;
 import io.harness.delegate.beans.ci.pod.SecretParams;
@@ -29,24 +23,17 @@ import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.Config;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.Config.ConfigBuilder;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.ExecuteStepRequestBuilder;
 import io.harness.delegate.beans.ci.vm.runner.ExecuteStepRequest.ImageAuth;
-import io.harness.delegate.beans.ci.vm.steps.VmBackgroundStep;
-import io.harness.delegate.beans.ci.vm.steps.VmJunitTestReport;
-import io.harness.delegate.beans.ci.vm.steps.VmPluginStep;
-import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
-import io.harness.delegate.beans.ci.vm.steps.VmRunTestStep;
-import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
-import io.harness.delegate.beans.ci.vm.steps.VmStepInfo;
-import io.harness.delegate.beans.ci.vm.steps.VmUnitTestReport;
+import io.harness.delegate.beans.ci.vm.steps.*;
 import io.harness.k8s.model.ImageDetails;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+
+import static io.harness.data.encoding.EncodingUtils.decodeBase64;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.vm.CIVMConstants.*;
+import static org.apache.commons.lang3.CharUtils.isAsciiAlphanumeric;
 
 @Singleton
 public class VmExecuteStepUtils {
@@ -56,6 +43,9 @@ public class VmExecuteStepUtils {
   private static final String DOCKER_REGISTRY_ENV = "PLUGIN_REGISTRY";
 
   public ExecuteStepRequestBuilder convertStep(CIVmExecuteStepTaskParams params) {
+    InfraInfo infraInfo = params.getInfraInfo();
+    String poolId = infraInfo.getPoolId();
+
     ConfigBuilder configBuilder = Config.builder()
                                       .id(getIdentifier(params.getStepRuntimeId()))
                                       .name(params.getStepId())
@@ -82,15 +72,21 @@ public class VmExecuteStepUtils {
       secrets.addAll(params.getSecrets());
     }
     configBuilder.secrets(secrets);
+
     return ExecuteStepRequest.builder()
         .stageRuntimeID(params.getStageRuntimeId())
-        .poolId(params.getPoolId())
+        .poolId(poolId)
         .ipAddress(params.getIpAddress())
-        .config(configBuilder.build());
+        .config(configBuilder.build())
+        .infraType(infraInfo.getType().toString());
   }
 
   public ExecuteStepRequestBuilder convertService(
       VmServiceDependency params, CIVmInitializeTaskParams initializeTaskParams) {
+    InfraInfo infraInfo = initializeTaskParams.getInfraInfo();
+    String poolId = infraInfo.getPoolId();
+
+    String id = params.getIdentifier();
     ConfigBuilder configBuilder = Config.builder()
                                       .id(params.getIdentifier())
                                       .name(params.getIdentifier())
@@ -120,9 +116,10 @@ public class VmExecuteStepUtils {
     }
 
     return ExecuteStepRequest.builder()
-        .poolId(initializeTaskParams.getPoolID())
+        .poolId(poolId)
         .config(configBuilder.build())
-        .stageRuntimeID(initializeTaskParams.getStageRuntimeId());
+        .stageRuntimeID(initializeTaskParams.getStageRuntimeId())
+        .infraType(infraInfo.getType().toString());
   }
 
   private List<String> setRunConfig(VmRunStep runStep, ConfigBuilder configBuilder) {

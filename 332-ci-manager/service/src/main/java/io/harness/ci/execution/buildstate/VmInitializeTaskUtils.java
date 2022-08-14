@@ -7,13 +7,8 @@
 
 package io.harness.ci.buildstate;
 
-import static io.harness.beans.serializer.RunTimeInputHandler.resolveMapParameter;
-import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-
-import static java.lang.String.format;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
@@ -26,13 +21,11 @@ import io.harness.beans.sweepingoutputs.ContextElement;
 import io.harness.beans.sweepingoutputs.StageDetails;
 import io.harness.beans.sweepingoutputs.VmStageInfraDetails;
 import io.harness.beans.yaml.extended.infrastrucutre.Infrastructure;
-import io.harness.beans.yaml.extended.infrastrucutre.VmInfraSpec;
-import io.harness.beans.yaml.extended.infrastrucutre.VmInfraYaml;
-import io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.logserviceclient.CILogServiceUtils;
 import io.harness.ci.tiserviceclient.TIServiceUtils;
 import io.harness.ci.utils.CIVmSecretEvaluator;
+import io.harness.delegate.beans.ci.InfraInfo;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.vm.CIVmInitializeTaskParams;
 import io.harness.delegate.beans.ci.vm.steps.VmServiceDependency;
@@ -50,20 +43,18 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.StepUtils;
 import io.harness.stoserviceclient.STOServiceUtils;
 import io.harness.yaml.utils.NGVariablesUtils;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.lang3.StringUtils;
+
+import java.time.Duration;
+import java.util.*;
+
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveMapParameter;
+import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static java.lang.String.format;
 
 @Singleton
 @Slf4j
@@ -85,35 +76,31 @@ public class VmInitializeTaskUtils {
   public CIVmInitializeTaskParams getInitializeTaskParams(
       InitializeStepInfo initializeStepInfo, Ambiance ambiance, String logPrefix) {
     Infrastructure infrastructure = initializeStepInfo.getInfrastructure();
-
-    if (infrastructure == null || ((VmInfraYaml) infrastructure).getSpec() == null) {
-      throw new CIStageExecutionException("Input infrastructure can not be empty");
+    if (infrastructure == null) {
+      throw new CIStageExecutionException("Input infrastructure can not be null");
     }
-
-    VmInfraYaml vmInfraYaml = (VmInfraYaml) infrastructure;
-    if (vmInfraYaml.getSpec().getType() != VmInfraSpec.Type.POOL) {
-      throw new CIStageExecutionException(
-          format("Invalid VM infrastructure spec type: %s", vmInfraYaml.getSpec().getType()));
-    }
-    VmBuildJobInfo vmBuildJobInfo = (VmBuildJobInfo) initializeStepInfo.getBuildJobEnvInfo();
-    VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
-    String poolId = getPoolName(vmPoolYaml);
-    consumeSweepingOutput(ambiance,
-        VmStageInfraDetails.builder()
-            .poolId(poolId)
-            .workDir(vmBuildJobInfo.getWorkDir())
-            .volToMountPathMap(vmBuildJobInfo.getVolToMountPath())
-            .harnessImageConnectorRef(vmPoolYaml.getSpec().getHarnessImageConnectorRef().getValue())
-            .build(),
-        STAGE_INFRA_DETAILS);
 
     OptionalSweepingOutput optionalSweepingOutput = executionSweepingOutputResolver.resolveOptional(
-        ambiance, RefObjectUtils.getSweepingOutputRefObject(ContextElement.stageDetails));
+            ambiance, RefObjectUtils.getSweepingOutputRefObject(ContextElement.stageDetails));
     if (!optionalSweepingOutput.isFound()) {
       throw new CIStageExecutionException("Stage details sweeping output cannot be empty");
     }
 
     StageDetails stageDetails = (StageDetails) optionalSweepingOutput.getOutput();
+
+    InfraInfo infraInfo = new InfraInfoBuilder().GetInfraInfo(infrastructure, stageDetails.getStageRuntimeID());
+    String poolId = infraInfo.getPoolId();
+    VmBuildJobInfo vmBuildJobInfo = (VmBuildJobInfo) initializeStepInfo.getBuildJobEnvInfo();
+    consumeSweepingOutput(ambiance,
+        VmStageInfraDetails.builder()
+            .poolId(poolId)
+            .workDir(vmBuildJobInfo.getWorkDir())
+            .volToMountPathMap(vmBuildJobInfo.getVolToMountPath())
+            .harnessImageConnectorRef(infraInfo.getharnessImageConnectorRef())
+            .infraInfo(infraInfo)
+            .build(),
+        STAGE_INFRA_DETAILS);
+
     String accountID = AmbianceUtils.getAccountId(ambiance);
     NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
 
@@ -156,20 +143,8 @@ public class VmInitializeTaskUtils {
         .secrets(new ArrayList<>(secrets))
         .volToMountPath(vmBuildJobInfo.getVolToMountPath())
         .serviceDependencies(getServiceDependencies(ambiance, vmBuildJobInfo.getServiceDependencies()))
+        .infraInfo(infraInfo)
         .build();
-  }
-
-  private String getPoolName(VmPoolYaml vmPoolYaml) {
-    String poolName = vmPoolYaml.getSpec().getPoolName().getValue();
-    if (isNotEmpty(poolName)) {
-      return poolName;
-    }
-
-    String poolId = vmPoolYaml.getSpec().getIdentifier();
-    if (isEmpty(poolId)) {
-      throw new CIStageExecutionException("VM pool name should be set");
-    }
-    return poolId;
   }
 
   private List<VmServiceDependency> getServiceDependencies(

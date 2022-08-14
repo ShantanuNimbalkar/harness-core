@@ -49,6 +49,7 @@ import io.harness.plancreator.steps.StepGroupElementConfig;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.ci.integrationstage.VmInitializeStepUtils;
 
 import com.google.inject.Singleton;
 import java.util.HashMap;
@@ -187,25 +188,12 @@ public class VmInitializeUtils {
 
   public static OSType getOS(Infrastructure infrastructure) {
     // Only linux is supported now for runs on infrastructure
-    if (infrastructure.getType() == Infrastructure.Type.HOSTED_VM) {
+    Infrastructure.Type infraType = infrastructure.getType();
+    if (infraType == Infrastructure.Type.HOSTED_VM) {
       return OSType.Linux;
     }
 
-    if (infrastructure.getType() != Infrastructure.Type.VM) {
-      throw new CIStageExecutionException(format("Invalid infrastructure type: %s", infrastructure.getType()));
-    }
-
-    VmInfraYaml vmInfraYaml = (VmInfraYaml) infrastructure;
-    if (vmInfraYaml.getSpec() == null) {
-      throw new CIStageExecutionException("Infrastructure spec should not be empty");
-    }
-
-    if (vmInfraYaml.getSpec().getType() != VmInfraSpec.Type.POOL) {
-      throw new CIStageExecutionException(format("Invalid VM type: %s", vmInfraYaml.getSpec().getType()));
-    }
-
-    VmPoolYaml vmPoolYaml = (VmPoolYaml) vmInfraYaml.getSpec();
-    return resolveOSType(vmPoolYaml.getSpec().getOs());
+    return VmInitializeStepUtils.getVmOS(infrastructure);
   }
 
   public Map<String, String> getBuildTags(Ambiance ambiance, StageDetails stageDetails) {
