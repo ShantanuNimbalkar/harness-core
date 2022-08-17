@@ -254,6 +254,7 @@ public class WatcherServiceImpl implements WatcherService {
                                  : "[New] Timed out waiting for go-ahead. Proceeding anyway");
       }
       if (chronicleEventTailer != null) {
+        chronicleEventTailer.setAccountId(watcherConfiguration.getAccountId());
         chronicleEventTailer.startAsync().awaitRunning();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
           // needed to satisfy infer since chronicleEventTailer is not final and it's nullable so it could be null

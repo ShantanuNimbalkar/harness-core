@@ -12,7 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CE;
 
 @OwnedBy(CE)
 @Slf4j
-public class GrpcRestUtils {
+public class EventServiceRestUtils {
   public static <T> T executeRestCall(Call<T> call) throws IOException {
     Response<T> response = null;
     try {

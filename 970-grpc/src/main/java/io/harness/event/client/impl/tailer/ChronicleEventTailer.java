@@ -26,7 +26,7 @@ import com.google.inject.name.Named;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import io.harness.util.GrpcRestUtils;
+import io.harness.util.EventServiceRestUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.RollingChronicleQueue;
@@ -60,6 +60,8 @@ public class ChronicleEventTailer extends AbstractScheduledService {
 
   private final EventPublisherClient eventPublisherClient;
 
+  private String accountId;
+
   @Inject
   ChronicleEventTailer(EventPublisherBlockingStub blockingStub, EventPublisherClient eventPublisherClient, @Named("tailer") RollingChronicleQueue chronicleQueue,
       FileDeletionManager fileDeletionManager, @Named("tailer") BackoffScheduler backoffScheduler) {
@@ -71,6 +73,10 @@ public class ChronicleEventTailer extends AbstractScheduledService {
     this.scheduler = backoffScheduler;
     this.sampler = new Sampler(Duration.ofMinutes(1));
     addListener(new LoggingListener(this), MoreExecutors.directExecutor());
+  }
+
+  public void setAccountId(String accountId) {
+    this.accountId = accountId;
   }
 
   @Override
@@ -189,8 +195,8 @@ public class ChronicleEventTailer extends AbstractScheduledService {
 
   private void publishMessagesOverRest(PublishRequest publishRequest) {
     try {
-      Call<PublishResponse> call = eventPublisherClient.publish(publishRequest);
-      GrpcRestUtils.executeRestCall(call);
+      Call<PublishResponse> call = eventPublisherClient.publish(accountId, publishRequest);
+      EventServiceRestUtils.executeRestCall(call);
     } catch (Exception e) {
       log.error("Error while publishing messages over rest ", e);
     }
