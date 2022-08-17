@@ -11,7 +11,6 @@ import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 import io.dropwizard.jersey.protobuf.ProtocolBufferMediaType;
-import io.grpc.Context;
 import io.harness.annotations.ExposeInternalException;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.event.PublishRequest;
@@ -23,13 +22,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import static io.harness.annotations.dev.HarnessTeam.CE;
 import static io.harness.grpc.IdentifierKeys.DELEGATE_ID;
-import static io.harness.grpc.auth.DelegateAuthServerInterceptor.ACCOUNT_ID_CTX_KEY;
-import static java.util.Objects.requireNonNull;
 
 @Api("/event-publisher-server")
 @Path("/event-publisher-server")
@@ -52,9 +53,8 @@ public class EventPublisherServerResource {
   @Timed
   @ExceptionMetered
   @ApiOperation(value = "publish", nickname = "publish")
-  public Response publish(@RequestBody(description = "Publish Request") PublishRequest request) {
+  public Response publish(@QueryParam("accountId") String accountId, @RequestBody(description = "Publish Request") PublishRequest request) {
     log.info("Received publish request with {} messages", request.getMessagesCount());
-    String accountId = requireNonNull(ACCOUNT_ID_CTX_KEY.get(Context.current()));
     log.info("EventPublisherServerResource  accountId: {}", accountId);
     String delegateId = request.getMessages(0).getAttributesMap().getOrDefault(DELEGATE_ID, "");
     try {
