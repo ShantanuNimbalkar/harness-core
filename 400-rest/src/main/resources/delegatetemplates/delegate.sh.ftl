@@ -5,7 +5,9 @@ if [ -z "$1" ]; then
   exit 0
 fi
 
-rm config-delegate.yml
+if [ -e config-delegate.yml ]; then
+  rm config-delegate.yml
+fi
 
 ULIM=$(ulimit -n)
 echo "ulimit -n is set to $ULIM"
@@ -170,6 +172,8 @@ fi
 if ! `grep pollForTasks config-delegate.yml > /dev/null`; then
   if [ "$DEPLOY_MODE" == "ONPREM" ]; then
       echo "pollForTasks: true" >> config-delegate.yml
+  elif [[ ! -z "$POLL_FOR_TASKS" ]]; then
+      echo "pollForTasks: $POLL_FOR_TASKS" >> config-delegate.yml
   else
       echo "pollForTasks: false" >> config-delegate.yml
   fi
@@ -287,10 +291,10 @@ JAVA_OPTS=${JAVA_OPTS//UseCGroupMemoryLimitForHeap/UseContainerSupport}
 </#noparse>
 if [[ $DEPLOY_MODE == "KUBERNETES" ]]; then
   echo "Starting delegate - version $2 with java $JRE_BINARY"
-  $JRE_BINARY $INSTRUMENTATION $PROXY_SYS_PROPS $OVERRIDE_TMP_PROPS -DACCOUNT_ID="${accountId}" -DMANAGER_HOST_AND_PORT="${managerHostAndPort}" -Ddelegatesourcedir="$DIR" ${delegateXmx} -XX:+IgnoreUnrecognizedVMOptions -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -Xloggc:mygclogfilename.gc -XX:+UseParallelGC -XX:MaxGCPauseMillis=500 -Dfile.encoding=UTF-8 -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true -DLANG=en_US.UTF-8 $JAVA_OPTS $ALPN_CMD -jar $2/delegate.jar config-delegate.yml watched $1
+  $JRE_BINARY $INSTRUMENTATION $PROXY_SYS_PROPS $OVERRIDE_TMP_PROPS -DACCOUNT_ID="${accountId}" -DMANAGER_HOST_AND_PORT="${managerHostAndPort}" -Ddelegatesourcedir="$DIR" ${delegateXmx} -XX:+IgnoreUnrecognizedVMOptions -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+UseParallelGC -XX:MaxGCPauseMillis=500 -Dfile.encoding=UTF-8 -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true -DLANG=en_US.UTF-8 $JAVA_OPTS $ALPN_CMD -jar $2/delegate.jar config-delegate.yml watched $1
 else
   echo "Starting delegate - version $REMOTE_DELEGATE_VERSION with java $JRE_BINARY"
-  $JRE_BINARY $INSTRUMENTATION $PROXY_SYS_PROPS $OVERRIDE_TMP_PROPS -DACCOUNT_ID="${accountId}" -DMANAGER_HOST_AND_PORT="${managerHostAndPort}" -Ddelegatesourcedir="$DIR" ${delegateXmx} -XX:+IgnoreUnrecognizedVMOptions -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -Xloggc:mygclogfilename.gc -XX:+UseParallelGC -XX:MaxGCPauseMillis=500 -Dfile.encoding=UTF-8 -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true -DLANG=en_US.UTF-8 $JAVA_OPTS $ALPN_CMD -jar delegate.jar config-delegate.yml watched $1
+  $JRE_BINARY $INSTRUMENTATION $PROXY_SYS_PROPS $OVERRIDE_TMP_PROPS -DACCOUNT_ID="${accountId}" -DMANAGER_HOST_AND_PORT="${managerHostAndPort}" -Ddelegatesourcedir="$DIR" ${delegateXmx} -XX:+IgnoreUnrecognizedVMOptions -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+UseParallelGC -XX:MaxGCPauseMillis=500 -Dfile.encoding=UTF-8 -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true -DLANG=en_US.UTF-8 $JAVA_OPTS $ALPN_CMD -jar delegate.jar config-delegate.yml watched $1
 fi
 
 sleep 3

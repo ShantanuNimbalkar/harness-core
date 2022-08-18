@@ -64,6 +64,10 @@ public class StripeHelperImpl implements StripeHelper {
   private List<String> subscriptionExpandList = Arrays.asList("latest_invoice.payment_intent");
   private static final String ACCOUNT_IDENTIFIER_KEY = "accountIdentifier";
   private static final String MODULE_TYPE_KEY = "moduleType";
+  private static final String SEARCH_MODULE_TYPE_EDITION_BILLED_MAX =
+      "metadata['module']:'%s' AND metadata['type']:'%s' AND metadata['edition']:'%s' AND metadata['billed']:'%s' AND metadata['max']:'%s'";
+  private static final String SEARCH_MODULE_TYPE_EDITION_BILLED =
+      "metadata['module']:'%s' AND metadata['type']:'%s' AND metadata['edition']:'%s' AND metadata['billed']:'%s'";
 
   public StripeHelperImpl() {
     this.stripeHandler = new StripeHandlerImpl();
@@ -71,12 +75,23 @@ public class StripeHelperImpl implements StripeHelper {
 
   @Override
   public CustomerDetailDTO createCustomer(CustomerParams customerParams) {
+    CustomerCreateParams.Address address = CustomerCreateParams.Address.builder()
+                                               .setCity(customerParams.getAddress().getCity())
+                                               .setCountry(customerParams.getAddress().getCountry())
+                                               .setLine1(customerParams.getAddress().getLine1())
+                                               .setLine2(customerParams.getAddress().getLine2())
+                                               .setPostalCode(customerParams.getAddress().getPostalCode())
+                                               .setState(customerParams.getAddress().getState())
+                                               .build();
+
     CustomerCreateParams params =
         CustomerCreateParams.builder()
+            .setAddress(address)
             .setEmail(customerParams.getBillingContactEmail())
             .setName(customerParams.getName())
             .setMetadata(ImmutableMap.of(ACCOUNT_IDENTIFIER_KEY, customerParams.getAccountIdentifier()))
             .build();
+
     Customer customer = stripeHandler.createCustomer(params);
     return toCustomerDetailDTO(customer);
   }
@@ -128,10 +143,14 @@ public class StripeHelperImpl implements StripeHelper {
     }
 
     if (!Strings.isNullOrEmpty(billingParams.getCreditCardId())) {
-      paramsBuilder.setSource(billingParams.getCreditCardId());
+      paramsBuilder.setInvoiceSettings(CustomerUpdateParams.InvoiceSettings.builder()
+                                           .setDefaultPaymentMethod(billingParams.getCreditCardId())
+                                           .build());
     }
 
     paramsBuilder.setAddress(newAddress.build());
+
+    stripeHandler.linkPaymentMethodToCustomer(billingParams.getCustomerId(), billingParams.getCreditCardId());
 
     Customer customer = stripeHandler.updateCustomer(billingParams.getCustomerId(), paramsBuilder.build());
     return toCustomerDetailDTO(customer);
@@ -155,6 +174,32 @@ public class StripeHelperImpl implements StripeHelper {
     List<Price> priceResults = stripeHandler.searchPrices(params).getData();
 
     return toPriceCollectionDTO(priceResults);
+  }
+
+  @Override
+  public Price getPrice(ModuleType moduleType, String type, String edition, String paymentFrequency, int quantity) {
+    String searchString = String.format(
+        SEARCH_MODULE_TYPE_EDITION_BILLED_MAX, moduleType.toString(), type, edition, paymentFrequency, quantity);
+
+    PriceSearchParams params =
+        PriceSearchParams.builder().setQuery(searchString).addAllExpand(Lists.newArrayList("data.tiers")).build();
+
+    List<Price> priceResults = stripeHandler.searchPrices(params).getData();
+
+    return priceResults.stream().findFirst().get();
+  }
+
+  @Override
+  public Price getPrice(ModuleType moduleType, String type, String edition, String paymentFrequency) {
+    String searchString =
+        String.format(SEARCH_MODULE_TYPE_EDITION_BILLED, moduleType.toString(), type, edition, paymentFrequency);
+
+    PriceSearchParams params =
+        PriceSearchParams.builder().setQuery(searchString).addAllExpand(Lists.newArrayList("data.tiers")).build();
+
+    List<Price> priceResults = stripeHandler.searchPrices(params).getData();
+
+    return priceResults.stream().findFirst().get();
   }
 
   @Override
@@ -188,7 +233,9 @@ public class StripeHelperImpl implements StripeHelper {
     creationParamsBuilder.setCustomer(subscriptionParams.getCustomerId())
         .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.DEFAULT_INCOMPLETE)
         .addAllExpand(subscriptionExpandList)
-        .setProrationBehavior(SubscriptionCreateParams.ProrationBehavior.ALWAYS_INVOICE);
+        .setProrationBehavior(SubscriptionCreateParams.ProrationBehavior.ALWAYS_INVOICE)
+        .setCollectionMethod(SubscriptionCreateParams.CollectionMethod.SEND_INVOICE)
+        .setDaysUntilDue(7L);
 
     // Register subscription items
     subscriptionParams.getItems().forEach(item
@@ -330,6 +377,11 @@ public class StripeHelperImpl implements StripeHelper {
   public PaymentMethodCollectionDTO listPaymentMethods(String customerId) {
     PaymentMethodCollection paymentMethodCollection = stripeHandler.retrievePaymentMethodsUnderCustomer(customerId);
     return toPaymentMethodCollectionDTO(paymentMethodCollection);
+  }
+
+  @Override
+  public InvoiceDetailDTO finalizeInvoice(String invoiceId) {
+    return toInvoiceDetailDTO(stripeHandler.finalizeInvoice(invoiceId));
   }
 
   private InvoiceDetailDTO toInvoiceDetailDTO(Invoice invoice) {

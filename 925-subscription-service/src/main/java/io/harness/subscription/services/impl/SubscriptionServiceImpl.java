@@ -12,7 +12,6 @@ import io.harness.beans.FeatureName;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnsupportedOperationException;
 import io.harness.ff.FeatureFlagService;
-import io.harness.licensing.services.LicenseService;
 import io.harness.repositories.StripeCustomerRepository;
 import io.harness.repositories.SubscriptionDetailRepository;
 import io.harness.subscription.constant.Prices;
@@ -53,19 +52,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
   private final StripeHelper stripeHelper;
   private final StripeCustomerRepository stripeCustomerRepository;
   private final SubscriptionDetailRepository subscriptionDetailRepository;
-  private final LicenseService licenseService;
   private final FeatureFlagService featureFlagService;
 
   private final Map<String, StripeEventHandler> eventHandlers;
 
   @Inject
   public SubscriptionServiceImpl(StripeHelper stripeHelper, StripeCustomerRepository stripeCustomerRepository,
-      SubscriptionDetailRepository subscriptionDetailRepository, LicenseService licenseService,
-      FeatureFlagService featureFlagService, Map<String, StripeEventHandler> eventHandlers) {
+      SubscriptionDetailRepository subscriptionDetailRepository, FeatureFlagService featureFlagService,
+      Map<String, StripeEventHandler> eventHandlers) {
     this.stripeHelper = stripeHelper;
     this.stripeCustomerRepository = stripeCustomerRepository;
     this.subscriptionDetailRepository = subscriptionDetailRepository;
-    this.licenseService = licenseService;
     this.featureFlagService = featureFlagService;
     this.eventHandlers = eventHandlers;
   }
@@ -107,7 +104,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
   }
 
   @Override
-  public InvoiceDetailDTO createFfSubscription(String accountIdentifier, FfSubscriptionDTO subscriptionDTO) {
+  public SubscriptionDetailDTO createFfSubscription(String accountIdentifier, FfSubscriptionDTO subscriptionDTO) {
     isSelfServiceEnable(accountIdentifier);
 
     // TODO: transaction control in case any race condition
@@ -115,7 +112,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // verify customer exists
     StripeCustomer stripeCustomer = stripeCustomerRepository.findByAccountIdentifier(accountIdentifier);
     if (stripeCustomer == null) {
-      createStripeCustomer(accountIdentifier, new CustomerDTO("admin@harness.io", "Harness"));
+      createStripeCustomer(accountIdentifier, subscriptionDTO.getCustomer());
       stripeCustomer = stripeCustomerRepository.findByAccountIdentifier(accountIdentifier);
     }
 
@@ -134,21 +131,30 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     ArrayList<ItemParams> subscriptionItems = new ArrayList<>();
 
     val developerPriceId = stripeHelper.getPrice(
-        Prices.getLookupKey("FF", subscriptionDTO.getEdition(), "DEVELOPERS", subscriptionDTO.getPaymentFreq()));
-    subscriptionItems.add(new ItemParams(developerPriceId.getId(), (long) subscriptionDTO.getNumberOfDevelopers(),
-        Prices.getLookupKey("FF", subscriptionDTO.getEdition(), "DEVELOPERS", subscriptionDTO.getPaymentFreq())));
+        ModuleType.CF, "DEVELOPERS", subscriptionDTO.getEdition(), subscriptionDTO.getPaymentFreq());
 
-    val mauPriceId = stripeHelper.getPrice(
-        Prices.getLookupKey("FF", subscriptionDTO.getEdition(), "MAU", subscriptionDTO.getPaymentFreq()));
-    subscriptionItems.add(new ItemParams(mauPriceId.getId(), (long) subscriptionDTO.getNumberOfMau(),
-        Prices.getLookupKey("FF", subscriptionDTO.getEdition(), "MAU", subscriptionDTO.getPaymentFreq())));
+    subscriptionItems.add(ItemParams.builder()
+                              .priceId(developerPriceId.getId())
+                              .quantity((long) subscriptionDTO.getNumberOfDevelopers())
+                              .build());
+
+    val mauPriceId = stripeHelper.getPrice(ModuleType.CF, "MAU", subscriptionDTO.getEdition(),
+        subscriptionDTO.getPaymentFreq(), subscriptionDTO.getNumberOfMau());
+
+    subscriptionItems.add(ItemParams.builder().priceId(mauPriceId.getId()).quantity(1L).build());
 
     if (subscriptionDTO.isPremiumSupport()) {
-      val supportPriceId = stripeHelper.getPrice(Prices.PREMIUM_SUPPORT);
-      subscriptionItems.add(new ItemParams(supportPriceId.getId(), 1L, Prices.PREMIUM_SUPPORT));
-    }
+      val mauSupportPriceId = stripeHelper.getPrice(ModuleType.CF, "MAU_SUPPORT", subscriptionDTO.getEdition(),
+          subscriptionDTO.getPaymentFreq(), subscriptionDTO.getNumberOfMau());
 
-    // subscriptionItems.add(new ItemParams(priceId));
+      subscriptionItems.add(new ItemParams(mauSupportPriceId.getId(), 1L, Prices.PREMIUM_SUPPORT));
+
+      val developerSupportPriceId = stripeHelper.getPrice(
+          ModuleType.CF, "DEVELOPERS_SUPPORT", subscriptionDTO.getEdition(), subscriptionDTO.getPaymentFreq());
+
+      subscriptionItems.add(new ItemParams(
+          developerSupportPriceId.getId(), (long) subscriptionDTO.getNumberOfDevelopers(), Prices.PREMIUM_SUPPORT));
+    }
 
     // create Subscription
     SubscriptionParams param = SubscriptionParams.builder()
@@ -158,6 +164,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                    .items(subscriptionItems)
                                    .paymentFrequency(subscriptionDTO.getPaymentFreq())
                                    .build();
+
     SubscriptionDetailDTO subscription = stripeHelper.createSubscription(param);
 
     // Save locally with basic information after succeed
@@ -170,10 +177,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                           .moduleType(ModuleType.CF)
                                           .build());
 
-    val invoice = stripeHelper.getUpcomingInvoice(stripeCustomer.getCustomerId());
-    invoice.setClientSecret(subscription.getClientSecret());
-
-    return invoice;
+    return subscription;
   }
 
   @Override
@@ -312,6 +316,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     CustomerDetailDTO customerDetailDTO =
         stripeHelper.createCustomer(CustomerParams.builder()
                                         .accountIdentifier(accountIdentifier)
+                                        .address(customerDTO.getAddress())
                                         .billingContactEmail(customerDTO.getBillingEmail())
                                         .name(customerDTO.getCompanyName())
                                         .build());

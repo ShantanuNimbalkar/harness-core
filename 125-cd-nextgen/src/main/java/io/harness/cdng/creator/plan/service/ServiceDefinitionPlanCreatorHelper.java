@@ -8,13 +8,15 @@
 package io.harness.cdng.creator.plan.service;
 
 import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
+import io.harness.cdng.azure.config.yaml.ApplicationSettingsConfiguration;
+import io.harness.cdng.azure.config.yaml.ConnectionStringsConfiguration;
+import io.harness.cdng.azure.config.yaml.StartupCommandConfiguration;
 import io.harness.cdng.azure.webapp.ApplicationSettingsParameters;
 import io.harness.cdng.azure.webapp.ConnectionStringsParameters;
-import io.harness.cdng.azure.webapp.StartupScriptParameters;
+import io.harness.cdng.azure.webapp.StartupCommandParameters;
 import io.harness.cdng.configfile.ConfigFileWrapper;
 import io.harness.cdng.creator.plan.PlanCreatorConstants;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
-import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.cdng.service.beans.AzureWebAppServiceSpec;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.utilities.ArtifactsUtility;
@@ -233,32 +235,32 @@ public class ServiceDefinitionPlanCreatorHelper {
         .build();
   }
 
-  String addDependenciesForStartupScript(YamlNode serviceConfigNode,
+  String addDependenciesForStartupCommand(YamlNode serviceConfigNode,
       Map<String, PlanCreationResponse> planCreationResponseMap, ServiceConfig serviceConfig,
       KryoSerializer kryoSerializer) {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
     boolean isUseFromStage = serviceConfig.getUseFromStage() != null;
-    YamlField startupScriptYamlField = AzureConfigsUtility.fetchAzureConfigYamlFieldAndSetYamlUpdates(
-        serviceConfigNode, isUseFromStage, yamlUpdates, YamlTypes.STARTUP_SCRIPT);
-    String startupScriptPlanNodeId = "startupScript-" + UUIDGenerator.generateUuid();
+    YamlField startupCommandYamlField = AzureConfigsUtility.fetchAzureConfigYamlFieldAndSetYamlUpdates(
+        serviceConfigNode, isUseFromStage, yamlUpdates, YamlTypes.STARTUP_COMMAND);
+    String startupCommandPlanNodeId = "startupCommnad-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper startupScript =
-        ((AzureWebAppServiceSpec) serviceConfig.getServiceDefinition().getServiceSpec()).getStartupScript();
+    StartupCommandConfiguration startupCommand =
+        ((AzureWebAppServiceSpec) serviceConfig.getServiceDefinition().getServiceSpec()).getStartupCommand();
     Map<String, YamlField> dependenciesMap = new HashMap<>();
-    dependenciesMap.put(startupScriptPlanNodeId, startupScriptYamlField);
-    PlanCreationResponseBuilder startupScriptPlanCreationResponse = PlanCreationResponse.builder().dependencies(
+    dependenciesMap.put(startupCommandPlanNodeId, startupCommandYamlField);
+    PlanCreationResponseBuilder startupCommandPlanCreationResponse = PlanCreationResponse.builder().dependencies(
         DependenciesUtils.toDependenciesProto(dependenciesMap)
             .toBuilder()
-            .putDependencyMetadata(startupScriptPlanNodeId,
-                AzureConfigsUtility.getDependencyMetadata(startupScriptPlanNodeId,
-                    StartupScriptParameters.builder().startupScript(startupScript).build(), kryoSerializer,
-                    PlanCreatorConstants.STARTUP_SCRIPT_STEP_PARAMETER))
+            .putDependencyMetadata(startupCommandPlanNodeId,
+                AzureConfigsUtility.getDependencyMetadata(startupCommandPlanNodeId,
+                    StartupCommandParameters.builder().startupCommand(startupCommand).build(), kryoSerializer,
+                    PlanCreatorConstants.STARTUP_COMMAND_STEP_PARAMETER))
             .build());
     if (yamlUpdates.getFqnToYamlCount() > 0) {
-      startupScriptPlanCreationResponse.yamlUpdates(yamlUpdates.build());
+      startupCommandPlanCreationResponse.yamlUpdates(yamlUpdates.build());
     }
-    planCreationResponseMap.put(startupScriptPlanNodeId, startupScriptPlanCreationResponse.build());
-    return startupScriptPlanNodeId;
+    planCreationResponseMap.put(startupCommandPlanNodeId, startupCommandPlanCreationResponse.build());
+    return startupCommandPlanNodeId;
   }
 
   String addDependenciesForApplicationSettings(YamlNode serviceConfigNode,
@@ -270,7 +272,7 @@ public class ServiceDefinitionPlanCreatorHelper {
         serviceConfigNode, isUseFromStage, yamlUpdates, YamlTypes.APPLICATION_SETTINGS);
     String applicationSettingsYamlFieldPlanNodeId = "applicationSettings-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper applicationSettings =
+    ApplicationSettingsConfiguration applicationSettings =
         ((AzureWebAppServiceSpec) serviceConfig.getServiceDefinition().getServiceSpec()).getApplicationSettings();
     Map<String, YamlField> dependenciesMap = new HashMap<>();
     dependenciesMap.put(applicationSettingsYamlFieldPlanNodeId, applicationSettingsYamlField);
@@ -299,7 +301,7 @@ public class ServiceDefinitionPlanCreatorHelper {
         serviceConfigNode, isUseFromStage, yamlUpdates, YamlTypes.CONNECTION_STRINGS);
     String connectionStringsYamlFieldPlanNodeId = "connectionStrings-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper connectionStrings =
+    ConnectionStringsConfiguration connectionStrings =
         ((AzureWebAppServiceSpec) serviceConfig.getServiceDefinition().getServiceSpec()).getConnectionStrings();
     Map<String, YamlField> dependenciesMap = new HashMap<>();
     dependenciesMap.put(connectionStringsYamlFieldPlanNodeId, connectionStringsYamlField);
@@ -318,32 +320,32 @@ public class ServiceDefinitionPlanCreatorHelper {
     return connectionStringsYamlFieldPlanNodeId;
   }
 
-  String addDependenciesForStartupScriptV2(YamlNode serviceV2Node,
+  String addDependenciesForStartupCommandV2(YamlNode serviceV2Node,
       Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
       KryoSerializer kryoSerializer) {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
-    YamlField startupScriptYamlField = AzureConfigsUtility.fetchAzureConfigYamlFieldAndSetYamlUpdates(
-        serviceV2Node, false, yamlUpdates, YamlTypes.STARTUP_SCRIPT);
-    String startupScriptPlanNodeId = "startupScript-" + UUIDGenerator.generateUuid();
+    YamlField startupCommandYamlField = AzureConfigsUtility.fetchAzureConfigYamlFieldAndSetYamlUpdates(
+        serviceV2Node, false, yamlUpdates, YamlTypes.STARTUP_COMMAND);
+    String startupCommandPlanNodeId = "startupCommand-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper startupScript =
-        ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getStartupScript();
+    StartupCommandConfiguration startupCommand =
+        ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getStartupCommand();
 
     Map<String, YamlField> dependenciesMap = new HashMap<>();
-    dependenciesMap.put(startupScriptPlanNodeId, startupScriptYamlField);
-    PlanCreationResponseBuilder startupScriptPlanCreationResponse = PlanCreationResponse.builder().dependencies(
+    dependenciesMap.put(startupCommandPlanNodeId, startupCommandYamlField);
+    PlanCreationResponseBuilder startupCommandPlanCreationResponse = PlanCreationResponse.builder().dependencies(
         DependenciesUtils.toDependenciesProto(dependenciesMap)
             .toBuilder()
-            .putDependencyMetadata(startupScriptPlanNodeId,
-                AzureConfigsUtility.getDependencyMetadata(startupScriptPlanNodeId,
-                    StartupScriptParameters.builder().startupScript(startupScript).build(), kryoSerializer,
-                    PlanCreatorConstants.STARTUP_SCRIPT_STEP_PARAMETER))
+            .putDependencyMetadata(startupCommandPlanNodeId,
+                AzureConfigsUtility.getDependencyMetadata(startupCommandPlanNodeId,
+                    StartupCommandParameters.builder().startupCommand(startupCommand).build(), kryoSerializer,
+                    PlanCreatorConstants.STARTUP_COMMAND_STEP_PARAMETER))
             .build());
     if (yamlUpdates.getFqnToYamlCount() > 0) {
-      startupScriptPlanCreationResponse.yamlUpdates(yamlUpdates.build());
+      startupCommandPlanCreationResponse.yamlUpdates(yamlUpdates.build());
     }
-    planCreationResponseMap.put(startupScriptPlanNodeId, startupScriptPlanCreationResponse.build());
-    return startupScriptPlanNodeId;
+    planCreationResponseMap.put(startupCommandPlanNodeId, startupCommandPlanCreationResponse.build());
+    return startupCommandPlanNodeId;
   }
 
   String addDependenciesForApplicationSettingsV2(YamlNode serviceV2Node,
@@ -354,7 +356,7 @@ public class ServiceDefinitionPlanCreatorHelper {
         serviceV2Node, false, yamlUpdates, YamlTypes.APPLICATION_SETTINGS);
     String applicationSettingsPlanNodeId = "applicationSettings-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper applicationSettings =
+    ApplicationSettingsConfiguration applicationSettings =
         ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getApplicationSettings();
 
     Map<String, YamlField> dependenciesMap = new HashMap<>();
@@ -382,7 +384,7 @@ public class ServiceDefinitionPlanCreatorHelper {
         serviceV2Node, false, yamlUpdates, YamlTypes.CONNECTION_STRINGS);
     String connectionStringsPlanNodeId = "connectionStrings-" + UUIDGenerator.generateUuid();
 
-    StoreConfigWrapper connectionStrings =
+    ConnectionStringsConfiguration connectionStrings =
         ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getConnectionStrings();
 
     Map<String, YamlField> dependenciesMap = new HashMap<>();

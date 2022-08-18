@@ -44,6 +44,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
@@ -92,11 +93,10 @@ public class PVWatcher implements ResourceEventHandler<V1PersistentVolume> {
                                 .build();
 
     this.storageV1Api = new StorageV1Api(apiClient);
-    this.storageClassParamsCache =
-        Caffeine.newBuilder()
-            .maximumSize(20)
-            .expireAfterWrite(1, TimeUnit.DAYS)
-            .build(key -> this.storageV1Api.readStorageClass(key, null, null, null).getParameters());
+    this.storageClassParamsCache = Caffeine.newBuilder()
+                                       .maximumSize(20)
+                                       .expireAfterWrite(1, TimeUnit.DAYS)
+                                       .build(key -> this.storageV1Api.readStorageClass(key, null).getParameters());
 
     CoreV1Api coreV1Api = new CoreV1Api(apiClient);
     sharedInformerFactory
@@ -105,7 +105,8 @@ public class PVWatcher implements ResourceEventHandler<V1PersistentVolume> {
                 -> {
               log.info("PV watcher :: Resource version: {}, timeoutSeconds: {}, watch: {}",
                   callGeneratorParams.resourceVersion, callGeneratorParams.timeoutSeconds, callGeneratorParams.watch);
-              if (!"0".equals(callGeneratorParams.resourceVersion)) {
+              if (!"0".equals(callGeneratorParams.resourceVersion)
+                  && Objects.nonNull(callGeneratorParams.timeoutSeconds)) {
                 K8sWatcherHelper.updateLastSeen(
                     String.format(K8sWatcherHelper.PV_WATCHER_PREFIX, clusterId), Instant.now());
               }
