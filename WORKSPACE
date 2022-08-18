@@ -5291,8 +5291,8 @@ maven_install(
 maven_install(
     name = "maven_debezium",
     artifacts = [
-        "org.mongodb:mongodb-driver-core:4.0.4",
-        "org.mongodb:mongodb-driver-sync:4.0.4",
+        "org.mongodb:mongodb-driver-core:4.3.4",
+        "org.mongodb:mongodb-driver-sync:4.3.4",
         "io.debezium:debezium-api:1.8.0.Final",
         "io.debezium:debezium-connector-mongodb:1.8.0.Final",
         "io.debezium:debezium-core:1.8.0.Final",
