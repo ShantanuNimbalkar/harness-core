@@ -7,6 +7,9 @@
 
 package io.harness.debezium;
 
+import io.harness.beans.FeatureName;
+import io.harness.cf.client.api.CfClient;
+import io.harness.cf.client.dto.Target;
 import io.harness.eventsframework.api.Producer;
 import io.harness.eventsframework.producer.Message;
 
@@ -30,10 +33,12 @@ public class EventsFrameworkChangeConsumer implements MongoCollectionChangeConsu
   private long sleepInterval;
   private long producingCountPerBatch;
   private int redisStreamSize;
+  private CfClient cfClient;
 
   public EventsFrameworkChangeConsumer(long sleepInterval, String collectionName,
-      DebeziumProducerFactory producerFactory, long producingCountPerBatch, int redisStreamSize) {
+      DebeziumProducerFactory producerFactory, long producingCountPerBatch, int redisStreamSize, CfClient cfClient) {
     this.collectionName = collectionName;
+    this.cfClient = cfClient;
     this.producerFactory = producerFactory;
     this.sleepInterval = sleepInterval;
     this.producingCountPerBatch = producingCountPerBatch;
@@ -56,8 +61,12 @@ public class EventsFrameworkChangeConsumer implements MongoCollectionChangeConsu
                                                     .setTimestamp(System.currentTimeMillis())
                                                     .build();
 
+      boolean debeziumEnabled =
+          cfClient.boolVariation(FeatureName.DEBEZIUM_ENABLED.toString(), Target.builder().build(), false);
       Producer producer = producerFactory.get(record.destination(), redisStreamSize);
-      producer.send(Message.newBuilder().setData(debeziumChangeEvent.toByteString()).build());
+      if (debeziumEnabled) {
+        producer.send(Message.newBuilder().setData(debeziumChangeEvent.toByteString()).build());
+      }
       try {
         recordCommitter.markProcessed(record);
       } catch (InterruptedException e) {
