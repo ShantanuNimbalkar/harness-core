@@ -15,14 +15,11 @@ import com.google.inject.AbstractModule;
 
 public class WatcherManagerClientModule extends AbstractModule {
   private final String managerBaseUrl;
-  private final String ceEventServiceUrl;
   private final String accountId;
   private final String accountSecret;
 
-  public WatcherManagerClientModule(String managerBaseUrl, String ceEventServiceUrl,
-                                    String accountId, String accountSecret) {
+  public WatcherManagerClientModule(String managerBaseUrl, String accountId, String accountSecret) {
     this.managerBaseUrl = managerBaseUrl;
-    this.ceEventServiceUrl = ceEventServiceUrl;
     this.accountId = accountId;
     this.accountSecret = accountSecret;
   }
@@ -33,6 +30,6 @@ public class WatcherManagerClientModule extends AbstractModule {
     bind(TokenGenerator.class).toInstance(tokenGenerator);
     bind(ManagerClientV2.class).toProvider(new WatcherManagerClientV2Factory(managerBaseUrl, tokenGenerator));
     bind(EventPublisherClient.class)
-            .toProvider(new WatcherEventPublisherClientFactory(ceEventServiceUrl, tokenGenerator));
+            .toProvider(new WatcherEventPublisherClientFactory(managerBaseUrl, tokenGenerator));
   }
 }

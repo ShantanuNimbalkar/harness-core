@@ -24,18 +24,16 @@ public class DelegateManagerClientModule extends AbstractModule {
   private final String accountSecret;
   private final String verificationServiceBaseUrl;
   private final String cvNextGenUrl;
-  private final String ceEventServiceUrl;
   private final String clientCertificateFilePath;
   private final String clientCertificateKeyFilePath;
   private final boolean trustAllCertificates;
 
   public DelegateManagerClientModule(String managerBaseUrl, String verificationServiceBaseUrl, String cvNextGenUrl,
-      String ceEventServiceUrl, String accountId, String accountSecret, String clientCertificateFilePath,
+      String accountId, String accountSecret, String clientCertificateFilePath,
       String clientCertificateKeyFilePath, boolean trustAllCertificates) {
     this.managerBaseUrl = managerBaseUrl;
     this.verificationServiceBaseUrl = verificationServiceBaseUrl;
     this.cvNextGenUrl = cvNextGenUrl;
-    this.ceEventServiceUrl = ceEventServiceUrl;
     this.accountId = accountId;
     this.accountSecret = accountSecret;
     this.clientCertificateFilePath = clientCertificateFilePath;
@@ -51,7 +49,7 @@ public class DelegateManagerClientModule extends AbstractModule {
         .toProvider(new DelegateAgentManagerClientFactory(managerBaseUrl, tokenGenerator, clientCertificateFilePath,
             clientCertificateKeyFilePath, trustAllCertificates));
     bind(EventPublisherClient.class)
-            .toProvider(new EventPublisherClientFactory(ceEventServiceUrl, tokenGenerator, clientCertificateFilePath,
+            .toProvider(new EventPublisherClientFactory(managerBaseUrl, tokenGenerator, clientCertificateFilePath,
                     clientCertificateKeyFilePath, trustAllCertificates));
     bind(VerificationServiceClient.class)
         .toProvider(new VerificationServiceClientFactory(verificationServiceBaseUrl, tokenGenerator,

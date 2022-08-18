@@ -133,8 +133,7 @@ public class WatcherApplication {
       throw new RuntimeException("Neither delegateToken nor accountSecret present in config-watcher.yml");
     }
     modules.add(
-        new WatcherManagerClientModule(configuration.getManagerUrl(), configuration.getCeEventServiceUrl(),
-                configuration.getAccountId(), delegateToken));
+        new WatcherManagerClientModule(configuration.getManagerUrl(), configuration.getAccountId(), delegateToken));
 
     modules.add(WatcherModule.getInstance());
 

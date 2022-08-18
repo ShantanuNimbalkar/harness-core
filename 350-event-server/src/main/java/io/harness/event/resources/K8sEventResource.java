@@ -32,19 +32,19 @@ import javax.ws.rs.core.Response;
 import static io.harness.annotations.dev.HarnessTeam.CE;
 import static io.harness.grpc.IdentifierKeys.DELEGATE_ID;
 
-@Api("/event-publisher-server")
-@Path("/event-publisher-server")
+@Api("/k8sevent")
+@Path("/k8sevent")
 @Consumes(ProtocolBufferMediaType.APPLICATION_PROTOBUF)
 @Produces(ProtocolBufferMediaType.APPLICATION_PROTOBUF)
 @PublicApi
 @Slf4j
 @ExposeInternalException
 @OwnedBy(CE)
-public class EventPublisherServerResource {
+public class K8sEventResource {
   private final EventPublisherService eventPublisherService;
 
   @Inject
-  public EventPublisherServerResource(EventPublisherService eventPublisherService) {
+  public K8sEventResource(EventPublisherService eventPublisherService) {
     this.eventPublisherService = eventPublisherService;
   }
 

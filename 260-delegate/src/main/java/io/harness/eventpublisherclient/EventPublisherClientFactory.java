@@ -47,6 +47,7 @@ public class EventPublisherClientFactory
     implements Provider<EventPublisherClient> {
   @Inject private VersionInfoManager versionInfoManager;
   @Inject private DelegateKryoConverterFactory kryoConverterFactory;
+  private static final String CCM_EVENT_SERVICE_ENDPOINT = "/ccmevent";
 
   private final String baseUrl;
   private final TokenGenerator tokenGenerator;
@@ -54,9 +55,9 @@ public class EventPublisherClientFactory
   private final String clientCertificateKeyFilePath;
   private final boolean trustAllCertificates;
 
-  public EventPublisherClientFactory(String baseUrl, TokenGenerator tokenGenerator, String clientCertificateFilePath,
+  public EventPublisherClientFactory(String managerBaseUrl, TokenGenerator tokenGenerator, String clientCertificateFilePath,
                                      String clientCertificateKeyFilePath, boolean trustAllCertificates) {
-    this.baseUrl = baseUrl;
+    this.baseUrl = managerBaseUrl + CCM_EVENT_SERVICE_ENDPOINT;
     this.tokenGenerator = tokenGenerator;
     this.clientCertificateFilePath = clientCertificateFilePath;
     this.clientCertificateKeyFilePath = clientCertificateKeyFilePath;

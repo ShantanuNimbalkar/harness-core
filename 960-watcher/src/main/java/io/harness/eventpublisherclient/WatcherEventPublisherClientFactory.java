@@ -34,12 +34,13 @@ import javax.net.ssl.*;
 public class WatcherEventPublisherClientFactory implements Provider<EventPublisherClient> {
   private static final ImmutableList<TrustManager> TRUST_ALL_CERTS =
           ImmutableList.of(new AllTrustingX509TrustManager());
+  private static final String CCM_EVENT_SERVICE_ENDPOINT = "/ccmevent";
 
   private String baseUrl;
   private TokenGenerator tokenGenerator;
 
-  public WatcherEventPublisherClientFactory(String baseUrl, TokenGenerator tokenGenerator) {
-    this.baseUrl = baseUrl;
+  public WatcherEventPublisherClientFactory(String managerBaseUrl, TokenGenerator tokenGenerator) {
+    this.baseUrl = managerBaseUrl + CCM_EVENT_SERVICE_ENDPOINT;
     this.tokenGenerator = tokenGenerator;
   }
 

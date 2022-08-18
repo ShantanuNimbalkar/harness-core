@@ -14,6 +14,6 @@ import javax.ws.rs.Consumes;
 @OwnedBy(HarnessTeam.CE)
 public interface EventPublisherClient {
     @Consumes({"application/x-protobuf"})
-    @GET("/event-publisher-server/publish")
+    @GET("/k8sevent/publish")
     Call<PublishResponse> publish(@Query("accountId") String accountId, @Body PublishRequest publishRequest);
 }
