@@ -14,6 +14,7 @@ import static io.harness.spec.server.ng.model.SecretSpec.TypeEnum.WINRMTGTPASSWO
 import static io.harness.spec.server.ng.model.SecretTextSpec.ValueTypeEnum.valueOf;
 
 import io.harness.encryption.SecretRefData;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.dto.secrets.KerberosConfigDTO;
 import io.harness.ng.core.dto.secrets.KerberosWinRmConfigDTO;
 import io.harness.ng.core.dto.secrets.NTLMConfigDTO;
@@ -25,6 +26,7 @@ import io.harness.ng.core.dto.secrets.SSHKeyReferenceCredentialDTO;
 import io.harness.ng.core.dto.secrets.SSHKeySpecDTO;
 import io.harness.ng.core.dto.secrets.SSHPasswordCredentialDTO;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
+import io.harness.ng.core.dto.secrets.SecretDTOV2.SecretDTOV2Builder;
 import io.harness.ng.core.dto.secrets.SecretFileSpecDTO;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.ng.core.dto.secrets.SecretSpecDTO;
@@ -58,13 +60,13 @@ import java.util.stream.Collectors;
 
 public class SecretApiMapper {
   public static SecretDTOV2 toSecretDto(Secret secret) {
-    SecretDTOV2.SecretDTOV2Builder secretDTOV2Builder = SecretDTOV2.builder()
-                                                            .identifier(secret.getSlug())
-                                                            .name(secret.getName())
-                                                            .orgIdentifier(secret.getOrg())
-                                                            .projectIdentifier(secret.getProject())
-                                                            .description(secret.getDescription())
-                                                            .tags(secret.getTags());
+    SecretDTOV2Builder secretDTOV2Builder = SecretDTOV2.builder()
+                                                .identifier(secret.getSlug())
+                                                .name(secret.getName())
+                                                .orgIdentifier(secret.getOrg())
+                                                .projectIdentifier(secret.getProject())
+                                                .description(secret.getDescription())
+                                                .tags(secret.getTags());
     switch (secret.getSpec().getType()) {
       case SSHKEYPATH:
         secretDTOV2Builder.type(SecretType.SSHKey).spec(fromSSHKeyPathSpec(secret));
@@ -96,6 +98,9 @@ public class SecretApiMapper {
       case WINRMTGTPASSWORD:
         secretDTOV2Builder.type(SecretType.WinRmCredentials).spec(fromWinRmPasswordSpec(secret));
         break;
+      default:
+        throw new InvalidRequestException(
+            String.format("Invalid request, secret spec type [%s] is not supported", secret.getSpec().getType()));
     }
 
     return secretDTOV2Builder.build();
@@ -402,6 +407,9 @@ public class SecretApiMapper {
 
           secret.setSpec(winRmNTLMSpec);
         }
+        break;
+      default:
+        throw new InvalidRequestException(String.format("Unable to map secret type [%s]", secretDTOV2.getType()));
     }
     return secret;
   }
