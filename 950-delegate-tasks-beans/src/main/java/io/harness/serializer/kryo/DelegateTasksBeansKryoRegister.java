@@ -133,6 +133,7 @@ import io.harness.delegate.beans.ci.vm.CIVmExecuteStepTaskParams;
 import io.harness.delegate.beans.ci.vm.CIVmInitializeTaskParams;
 import io.harness.delegate.beans.ci.vm.VmServiceStatus;
 import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
+import io.harness.delegate.beans.ci.vm.steps.VmBackgroundStep;
 import io.harness.delegate.beans.ci.vm.steps.VmJunitTestReport;
 import io.harness.delegate.beans.ci.vm.steps.VmPluginStep;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
@@ -343,6 +344,7 @@ import io.harness.delegate.task.azure.appservice.settings.AppSettingsFile;
 import io.harness.delegate.task.azure.appservice.settings.EncryptedAppSettingsFile;
 import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppInfraDelegateConfig;
 import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppRequestType;
+import io.harness.delegate.task.azure.appservice.webapp.ng.exception.AzureWebAppRollbackExceptionData;
 import io.harness.delegate.task.azure.appservice.webapp.ng.exception.AzureWebAppSlotDeploymentExceptionData;
 import io.harness.delegate.task.azure.appservice.webapp.ng.request.AzureWebAppFetchPreDeploymentDataRequest;
 import io.harness.delegate.task.azure.appservice.webapp.ng.request.AzureWebAppRollbackRequest;
@@ -1657,11 +1659,13 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(PdcServerInstanceInfo.class, 55501);
     kryo.register(AzureSshWinrmServerInstanceInfo.class, 55502);
     kryo.register(AwsSshWinrmServerInstanceInfo.class, 55503);
+    kryo.register(VmBackgroundStep.class, 55504);
     kryo.register(GitPollingTaskParameters.class, 56335);
     kryo.register(GitHubPollingDelegateRequest.class, 56336);
     kryo.register(GitPollingSourceType.class, 56337);
     kryo.register(GitPollingTaskType.class, 56338);
     kryo.register(GitPollingDelegateResponse.class, 56339);
     kryo.register(JenkinsArtifactDelegateConfig.class, 9800003);
+    kryo.register(AzureWebAppRollbackExceptionData.class, 55419);
   }
 }
