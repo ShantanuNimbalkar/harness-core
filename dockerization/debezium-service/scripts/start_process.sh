@@ -37,7 +37,9 @@ if [[ "${ENABLE_APPDYNAMICS}" == "true" ]]; then
     echo "Using Appdynamics java agent"
 fi
 
+if [[ "${ENABLE_PROMETHEUS}" == "true" ]]; then
 JAVA_OPTS=$JAVA_OPTS" -javaagent:/opt/harness/jmx_prometheus_javaagent-0.17.0.jar=12345:prometheus_config.yaml"
+fi
 
 if [[ "${ENABLE_OPENTELEMETRY}" == "true" ]] ; then
     echo "OpenTelemetry is enabled"
