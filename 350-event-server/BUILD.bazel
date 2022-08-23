@@ -83,4 +83,5 @@ exports_files([
     "event-service-config.yml",
     "key.pem",
     "cert.pem",
+    "keystore.jks",
 ])
