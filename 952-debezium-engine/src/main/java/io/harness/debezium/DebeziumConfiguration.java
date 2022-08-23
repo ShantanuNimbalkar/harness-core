@@ -44,6 +44,7 @@ public class DebeziumConfiguration {
   public static final String SNAPSHOT_FETCH_SIZE = "snapshot.fetch.size";
   public static final String SNAPSHOT_MODE = "snapshot.mode";
   public static final String TRANSFORMS_UNWRAP_ARRAY_ENCODING = "transforms.unwrap.array.encoding";
+  public static final String MONGODB_MEMBERS_AUTO_DISCOVER = "mongodb.members.auto.discover";
 
   public static Properties getDebeziumProperties(DebeziumConfig debeziumConfig, RedisConfig redisLockConfig) {
     Properties props = new Properties();
@@ -55,6 +56,7 @@ public class DebeziumConfiguration {
     props.setProperty(VALUE_CONVERTER_SCHEMAS_ENABLE, debeziumConfig.getValueConverterSchemasEnable());
     props.setProperty(OFFSET_FLUSH_INTERVAL_MS, debeziumConfig.getOffsetFlushIntervalMillis());
     props.setProperty(TRANSFORMS_UNWRAP_ARRAY_ENCODING, debeziumConfig.getTransformsUnwrapArrayEncoding());
+    props.setProperty(MONGODB_MEMBERS_AUTO_DISCOVER, debeziumConfig.getMongodbMembersAutoDiscover());
 
     /* begin connector properties */
     props.setProperty(CONNECTOR_CLASS, MONGO_DB_CONNECTOR);

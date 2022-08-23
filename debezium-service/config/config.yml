@@ -50,6 +50,7 @@ debeziumConfigs:
     redisStreamSize: ${REDIS_STREAM_SIZE:-10000}
     snapshot.mode: ${SNAPSHOT_MODE:-initial}
     transforms.unwrap.array.encoding: ${TRANSFORMS_UNWRAP_ARRAY_ENCODING:-document}
+    mongodb.members.auto.discover: ${MONGODB_MEMBERS_AUTO_DISCOVER:-false}
 
 eventsFramework:
   redis:
