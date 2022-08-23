@@ -125,7 +125,6 @@ public class DebeziumConfig {
    * represents the index of the element in the array. Every element is then passed as the value for the given field.
    */
   @JsonProperty("transforms.unwrap.array.encoding") private String transformsUnwrapArrayEncoding;
-  @JsonProperty("mongodb.members.auto.discover") private String mongodbMembersAutoDiscover;
   public List<String> getMonitoredCollections() {
     if (EmptyPredicate.isEmpty(collectionIncludeList)) {
       return new ArrayList<>();
