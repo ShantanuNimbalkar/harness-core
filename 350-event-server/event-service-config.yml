@@ -9,8 +9,6 @@ server:
   adminConnectors:
     - type: http
       port: 8191
-      keyStorePath: keystore.jks
-      keyStorePassword: password
 
 logging:
   level: INFO
