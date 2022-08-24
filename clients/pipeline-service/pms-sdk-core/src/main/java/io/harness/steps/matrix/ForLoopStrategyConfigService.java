@@ -131,6 +131,7 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
   private List<String> handleSplitByPercentage(HarnessForConfig harnessForConfig) {
     int start = 0;
     List<String> params = harnessForConfig.getItems().getValue();
+    validateItems(params);
     int end = params.size() - 1;
     if (!ParameterField.isBlank(harnessForConfig.getStart())) {
       start = (int) (((harnessForConfig.getStart().getValue().floatValue()) / 100) * params.size());
@@ -144,6 +145,7 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
 
   private List<String> handleSplitByCount(HarnessForConfig harnessForConfig) {
     List<String> params = harnessForConfig.getItems().getValue();
+    validateItems(params);
     if (!ParameterField.isBlank(harnessForConfig.getStart())) {
       int start = harnessForConfig.getStart().getValue();
       if (!ParameterField.isBlank(harnessForConfig.getEnd())) {
@@ -160,6 +162,12 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
       params = params.subList(0, end);
     }
     return params;
+  }
+
+  private void validateItems(List<String> params) {
+    if (null == params) {
+      throw new InvalidArgumentsException("items list cannot be null");
+    }
   }
 
   private void validateStartEnd(int start, int end, int size) {
@@ -182,7 +190,6 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
       throw new InvalidArgumentsException("partition size cannot be equal or less that 0");
     }
   }
-
   @Override
   public StrategyInfo expandJsonNode(StrategyConfig strategyConfig, JsonNode jsonNode) {
     HarnessForConfig harnessForConfig = strategyConfig.getRepeat();
