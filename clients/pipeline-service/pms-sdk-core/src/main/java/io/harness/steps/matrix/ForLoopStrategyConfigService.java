@@ -60,7 +60,9 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
     } else {
       int currentIteration = 0;
       List<String> params = splitParamsIfNeeded(harnessForConfig);
-
+      if (params == null) {
+        throw new NullPointerException("Please verify the expression for looping strategy. It is resolved as null");
+      }
       for (String value : params) {
         children.add(ChildrenExecutableResponse.Child.newBuilder()
                          .setChildNodeId(childNodeId)
