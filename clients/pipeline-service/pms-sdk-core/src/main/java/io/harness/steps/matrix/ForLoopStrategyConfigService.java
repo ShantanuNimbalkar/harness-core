@@ -61,7 +61,8 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
       int currentIteration = 0;
       List<String> params = splitParamsIfNeeded(harnessForConfig);
       if (params == null) {
-        throw new NullPointerException("Please verify the expression for looping strategy. It is resolved as null");
+        throw new NullPointerException(
+            "Error in resolving params for repeat strategy! Expected integer but found null.");
       }
       for (String value : params) {
         children.add(ChildrenExecutableResponse.Child.newBuilder()
