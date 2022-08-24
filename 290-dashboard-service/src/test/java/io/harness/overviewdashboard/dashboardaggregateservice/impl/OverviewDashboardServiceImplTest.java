@@ -228,14 +228,14 @@ public class OverviewDashboardServiceImplTest {
 
     ExecutionResponse<DeploymentsStatsOverview> actualSuccessResponse =
         overviewDashboardService.getDeploymentStatsOverview(
-            accountIdentifier1, userId1, anyLong(), anyLong(), groupBy, sortBy);
+            accountIdentifier1, null,null,userId1, anyLong(), anyLong(), groupBy, sortBy);
     assertThat(actualSuccessResponse.getExecutionStatus()).isEqualTo(ExecutionStatus.SUCCESS);
     assertThat(actualSuccessResponse.getResponse()).isEqualTo(expectedDeploymentsStatsOverview1);
 
     when(parallelRestCallExecutor.executeRestCalls(anyList())).thenReturn(deploymentStatsOverviewRestCallResponseList2);
     ExecutionResponse<DeploymentsStatsOverview> actualFailureResponse =
         overviewDashboardService.getDeploymentStatsOverview(
-            accountIdentifier1, userId1, anyLong(), anyLong(), groupBy, sortBy);
+            accountIdentifier1, null,null,userId1, anyLong(), anyLong(), groupBy, sortBy);
     assertThat(actualFailureResponse.getExecutionStatus()).isEqualTo(ExecutionStatus.FAILURE);
   }
 
@@ -260,13 +260,13 @@ public class OverviewDashboardServiceImplTest {
     when(parallelRestCallExecutor.executeRestCalls(anyList())).thenReturn(restCallResponseListForCountOverview1);
 
     ExecutionResponse<CountOverview> actualSuccessResponse =
-        overviewDashboardService.getCountOverview(accountIdentifier1, userId1, startTime1, endTime1);
+        overviewDashboardService.getCountOverview(accountIdentifier1, null, null,userId1, startTime1, endTime1);
     assertThat(actualSuccessResponse.getExecutionStatus()).isEqualTo(ExecutionStatus.SUCCESS);
     assertThat(actualSuccessResponse.getResponse()).isEqualTo(expectedCountOverview1);
 
     when(parallelRestCallExecutor.executeRestCalls(anyList())).thenReturn(restCallResponseListForCountOverview2);
     ExecutionResponse<CountOverview> actualFailureResponse =
-        overviewDashboardService.getCountOverview(accountIdentifier1, userId1, startTime1, endTime1);
+        overviewDashboardService.getCountOverview(accountIdentifier1, null,null,userId1, startTime1, endTime1);
     assertThat(actualFailureResponse.getExecutionStatus()).isEqualTo(ExecutionStatus.FAILURE);
   }
 

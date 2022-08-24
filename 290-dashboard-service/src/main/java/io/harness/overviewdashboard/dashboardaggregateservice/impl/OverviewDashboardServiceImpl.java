@@ -9,6 +9,9 @@ package io.harness.overviewdashboard.dashboardaggregateservice.impl;
 
 import static io.harness.dashboards.SortBy.DEPLOYMENTS;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
+import static java.lang.String.format;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -24,6 +27,7 @@ import io.harness.dashboards.ServicesCount;
 import io.harness.dashboards.ServicesDashboardInfo;
 import io.harness.dashboards.SortBy;
 import io.harness.dashboards.TimeBasedDeploymentInfo;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.OrgProjectIdentifier;
 import io.harness.ng.core.dto.ActiveProjectsCountDTO;
 import io.harness.ng.core.dto.ProjectDTO;
@@ -63,11 +67,7 @@ import io.harness.project.remote.ProjectClient;
 
 import com.google.inject.Inject;
 import dashboards.CDLandingDashboardResourceClient;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -140,15 +140,19 @@ public class OverviewDashboardServiceImpl implements OverviewDashboardService {
   }
 
   @Override
-  public ExecutionResponse<DeploymentsStatsOverview> getDeploymentStatsOverview(
-      String accountIdentifier, String userId, long startInterval, long endInterval, GroupBy groupBy, SortBy sortBy) {
+  public ExecutionResponse<DeploymentsStatsOverview> getDeploymentStatsOverview(String accountIdentifier,
+      String orgIdentifier, String projectIdentifier, String userId, long startInterval, long endInterval,
+      GroupBy groupBy, SortBy sortBy) {
     List<ProjectDTO> listOfAccessibleProject = dashboardRBACService.listAccessibleProject(accountIdentifier, userId);
     List<String> orgIdentifiers = getOrgIdentifiers(listOfAccessibleProject);
     Map<String, String> mapOfOrganizationIdentifierAndOrganizationName =
         dashboardRBACService.getMapOfOrganizationIdentifierAndOrganizationName(accountIdentifier, orgIdentifiers);
     List<OrgProjectIdentifier> orgProjectIdentifierList = getOrgProjectIdentifier(listOfAccessibleProject);
     LandingDashboardRequestCD landingDashboardRequestCD =
-        LandingDashboardRequestCD.builder().orgProjectIdentifiers(orgProjectIdentifierList).build();
+        LandingDashboardRequestCD.builder()
+            .orgProjectIdentifiers(
+                getOrgProjectIdentifierList(orgProjectIdentifierList, orgIdentifier, projectIdentifier))
+            .build();
     Map<String, String> mapOfProjectIdentifierAndProjectName =
         getMapOfProjectIdentifierAndProjectName(listOfAccessibleProject);
     List<RestCallRequest> restCallRequestList = getRestCallRequestListForDeploymentStatsOverview(
@@ -197,12 +201,15 @@ public class OverviewDashboardServiceImpl implements OverviewDashboardService {
   }
 
   @Override
-  public ExecutionResponse<CountOverview> getCountOverview(
-      String accountIdentifier, String userId, long startInterval, long endInterval) {
+  public ExecutionResponse<CountOverview> getCountOverview(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String userId, long startInterval, long endInterval) {
     List<ProjectDTO> listOfAccessibleProject = dashboardRBACService.listAccessibleProject(accountIdentifier, userId);
     List<OrgProjectIdentifier> orgProjectIdentifierList = getOrgProjectIdentifier(listOfAccessibleProject);
     LandingDashboardRequestCD landingDashboardRequestCD =
-        LandingDashboardRequestCD.builder().orgProjectIdentifiers(orgProjectIdentifierList).build();
+        LandingDashboardRequestCD.builder()
+            .orgProjectIdentifiers(
+                getOrgProjectIdentifierList(orgProjectIdentifierList, orgIdentifier, projectIdentifier))
+            .build();
     LandingDashboardRequestPMS landingDashboardRequestPMS =
         LandingDashboardRequestPMS.builder().orgProjectIdentifiers(orgProjectIdentifierList).build();
     List<RestCallRequest> restCallRequestList = getRestCallRequestListForCountOverview(
@@ -247,6 +254,22 @@ public class OverviewDashboardServiceImpl implements OverviewDashboardService {
         .executionStatus(ExecutionStatus.FAILURE)
         .executionMessage(FAILURE_MESSAGE)
         .build();
+  }
+
+  private List<OrgProjectIdentifier> getOrgProjectIdentifierList(
+      List<OrgProjectIdentifier> orgProjectIdentifierList, String orgIdentifier, String projectIdentifier) {
+    if (isNotEmpty(orgIdentifier) && isNotEmpty(projectIdentifier)) {
+      OrgProjectIdentifier orgProjectIdentifier =
+          OrgProjectIdentifier.builder().orgIdentifier(orgIdentifier).projectIdentifier(projectIdentifier).build();
+      if (orgProjectIdentifierList.contains(orgProjectIdentifier)) {
+        return Collections.singletonList(orgProjectIdentifier);
+      } else {
+        throw new InvalidRequestException(
+            format("Project with identifier %s in organization with identifier %s in not accessible to the user",
+                projectIdentifier, orgIdentifier));
+      }
+    }
+    return orgProjectIdentifierList;
   }
 
   private DeploymentsOverview getDeploymentsOverview(PipelinesExecutionDashboardInfo activeDeploymentsInfo,

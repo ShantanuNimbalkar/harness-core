@@ -22,8 +22,8 @@ public interface OverviewDashboardService {
       String accountIdentifier, String userId, long startInterval, long endInterval);
 
   ExecutionResponse<DeploymentsStatsOverview> getDeploymentStatsOverview(
-      String accountIdentifier, String userId, long startInterval, long endInterval, GroupBy groupBy, SortBy sortBy);
+      String accountIdentifier, String orgIdentifier,String projectIdentifier,String userId, long startInterval, long endInterval, GroupBy groupBy, SortBy sortBy);
 
   ExecutionResponse<CountOverview> getCountOverview(
-      String accountIdentifier, String userId, long startInterval, long endInterval);
+      String accountIdentifier,String orgIdentifier,String projectIdentifier, String userId, long startInterval, long endInterval);
 }
