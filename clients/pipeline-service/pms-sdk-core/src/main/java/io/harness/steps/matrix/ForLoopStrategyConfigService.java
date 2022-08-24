@@ -60,6 +60,10 @@ public class ForLoopStrategyConfigService implements StrategyConfigService {
     } else {
       int currentIteration = 0;
       List<String> params = splitParamsIfNeeded(harnessForConfig);
+      if (params == null) {
+        throw new NullPointerException(
+            "Error in resolving params for repeat strategy! Expected integer but found null.");
+      }
       for (String value : params) {
         children.add(ChildrenExecutableResponse.Child.newBuilder()
                          .setChildNodeId(childNodeId)
