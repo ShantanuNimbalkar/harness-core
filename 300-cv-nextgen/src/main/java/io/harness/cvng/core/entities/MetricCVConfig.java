@@ -156,24 +156,34 @@ public abstract class MetricCVConfig<I extends AnalysisInfo> extends CVConfig {
           customThresholds.stream()
               .filter(m -> TimeSeriesThresholdType.ACT_WHEN_LOWER.equals(m.getCriteria().getThresholdType()))
               .findFirst();
-      Double lessThan = null;
-      if (lessThanTimeSeriesThreshold.isPresent()) {
-        lessThan = thresholdCriteriaType.getPercentage(lessThanTimeSeriesThreshold.get().getCriteria().getValue());
-      }
       Optional<TimeSeriesThreshold> greaterThanTimeSeriesThreshold =
           customThresholds.stream()
               .filter(m -> TimeSeriesThresholdType.ACT_WHEN_HIGHER.equals(m.getCriteria().getThresholdType()))
               .findFirst();
+      Double lessThan = null;
       Double greaterThan = null;
+      if (lessThanTimeSeriesThreshold.isPresent()) {
+        double value = thresholdCriteriaType.getPercentage(lessThanTimeSeriesThreshold.get().getCriteria().getValue());
+        if (lessThanTimeSeriesThreshold.get().getAction().equals(TimeSeriesThresholdActionType.IGNORE)) {
+          greaterThan = value;
+        } else {
+          lessThan = value;
+        }
+      }
       if (greaterThanTimeSeriesThreshold.isPresent()) {
-        greaterThan =
+        double value =
             thresholdCriteriaType.getPercentage(greaterThanTimeSeriesThreshold.get().getCriteria().getValue());
+        if (greaterThanTimeSeriesThreshold.get().getAction().equals(TimeSeriesThresholdActionType.IGNORE)) {
+          lessThan = value;
+        } else {
+          greaterThan = value;
+        }
       }
       TimeSeriesThreshold baseMetricThreshold = customThresholds.get(0);
       metricThresholds.add(
           TimeSeriesMetricPackDTO.MetricThreshold.builder()
               .metricName(baseMetricThreshold.getMetricName())
-              .groupName(baseMetricThreshold.getMetricGroupName())
+              .groupName(maybeGetGroupName().orElse(baseMetricThreshold.getMetricGroupName()))
               .metricIdentifier(baseMetricThreshold.getMetricIdentifier())
               .type(MetricThresholdActionType.getMetricThresholdActionType(customThresholds.get(0).getAction()))
               .spec(MetricThresholdSpecDTOTransformer.getDto(baseMetricThreshold))

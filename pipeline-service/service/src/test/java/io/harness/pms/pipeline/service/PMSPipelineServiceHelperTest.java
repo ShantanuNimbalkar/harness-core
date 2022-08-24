@@ -24,7 +24,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.engine.GovernanceService;
-import io.harness.exception.GitYamlException;
+import io.harness.exception.DuplicateFileImportException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filter.FilterType;
 import io.harness.filter.dto.FilterDTO;
@@ -35,6 +35,7 @@ import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.governance.GovernanceMetadata;
 import io.harness.ng.core.common.beans.NGTag;
 import io.harness.ng.core.template.TemplateMergeResponseDTO;
+import io.harness.ng.core.template.TemplateReferenceSummary;
 import io.harness.pms.PmsFeatureFlagService;
 import io.harness.pms.contracts.governance.ExpansionRequestMetadata;
 import io.harness.pms.contracts.governance.ExpansionResponseBatch;
@@ -55,6 +56,7 @@ import io.harness.yaml.validator.InvalidYamlException;
 
 import com.google.protobuf.ByteString;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -232,8 +234,11 @@ public class PMSPipelineServiceHelperTest extends CategoryTest {
                                         .projectIdentifier(projectIdentifier)
                                         .yaml(yaml)
                                         .build();
-    TemplateMergeResponseDTO templateMergeResponseDTO =
-        TemplateMergeResponseDTO.builder().mergedPipelineYaml(yaml).build();
+    List<TemplateReferenceSummary> templateReferenceSummaryList = new ArrayList<>();
+    TemplateMergeResponseDTO templateMergeResponseDTO = TemplateMergeResponseDTO.builder()
+                                                            .mergedPipelineYaml(yaml)
+                                                            .templateReferenceSummaries(templateReferenceSummaryList)
+                                                            .build();
     doReturn(templateMergeResponseDTO)
         .when(pipelineTemplateHelper)
         .resolveTemplateRefsInPipeline(pipelineEntity, false);
@@ -328,7 +333,7 @@ public class PMSPipelineServiceHelperTest extends CategoryTest {
     assertThatThrownBy(()
                            -> pmsPipelineServiceHelper.getRepoUrlAndCheckForFileUniqueness(
                                accountIdentifier, orgIdentifier, projectIdentifier, pipelineIdentifier, false))
-        .isInstanceOf(GitYamlException.class);
+        .isInstanceOf(DuplicateFileImportException.class);
     assertThat(pmsPipelineServiceHelper.getRepoUrlAndCheckForFileUniqueness(
                    accountIdentifier, orgIdentifier, projectIdentifier, pipelineIdentifier, true))
         .isEqualTo(repoUrl);

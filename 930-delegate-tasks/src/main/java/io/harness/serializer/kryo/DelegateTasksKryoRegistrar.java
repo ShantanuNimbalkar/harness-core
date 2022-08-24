@@ -91,6 +91,7 @@ import software.wings.beans.BastionConnectionAttributes;
 import software.wings.beans.BugsnagConfig;
 import software.wings.beans.ClusterSelectionCriteriaEntry;
 import software.wings.beans.ConnectionType;
+import software.wings.beans.CustomSecretNGManagerConfig;
 import software.wings.beans.CyberArkConfig;
 import software.wings.beans.DatadogConfig;
 import software.wings.beans.DockerConfig;
@@ -238,7 +239,6 @@ import software.wings.helpers.ext.external.comm.EmailRequest;
 import software.wings.helpers.ext.helm.HelmCommandExecutionResponse;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
 import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
-import software.wings.helpers.ext.helm.request.HelmCommandRequest.HelmCommandType;
 import software.wings.helpers.ext.helm.request.HelmInstallCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmReleaseHistoryCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmRollbackCommandRequest;
@@ -293,6 +293,7 @@ import software.wings.service.impl.analysis.LogElement;
 import software.wings.service.impl.analysis.SetupTestNodeData;
 import software.wings.service.impl.apm.APMDataCollectionInfo;
 import software.wings.service.impl.apm.APMMetricInfo;
+import software.wings.service.impl.apm.AWSPrometheusInfo;
 import software.wings.service.impl.apm.CustomAPMDataCollectionInfo;
 import software.wings.service.impl.appdynamics.AppDynamicsDataCollectionInfoV2;
 import software.wings.service.impl.appdynamics.AppdynamicsDataCollectionInfo;
@@ -582,7 +583,6 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(ConnectionType.class, 5254);
     kryo.register(HelmInstallCommandRequest.class, 5259);
     kryo.register(HelmCommandExecutionResponse.class, 5260);
-    kryo.register(HelmCommandType.class, 5262);
     kryo.register(HelmReleaseHistoryCommandRequest.class, 5265);
     kryo.register(HelmRollbackCommandRequest.class, 5268);
     kryo.register(HelmReleaseHistoryCommandResponse.class, 5266);
@@ -994,5 +994,7 @@ public class DelegateTasksKryoRegistrar implements KryoRegistrar {
     kryo.register(EcsDeployRollbackDataFetchRequest.class, 8086);
     kryo.register(HelmChartSpecification.class, 5269);
     kryo.register(ManifestFile.class, 5539);
+    kryo.register(AWSPrometheusInfo.class, 90001);
+    kryo.register(CustomSecretNGManagerConfig.class, 40114);
   }
 }

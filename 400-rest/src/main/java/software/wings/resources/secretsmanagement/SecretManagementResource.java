@@ -15,6 +15,7 @@ import static io.harness.exception.WingsException.SRE;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 
 import static software.wings.security.PermissionAttribute.PermissionType.MANAGE_SECRETS;
+import static software.wings.security.PermissionAttribute.PermissionType.MANAGE_SECRET_MANAGERS;
 import static software.wings.security.PermissionAttribute.ResourceType.SETTING;
 
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
@@ -133,7 +134,7 @@ public class SecretManagementResource {
 
   @GET
   @Path("/list-configs")
-  @ApiKeyAuthorized(permissionType = MANAGE_SECRETS, action = PermissionAttribute.Action.READ)
+  @ApiKeyAuthorized(permissionType = MANAGE_SECRET_MANAGERS, action = PermissionAttribute.Action.READ)
   public RestResponse<List<SecretManagerConfig>> listEncryptionConfig(@QueryParam("accountId") final String accountId) {
     return new RestResponse<>(secretManager.listSecretManagers(accountId));
   }
@@ -220,6 +221,7 @@ public class SecretManagementResource {
   @DELETE
   @Path("/delete-secret")
   @AuthRule(permissionType = MANAGE_SECRETS)
+  @ApiKeyAuthorized(permissionType = MANAGE_SECRETS)
   @Deprecated
   public RestResponse<Boolean> deleteSecret(
       @QueryParam("accountId") final String accountId, @QueryParam("uuid") final String uuId) {

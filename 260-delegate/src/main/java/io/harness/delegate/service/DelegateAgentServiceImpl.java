@@ -72,6 +72,7 @@ import static io.harness.utils.MemoryPerformanceUtils.memoryUsage;
 import static software.wings.beans.TaskType.SCRIPT;
 import static software.wings.beans.TaskType.SHELL_SCRIPT_TASK_NG;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.time.Duration.ofMinutes;
@@ -325,6 +326,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private final double RESOURCE_USAGE_THRESHOLD = 0.90;
   private String MANAGER_PROXY_CURL = System.getenv().get("MANAGER_PROXY_CURL");
   private String MANAGER_HOST_AND_PORT = System.getenv().get("MANAGER_HOST_AND_PORT");
+  private static final String DEFAULT_PATCH_VERSION = "000";
 
   private final boolean BLOCK_SHELL_TASK = Boolean.parseBoolean(System.getenv().get("BLOCK_SHELL_TASK"));
 
@@ -446,6 +448,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @SuppressWarnings("unchecked")
   public void run(final boolean watched, final boolean isImmutableDelegate) {
     this.isImmutableDelegate = isImmutableDelegate;
+    delegateConfiguration.setImmutable(isImmutableDelegate);
 
     try {
       // Initialize delegate process in background.
@@ -593,6 +596,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
               .sampleDelegate(isSample)
               .location(Paths.get("").toAbsolutePath().toString())
               .heartbeatAsObject(true)
+              .immutable(isImmutableDelegate)
               .ceEnabled(Boolean.parseBoolean(System.getenv("ENABLE_CE")));
 
       delegateId = registerDelegate(builder);
@@ -948,7 +952,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.warn("Delegate used revoked token. It will be frozen and drained.");
       freeze();
     } else {
-      log.warn("Delegate received unhandled message");
+      log.warn("Delegate received unhandled message {}", message);
     }
   }
 
@@ -1365,9 +1369,11 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       } else {
         log.info("Checking for upgrade");
         try {
-          RestResponse<DelegateScripts> restResponse = HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter,
-              Duration.ofMinutes(1),
-              () -> executeRestCall(delegateAgentManagerClient.getDelegateScripts(accountId, version, DELEGATE_NAME)));
+          RestResponse<DelegateScripts> restResponse =
+              HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofMinutes(1),
+                  ()
+                      -> executeRestCall(delegateAgentManagerClient.getDelegateScripts(
+                          accountId, version, DEFAULT_PATCH_VERSION, DELEGATE_NAME)));
           DelegateScripts delegateScripts = restResponse.getResource();
           if (delegateScripts.isDoUpgrade()) {
             upgradePending.set(true);
@@ -1586,7 +1592,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private void watcherUpgrade(boolean heartbeatTimedOut) {
     String watcherVersion = messageService.getData(WATCHER_DATA, WATCHER_VERSION, String.class);
-    String expectedVersion = findExpectedWatcherVersion();
+    String expectedVersion = substringBefore(findExpectedWatcherVersion(), "-").trim();
     if (expectedVersion == null || StringUtils.equals(expectedVersion, watcherVersion)) {
       watcherVersionMatchedAt = clock.millis();
     }
@@ -1603,13 +1609,24 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         || (multiVersionRestartNeeded && multiVersionWatcherStarted.compareAndSet(false, true))) {
       String watcherProcess = messageService.getData(WATCHER_DATA, WATCHER_PROCESS, String.class);
       log.warn("Watcher process {} needs restart", watcherProcess);
-      healthMonitorExecutor.submit(() -> performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded));
+      healthMonitorExecutor.submit(
+          () -> performWatcherUpgrade(watcherProcess, multiVersionRestartNeeded, expectedVersion, heartbeatTimedOut));
     }
   }
 
-  private void performWatcherUpgrade(String watcherProcess, boolean multiVersionRestartNeeded) {
+  private void performWatcherUpgrade(
+      String watcherProcess, boolean multiVersionRestartNeeded, String expectedVersion, boolean heartbeatTimedOut) {
     synchronized (this) {
       try {
+        // Download watcher script before restarting watcher.
+        if (!downloadRunScriptsForWatcher(expectedVersion) && heartbeatTimedOut) {
+          // If hearbeat for watcher has been timedout means. watcher is either stuck or is dead and we failed to
+          // download watcher start script. Hence we will not be able to start watcher with latest version.
+          // Hence return early so that pod's liveliness check will fail and delegate will restart.
+          log.error("Watcher heartbead timedout and Delegate unable to download run script, skip starting watcher");
+          return;
+        }
+
         ProcessControl.ensureKilled(watcherProcess, Duration.ofSeconds(120));
         messageService.closeChannel(WATCHER, watcherProcess);
         sleep(ofSeconds(2));
@@ -1633,6 +1650,54 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       } catch (Exception e) {
         log.error("Error restarting watcher {}", watcherProcess, e);
       }
+    }
+  }
+
+  private boolean downloadRunScriptsForWatcher(String version) {
+    RestResponse<DelegateScripts> restResponse;
+    try {
+      if (!delegateNg) {
+        log.info("Calling getDelegateScripts with version{}}", version);
+        restResponse = HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofMinutes(1),
+            ()
+                -> executeRestCall(delegateAgentManagerClient.getDelegateScripts(
+                    accountId, version, DEFAULT_PATCH_VERSION, DELEGATE_NAME)));
+      } else {
+        log.info("Calling getDelegateScriptsNg with version{}}", version);
+        restResponse = HTimeLimiter.callInterruptible21(delegateHealthTimeLimiter, Duration.ofMinutes(1),
+            ()
+                -> executeRestCall(delegateAgentManagerClient.getDelegateScriptsNg(
+                    accountId, version, DEFAULT_PATCH_VERSION, DELEGATE_NAME)));
+      }
+
+      if (restResponse == null) {
+        log.warn("Received empty response from manager while executing DelegateScript call.");
+        return false;
+      }
+
+      DelegateScripts delegateScripts = restResponse.getResource();
+
+      File scriptFile = new File(START_SH);
+      String script = delegateScripts.getScriptByName(START_SH);
+
+      if (isNotEmpty(script)) {
+        Files.deleteIfExists(Paths.get(START_SH));
+        try (BufferedWriter writer = Files.newBufferedWriter(scriptFile.toPath())) {
+          writer.write(script, 0, script.length());
+          writer.flush();
+        }
+        log.info("Done replacing file [{}]. Set User and Group permission", scriptFile);
+        Files.setPosixFilePermissions(scriptFile.toPath(),
+            newHashSet(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ));
+        log.info("Done setting file permissions");
+        return true;
+      }
+      log.error("Script for file [{}] was not replaced", scriptFile);
+      return false;
+    } catch (Exception e) {
+      log.error("Error executing DelegateScript call to manager", e);
+      return false;
     }
   }
 
@@ -1970,8 +2035,13 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         DelegateTaskPackage delegateTaskPackage = executeRestCall(
             delegateAgentManagerClient.acquireTask(delegateId, delegateTaskId, accountId, delegateInstanceId));
         if (delegateTaskPackage == null || delegateTaskPackage.getData() == null) {
-          log.warn("Delegate task data not available for task: {} - accountId: {}", delegateTaskId,
-              delegateTaskEvent.getAccountId());
+          if (delegateTaskPackage == null) {
+            log.warn("Delegate task package is null for task: {} - accountId: {}", delegateTaskId,
+                delegateTaskEvent.getAccountId());
+          } else {
+            log.warn("Delegate task data not available for task: {} - accountId: {}", delegateTaskId,
+                delegateTaskEvent.getAccountId());
+          }
           return;
         } else {
           log.info("received task package {} for delegateInstance {}", delegateTaskPackage, delegateInstanceId);
@@ -2405,13 +2475,13 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           writer.write(script, 0, script.length());
           writer.flush();
         }
-        log.info("[Old] Done replacing file [{}]. Set User and Group permission", scriptFile);
+        log.info("Done replacing file [{}]. Set User and Group permission", scriptFile);
         Files.setPosixFilePermissions(scriptFile.toPath(),
             Sets.newHashSet(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE,
                 PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ));
-        log.info("[Old] Done setting file permissions");
+        log.info(" Done setting file permissions");
       } else {
-        log.error("[Old] Script for file [{}] was not replaced", scriptFile);
+        log.error("Script for file [{}] was not replaced", scriptFile);
       }
     }
   }
