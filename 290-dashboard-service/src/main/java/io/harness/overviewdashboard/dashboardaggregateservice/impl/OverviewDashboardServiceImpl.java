@@ -211,7 +211,7 @@ public class OverviewDashboardServiceImpl implements OverviewDashboardService {
                 getOrgProjectIdentifierList(orgProjectIdentifierList, orgIdentifier, projectIdentifier))
             .build();
     LandingDashboardRequestPMS landingDashboardRequestPMS =
-        LandingDashboardRequestPMS.builder().orgProjectIdentifiers(orgProjectIdentifierList).build();
+        LandingDashboardRequestPMS.builder().orgProjectIdentifiers(getOrgProjectIdentifierList(orgProjectIdentifierList, orgIdentifier, projectIdentifier)).build();
     List<RestCallRequest> restCallRequestList = getRestCallRequestListForCountOverview(
         accountIdentifier, userId, startInterval, endInterval, landingDashboardRequestCD, landingDashboardRequestPMS);
     List<RestCallResponse> restCallResponses = parallelRestCallExecutor.executeRestCalls(restCallRequestList);
@@ -224,6 +224,12 @@ public class OverviewDashboardServiceImpl implements OverviewDashboardService {
         getResponseOptional(restCallResponses, OverviewDashboardRequestType.GET_PIPELINES_COUNT);
     Optional<RestCallResponse> projectsCountOptional =
         getResponseOptional(restCallResponses, OverviewDashboardRequestType.GET_PROJECTS_COUNT);
+
+    // For project scope making projectDetails return 0
+    if(isNotEmpty(projectIdentifier) && isNotEmpty(orgIdentifier)){
+      projectsCountOptional = Optional.of(RestCallResponse.builder().response(ActiveProjectsCountDTO.builder().count(0).build()).build());
+      listOfAccessibleProject =Collections.emptyList();
+    }
 
     if (servicesCountOptional.isPresent() && envCountOptional.isPresent() && pipelinesCountOptional.isPresent()
         && projectsCountOptional.isPresent()) {
