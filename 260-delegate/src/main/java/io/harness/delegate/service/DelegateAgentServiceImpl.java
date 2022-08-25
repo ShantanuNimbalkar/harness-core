@@ -350,6 +350,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject @Named("grpcServiceExecutor") private ExecutorService grpcServiceExecutor;
   @Inject @Named("taskProgressExecutor") private ExecutorService taskProgressExecutor;
 
+  @Inject @Named("logStreamingExecutor") private ThreadPoolExecutor logStreamingExecutor;
+
   @Inject private SignalService signalService;
   @Inject private MessageService messageService;
   @Inject private Injector injector;

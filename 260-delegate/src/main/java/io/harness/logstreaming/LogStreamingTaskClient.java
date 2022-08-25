@@ -22,6 +22,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.taskprogress.ITaskProgressClient;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.logStreaming.DelegateLogStreamingDispatcher;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 import io.harness.network.SafeHttpCall;
@@ -61,6 +62,8 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
   private final LogStreamingClient logStreamingClient;
   private final LogStreamingSanitizer logStreamingSanitizer;
   private final ExecutorService taskProgressExecutor;
+
+  private final DelegateLogStreamingDispatcher delegateLogStreamingDispatcher;
   private final String token;
   private final String accountId;
   private final String baseLogKey;

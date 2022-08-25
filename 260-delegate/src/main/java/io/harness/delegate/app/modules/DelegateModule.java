@@ -927,6 +927,14 @@ public class DelegateModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("logStreamingExecutor")
+  public ThreadPoolExecutor logStreamingExecutor() {
+    return ThreadPool.create(10, 40, 500, TimeUnit.MILLISECONDS,
+        new ThreadFactoryBuilder().setNameFormat("log-streaming-client-%d").setPriority(Thread.NORM_PRIORITY).build());
+  }
+
+  @Provides
+  @Singleton
   public DefaultAsyncHttpClient defaultAsyncHttpClient()
       throws TrustManagerBuilderException, KeyManagerBuilderException, SSLException {
     TrustManager trustManager = new X509TrustManagerBuilder().trustAllCertificates().build();
