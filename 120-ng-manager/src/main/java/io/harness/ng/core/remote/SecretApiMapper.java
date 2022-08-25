@@ -11,7 +11,7 @@ import static io.harness.spec.server.ng.model.SecretSpec.TypeEnum.SSHPASSWORD;
 import static io.harness.spec.server.ng.model.SecretSpec.TypeEnum.WINRMNTLM;
 import static io.harness.spec.server.ng.model.SecretSpec.TypeEnum.WINRMTGTKEYTABFILE;
 import static io.harness.spec.server.ng.model.SecretSpec.TypeEnum.WINRMTGTPASSWORD;
-import static io.harness.spec.server.ng.model.SecretTextSpec.ValueTypeEnum.valueOf;
+import static io.harness.spec.server.ng.model.SecretTextSpec.ValueTypeEnum.fromValue;
 
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.InvalidRequestException;
@@ -340,7 +340,7 @@ public class SecretApiMapper {
         SecretTextSpec secretTextSpec = new SecretTextSpec();
         secretTextSpec.setType(SECRETTEXT);
         secretTextSpec.secretManagerSlug(secretTextSpecDTO.getSecretManagerIdentifier());
-        secretTextSpec.setValueType(valueOf(secretTextSpecDTO.getValueType().name()));
+        secretTextSpec.setValueType(fromValue(secretTextSpecDTO.getValueType().name()));
         secretTextSpec.setValue(secretTextSpecDTO.getValue());
 
         secret.setSpec(secretTextSpec);
