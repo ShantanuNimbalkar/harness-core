@@ -201,6 +201,32 @@ public class SecretApiImplTest extends CategoryTest {
     accountSecretApi.getAccountScopedSecret(slug, account);
   }
 
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testGetOrgScopedSecret(){
+    Secret textSecret = getTextSecret(org, null);
+    SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
+
+    when(ngSecretService.get(account, org, null, slug)).thenReturn(Optional.of(secretResponseWrapper));
+
+    Response response = orgSecretApi.getOrgScopedSecret(org, slug, account);
+
+    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    assertThat(secretResponse.getSecret().getProject()).isNull();
+    assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
+    assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
+  @Test(expected = NotFoundException.class)
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testGetOrgScopedSecretNotFoundException(){
+    orgSecretApi.getOrgScopedSecret(org, slug, account);
+  }
+
   private Secret getTextSecret(String org, String project) {
     Secret secret = new Secret();
     secret.setSlug(slug);
