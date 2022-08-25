@@ -87,6 +87,24 @@ public class AccountSecretApiImpl implements AccountSecretApi {
   }
 
   @Override
+  public Response updateAccountScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String secret, String account) {
+    if (nonNull(secretRequest.getSecret().getOrg()) || nonNull(secretRequest.getSecret().getProject())) {
+      throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
+    }
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, null, null, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(
+            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
+            Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
+            secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
+
+    SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
+
+    return Response.ok()
+            .entity(ngSecretService.updateFile(account, null, null, secret, secretDto, fileInputStream))
+            .build();
+  }
+
+  @Override
   public Response validateUniqueAccountScopedSecretSlug(String secret, String account) {
     return validateSecretSlug(secret, account, null, null);
   }
