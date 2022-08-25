@@ -20,6 +20,7 @@ enum Actions {
   DELETE
   EXECUTE
   EXECUTE_WORKFLOW
+  ABORT_WORKFLOW
   EXECUTE_PIPELINE
   # Beta: This action will be used to govern workflow rollback
   ROLLBACK_WORKFLOW

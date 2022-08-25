@@ -325,6 +325,10 @@ public class PermissionAttribute {
      */
     EXECUTE_WORKFLOW_ROLLBACK,
     /**
+     * Abort Workflow
+     */
+    ABORT_WORKFLOW,
+    /**
      * default action.
      */
     DEFAULT

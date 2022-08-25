@@ -25,6 +25,7 @@ public enum QLActions implements QLEnum {
   @Deprecated EXECUTE,
   EXECUTE_WORKFLOW,
   EXECUTE_PIPELINE,
+  ABORT_WORKFLOW,
   ROLLBACK_WORKFLOW;
   @Override
   public String getStringValue() {

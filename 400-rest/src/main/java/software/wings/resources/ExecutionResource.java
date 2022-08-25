@@ -393,6 +393,9 @@ public class ExecutionResource {
         || ExecutionInterruptType.ROLLBACK_PROVISIONER_AFTER_PHASES.equals(
             executionInterrupt.getExecutionInterruptType())) {
       deploymentAuthHandler.authorizeRollback(appId, workflowExecutionId);
+    } else if (ExecutionInterruptType.ABORT_ALL.equals(executionInterrupt.getExecutionInterruptType())
+        || ExecutionInterruptType.ABORT.equals(executionInterrupt.getExecutionInterruptType())) {
+      deploymentAuthHandler.authorizeAbortWorkflow(appId, workflowExecutionId);
     } else {
       deploymentAuthHandler.authorize(appId, workflowExecutionId);
     }
