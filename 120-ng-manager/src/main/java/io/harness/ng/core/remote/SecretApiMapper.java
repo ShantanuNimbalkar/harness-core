@@ -250,13 +250,13 @@ public class SecretApiMapper {
   }
 
   public static SecretResponse toSecretResponse(SecretResponseWrapper secretResponseWrapper) {
-    SecretResponse SecretResponse = new SecretResponse();
-    SecretResponse.setSecret(toSecret(secretResponseWrapper.getSecret()));
-    SecretResponse.created(secretResponseWrapper.getCreatedAt());
-    SecretResponse.updated(secretResponseWrapper.getUpdatedAt());
-    SecretResponse.setDraft(secretResponseWrapper.isDraft());
-    SecretResponse.setGovernanceMetadata(secretResponseWrapper.getGovernanceMetadata());
-    return SecretResponse;
+    SecretResponse secretResponse = new SecretResponse();
+    secretResponse.setSecret(toSecret(secretResponseWrapper.getSecret()));
+    secretResponse.created(secretResponseWrapper.getCreatedAt());
+    secretResponse.updated(secretResponseWrapper.getUpdatedAt());
+    secretResponse.setDraft(secretResponseWrapper.isDraft());
+    secretResponse.setGovernanceMetadata(secretResponseWrapper.getGovernanceMetadata());
+    return secretResponse;
   }
 
   public static Secret toSecret(SecretDTOV2 secretDTOV2) {
