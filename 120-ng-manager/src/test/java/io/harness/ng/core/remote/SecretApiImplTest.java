@@ -141,6 +141,40 @@ public class SecretApiImplTest extends CategoryTest {
     orgSecretApi.createOrgScopedSecret(secretRequest, org, account, privateSecret);
   }
 
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testCreateProjectScopedSecret(){
+    SecretRequest secretRequest = new SecretRequest();
+    secretRequest.setSecret(getTextSecret(org, project));
+
+    SecretDTOV2 secretDTOV2 = toSecretDto(secretRequest.getSecret());
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
+    when(ngSecretService.create(any(), any())).thenReturn(secretResponseWrapper);
+
+    Response response = projectSecretApi.createProjectScopedSecret(secretRequest, org, project, account, privateSecret);
+
+    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    assertThat(secretResponse.getSecret().getProject()).isEqualTo(project);
+    assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
+    assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
+  @Test(expected = InvalidRequestException.class)
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testCreateProjectScopedSecretInvalidRequestException(){
+    SecretRequest secretRequest = new SecretRequest();
+    secretRequest.setSecret(getTextSecret(null, null));
+
+    SecretDTOV2 secretDTOV2 = toSecretDto(secretRequest.getSecret());
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
+    when(ngSecretService.create(any(), any())).thenReturn(secretResponseWrapper);
+
+    projectSecretApi.createProjectScopedSecret(secretRequest, org, project, account, privateSecret);
+  }
+
   private Secret getTextSecret(String org, String project) {
     Secret secret = new Secret();
     secret.setSlug(slug);
