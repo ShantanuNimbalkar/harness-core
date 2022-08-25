@@ -27,6 +27,7 @@ import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 
 import com.google.inject.Inject;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -66,6 +67,20 @@ public class OrgSecretApiImpl implements OrgSecretApi {
   @Override
   public Response updateOrgScopedSecret(SecretRequest body, String org, String secret, String account) {
     return updateSecret(body, org, null, secret, account);
+  }
+
+  @Override
+  public Response updateOrgScopedSecret(
+      SecretRequest secretRequest, InputStream fileInputStream, String org, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, null, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, null),
+        Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
+        secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
+    SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
+
+    return Response.ok()
+        .entity(ngSecretService.updateFile(account, org, null, secret, secretDto, fileInputStream))
+        .build();
   }
 
   @Override
