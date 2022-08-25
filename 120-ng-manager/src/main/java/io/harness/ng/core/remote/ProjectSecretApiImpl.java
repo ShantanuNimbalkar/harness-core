@@ -93,6 +93,21 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
   }
 
   @Override
+  public Response updateProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org, String project, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper =
+            ngSecretService.get(account, org, project, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(
+            ResourceScope.of(account, org, project),
+            Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
+            secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
+    SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
+
+    return Response.ok()
+            .entity(ngSecretService.updateFile(account, org, project, secret, secretDto, fileInputStream))
+            .build();
+  }
+
+  @Override
   public Response validateUniqueProjectScopedSecretSlug(String org, String project, String secret, String account) {
     return validateSecretSlug(secret, account, org, null);
   }
