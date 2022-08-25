@@ -60,8 +60,10 @@ public class AccountSecretApiImpl implements AccountSecretApi {
       secretDto.setOwner(SecurityContextBuilder.getPrincipal());
     }
 
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.createFile(account, secretDto, fileInputStream);
+
     return Response.ok()
-            .entity(ngSecretService.createFile(account, secretDto, fileInputStream))
+            .entity(SecretApiMapper.toSecretResponse(secretResponseWrapper))
             .build();
   }
 
