@@ -51,13 +51,13 @@ public class OrgSecretApiImpl implements OrgSecretApi {
   @Override
   public Response createOrgScopedSecret(
       SecretRequest secretRequest, InputStream fileInputStream, String org, String account, Boolean privateSecret) {
-    if (!Objects.equals(org, secretRequest.getSecret().getOrg())
-            || nonNull(secretRequest.getSecret().getProject())) {
+    if (!Objects.equals(org, secretRequest.getSecret().getOrg()) || nonNull(secretRequest.getSecret().getProject())) {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()), Resource.of(SECRET_RESOURCE_TYPE, null),
-            SECRET_EDIT_PERMISSION, privateSecret ? SecurityContextBuilder.getPrincipal() : null);
+        ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
+        Resource.of(SECRET_RESOURCE_TYPE, null), SECRET_EDIT_PERMISSION,
+        privateSecret ? SecurityContextBuilder.getPrincipal() : null);
     SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
 
     if (privateSecret) {
@@ -66,9 +66,7 @@ public class OrgSecretApiImpl implements OrgSecretApi {
 
     SecretResponseWrapper secretResponseWrapper = ngSecretService.createFile(account, secretDto, fileInputStream);
 
-    return Response.ok()
-            .entity(SecretApiMapper.toSecretResponse(secretResponseWrapper))
-            .build();
+    return Response.ok().entity(SecretApiMapper.toSecretResponse(secretResponseWrapper)).build();
   }
 
   @Override

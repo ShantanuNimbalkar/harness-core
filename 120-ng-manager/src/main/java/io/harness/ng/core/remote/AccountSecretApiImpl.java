@@ -1,6 +1,18 @@
 package io.harness.ng.core.remote;
 
-import com.google.inject.Inject;
+import static io.harness.exception.WingsException.USER;
+import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
+import static io.harness.ng.core.remote.SecretApiMapper.toSecretResponse;
+import static io.harness.secrets.SecretPermissions.SECRET_DELETE_PERMISSION;
+import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
+import static io.harness.secrets.SecretPermissions.SECRET_RESOURCE_TYPE;
+import static io.harness.secrets.SecretPermissions.SECRET_VIEW_PERMISSION;
+import static io.harness.utils.PageUtils.getNGPageResponse;
+
+import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
+import static java.util.Objects.nonNull;
+
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.exception.InvalidRequestException;
@@ -13,25 +25,14 @@ import io.harness.security.SecurityContextBuilder;
 import io.harness.spec.server.ng.AccountSecretApi;
 import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
-import lombok.AllArgsConstructor;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
+import com.google.inject.Inject;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static io.harness.exception.WingsException.USER;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretResponse;
-import static io.harness.secrets.SecretPermissions.SECRET_DELETE_PERMISSION;
-import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
-import static io.harness.secrets.SecretPermissions.SECRET_RESOURCE_TYPE;
-import static io.harness.secrets.SecretPermissions.SECRET_VIEW_PERMISSION;
-import static io.harness.utils.PageUtils.getNGPageResponse;
-import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
-import static java.util.Objects.nonNull;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 public class AccountSecretApiImpl implements AccountSecretApi {
@@ -47,13 +48,15 @@ public class AccountSecretApiImpl implements AccountSecretApi {
   }
 
   @Override
-  public Response createAccountScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String account, Boolean privateSecret) {
+  public Response createAccountScopedSecret(
+      SecretRequest secretRequest, InputStream fileInputStream, String account, Boolean privateSecret) {
     if (nonNull(secretRequest.getSecret().getOrg()) || nonNull(secretRequest.getSecret().getProject())) {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()), Resource.of(SECRET_RESOURCE_TYPE, null),
-            SECRET_EDIT_PERMISSION, privateSecret ? SecurityContextBuilder.getPrincipal() : null);
+        ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
+        Resource.of(SECRET_RESOURCE_TYPE, null), SECRET_EDIT_PERMISSION,
+        privateSecret ? SecurityContextBuilder.getPrincipal() : null);
     SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
 
     if (privateSecret) {
@@ -62,9 +65,7 @@ public class AccountSecretApiImpl implements AccountSecretApi {
 
     SecretResponseWrapper secretResponseWrapper = ngSecretService.createFile(account, secretDto, fileInputStream);
 
-    return Response.ok()
-            .entity(SecretApiMapper.toSecretResponse(secretResponseWrapper))
-            .build();
+    return Response.ok().entity(SecretApiMapper.toSecretResponse(secretResponseWrapper)).build();
   }
 
   @Override
@@ -89,21 +90,22 @@ public class AccountSecretApiImpl implements AccountSecretApi {
   }
 
   @Override
-  public Response updateAccountScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String secret, String account) {
+  public Response updateAccountScopedSecret(
+      SecretRequest secretRequest, InputStream fileInputStream, String secret, String account) {
     if (nonNull(secretRequest.getSecret().getOrg()) || nonNull(secretRequest.getSecret().getProject())) {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, null, null, secret).orElse(null);
     secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
-            Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
-            secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
+        ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
+        Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
+        secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
 
     SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
 
     return Response.ok()
-            .entity(ngSecretService.updateFile(account, null, null, secret, secretDto, fileInputStream))
-            .build();
+        .entity(ngSecretService.updateFile(account, null, null, secret, secretDto, fileInputStream))
+        .build();
   }
 
   @Override

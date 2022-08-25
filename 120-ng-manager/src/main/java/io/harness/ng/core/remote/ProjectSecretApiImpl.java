@@ -27,7 +27,6 @@ import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 
 import com.google.inject.Inject;
-
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
@@ -51,14 +50,16 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
   }
 
   @Override
-  public Response createProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org, String project, String account, Boolean privateSecret) {
+  public Response createProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org,
+      String project, String account, Boolean privateSecret) {
     if (!Objects.equals(org, secretRequest.getSecret().getOrg())
-            || !Objects.equals(project, secretRequest.getSecret().getProject())) {
+        || !Objects.equals(project, secretRequest.getSecret().getProject())) {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()), Resource.of(SECRET_RESOURCE_TYPE, null),
-            SECRET_EDIT_PERMISSION, privateSecret ? SecurityContextBuilder.getPrincipal() : null);
+        ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()),
+        Resource.of(SECRET_RESOURCE_TYPE, null), SECRET_EDIT_PERMISSION,
+        privateSecret ? SecurityContextBuilder.getPrincipal() : null);
     SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
 
     if (privateSecret) {
@@ -67,9 +68,7 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
 
     SecretResponseWrapper secretResponseWrapper = ngSecretService.createFile(account, secretDto, fileInputStream);
 
-    return Response.ok()
-            .entity(SecretApiMapper.toSecretResponse(secretResponseWrapper))
-            .build();
+    return Response.ok().entity(SecretApiMapper.toSecretResponse(secretResponseWrapper)).build();
   }
 
   @Override
@@ -95,18 +94,17 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
   }
 
   @Override
-  public Response updateProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org, String project, String secret, String account) {
-    SecretResponseWrapper secretResponseWrapper =
-            ngSecretService.get(account, org, project, secret).orElse(null);
-    secretPermissionValidator.checkForAccessOrThrow(
-            ResourceScope.of(account, org, project),
-            Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
-            secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
+  public Response updateProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org,
+      String project, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, project, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, project),
+        Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
+        secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
     SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
 
     return Response.ok()
-            .entity(ngSecretService.updateFile(account, org, project, secret, secretDto, fileInputStream))
-            .build();
+        .entity(ngSecretService.updateFile(account, org, project, secret, secretDto, fileInputStream))
+        .build();
   }
 
   @Override

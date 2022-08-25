@@ -7,6 +7,16 @@
 
 package io.harness.ng.core.remote;
 
+import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
+import static io.harness.rule.OwnerRule.ASHISHSANODIA;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -23,24 +33,16 @@ import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 import io.harness.spec.server.ng.model.SecretSpec;
 import io.harness.spec.server.ng.model.SecretTextSpec;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+
 import software.wings.service.impl.security.NGEncryptorService;
 
+import java.util.Optional;
 import javax.validation.Validator;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.Optional;
-
-import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
-import static io.harness.rule.OwnerRule.ASHISHSANODIA;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @OwnedBy(PL)
 public class SecretApiImplTest extends CategoryTest {
@@ -75,7 +77,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateAccountScopedSecret(){
+  public void testCreateAccountScopedSecret() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(null, null));
 
@@ -86,7 +88,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = accountSecretApi.createAccountScopedSecret(secretRequest, account, privateSecret);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getOrg()).isNull();
     assertThat(secretResponse.getSecret().getProject()).isNull();
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -96,7 +98,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateAccountScopedSecretInvalidRequestException(){
+  public void testCreateAccountScopedSecretInvalidRequestException() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(org, project));
 
@@ -110,7 +112,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateOrgScopedSecret(){
+  public void testCreateOrgScopedSecret() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(org, null));
 
@@ -120,7 +122,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = orgSecretApi.createOrgScopedSecret(secretRequest, org, account, privateSecret);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getProject()).isNull();
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -130,7 +132,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateOrgScopedSecretInvalidRequestException(){
+  public void testCreateOrgScopedSecretInvalidRequestException() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(null, null));
 
@@ -144,7 +146,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateProjectScopedSecret(){
+  public void testCreateProjectScopedSecret() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(org, project));
 
@@ -154,7 +156,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = projectSecretApi.createProjectScopedSecret(secretRequest, org, project, account, privateSecret);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getProject()).isEqualTo(project);
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -164,7 +166,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = InvalidRequestException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testCreateProjectScopedSecretInvalidRequestException(){
+  public void testCreateProjectScopedSecretInvalidRequestException() {
     SecretRequest secretRequest = new SecretRequest();
     secretRequest.setSecret(getTextSecret(null, null));
 
@@ -178,7 +180,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetAccountScopedSecret(){
+  public void testGetAccountScopedSecret() {
     Secret textSecret = getTextSecret(null, null);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
@@ -187,7 +189,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = accountSecretApi.getAccountScopedSecret(slug, account);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getProject()).isNull();
     assertThat(secretResponse.getSecret().getOrg()).isNull();
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -197,14 +199,14 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = NotFoundException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetAccountScopedSecretNotFoundException(){
+  public void testGetAccountScopedSecretNotFoundException() {
     accountSecretApi.getAccountScopedSecret(slug, account);
   }
 
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetOrgScopedSecret(){
+  public void testGetOrgScopedSecret() {
     Secret textSecret = getTextSecret(org, null);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
@@ -213,7 +215,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = orgSecretApi.getOrgScopedSecret(org, slug, account);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getProject()).isNull();
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -223,14 +225,14 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = NotFoundException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetOrgScopedSecretNotFoundException(){
+  public void testGetOrgScopedSecretNotFoundException() {
     orgSecretApi.getOrgScopedSecret(org, slug, account);
   }
 
   @Test
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetProjectScopedSecret(){
+  public void testGetProjectScopedSecret() {
     Secret textSecret = getTextSecret(org, project);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
@@ -239,7 +241,7 @@ public class SecretApiImplTest extends CategoryTest {
 
     Response response = projectSecretApi.getProjectScopedSecret(org, project, slug, account);
 
-    SecretResponse secretResponse = (SecretResponse)response.getEntity();
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getProject()).isEqualTo(project);
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
@@ -249,7 +251,7 @@ public class SecretApiImplTest extends CategoryTest {
   @Test(expected = NotFoundException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
-  public void testGetProjectScopedSecretNotFoundException(){
+  public void testGetProjectScopedSecretNotFoundException() {
     projectSecretApi.getProjectScopedSecret(org, project, slug, account);
   }
 
