@@ -1647,12 +1647,6 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AzureWebAppTrafficShiftResponse.class, 55331);
     kryo.register(AzureWebAppSwapSlotsRequest.class, 55332);
     kryo.register(AzureWebAppSwapSlotsResponseNG.class, 55333);
-    kryo.register(AzureARMTaskNGParameters.class, 55338);
-    kryo.register(AzureARMTaskNGResponse.class, 55339);
-    kryo.register(AzureTaskNGParameters.class, 55340);
-    kryo.register(AzureTaskNGResponse.class, 55341);
-    kryo.register(AzureBlueprintTaskNGParameters.class, 55342);
-    kryo.register(AzureBlueprintTaskNGResponse.class, 55343);
 
     kryo.register(SerializedResponseData.class, 55401);
     kryo.register(SerializationFormat.class, 55402);
@@ -1663,6 +1657,12 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(WinrmTaskParameters.class, 55336);
     kryo.register(CustomArtifactDelegateRequest.class, 55337);
     kryo.register(CustomArtifactDelegateResponse.class, 55338);
+    kryo.register(AzureARMTaskNGParameters.class, 55339);
+    kryo.register(AzureARMTaskNGResponse.class, 55340);
+    kryo.register(AzureTaskNGParameters.class, 55344);
+    kryo.register(AzureTaskNGResponse.class, 55345);
+    kryo.register(AzureBlueprintTaskNGParameters.class, 55342);
+    kryo.register(AzureBlueprintTaskNGResponse.class, 55343);
     kryo.register(LocalFileStoreDelegateConfig.class, 55404);
     kryo.register(LocalStoreFetchFilesResult.class, 55405);
     kryo.register(ManifestFiles.class, 55406);
