@@ -7,10 +7,13 @@
 
 package io.harness.delegate.task.azure.arm;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.azure.model.AzureConstants.AZURE_ARM_ROLLBACK_PATTERN;
 import static io.harness.azure.model.AzureConstants.DEPLOYMENT_NAME_PATTERN;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.builder;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.context.AzureClientContext;
 import io.harness.azure.model.AzureConfig;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentManagementGroupContext;
@@ -23,6 +26,7 @@ import io.harness.logging.CommandExecutionStatus;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+@OwnedBy(CDP)
 public class AzureARMBaseHelperImpl implements AzureARMBaseHelper {
   private static final Random rand = new Random();
 
@@ -56,7 +60,7 @@ public class AzureARMBaseHelperImpl implements AzureARMBaseHelper {
     }
     int randomNum = rand.nextInt(1000);
     return deploymentParameters.isRollback()
-        ? String.format(DEPLOYMENT_NAME_PATTERN, "rollback_" + randomNum, System.currentTimeMillis())
+        ? String.format(DEPLOYMENT_NAME_PATTERN, AZURE_ARM_ROLLBACK_PATTERN + randomNum, System.currentTimeMillis())
         : String.format(DEPLOYMENT_NAME_PATTERN, randomNum, System.currentTimeMillis());
   }
 
