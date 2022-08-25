@@ -186,13 +186,13 @@ import io.harness.delegate.task.azure.appservice.webapp.handler.AzureWebAppSlotS
 import io.harness.delegate.task.azure.appservice.webapp.handler.AzureWebAppTrafficShiftRequestHandler;
 import io.harness.delegate.task.azure.appservice.webapp.ng.AzureWebAppRequestType;
 import io.harness.delegate.task.azure.appservice.webapp.ng.request.AzureWebAppTaskRequest;
-import io.harness.delegate.task.azure.arm.AzureARMBaseHelper;
 import io.harness.delegate.task.azure.arm.AzureARMBaseHelperImpl;
-import io.harness.delegate.task.azure.arm.AzureARMTaskNG;
 import io.harness.delegate.task.azure.arm.AzureARMTaskType;
-import io.harness.delegate.task.azure.arm.handlers.AzureARMAbstractTaskHandler;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationBaseHelper;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNG;
 import io.harness.delegate.task.azure.arm.handlers.AzureARMCreateTaskHandler;
 import io.harness.delegate.task.azure.arm.handlers.AzureBlueprintCreateTaskHandler;
+import io.harness.delegate.task.azure.arm.handlers.AzureResourceCreationAbstractTaskHandler;
 import io.harness.delegate.task.azure.artifact.AzureArtifactDownloadService;
 import io.harness.delegate.task.azure.artifact.AzureArtifactDownloadServiceImpl;
 import io.harness.delegate.task.azure.exception.AzureAppServicesRuntimeExceptionHandler;
@@ -1241,11 +1241,11 @@ public class DelegateModule extends AbstractModule {
         .to(CloudformationDeleteStackTaskHandler.class);
 
     // Azure ARM/BP Task handlers
-    MapBinder<AzureARMTaskType, AzureARMAbstractTaskHandler> azTaskTypeToHandlerMap =
-        MapBinder.newMapBinder(binder(), AzureARMTaskType.class, AzureARMAbstractTaskHandler.class);
+    MapBinder<AzureARMTaskType, AzureResourceCreationAbstractTaskHandler> azTaskTypeToHandlerMap =
+        MapBinder.newMapBinder(binder(), AzureARMTaskType.class, AzureResourceCreationAbstractTaskHandler.class);
     azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.ARM_DEPLOYMENT).to(AzureARMCreateTaskHandler.class);
     azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.BLUEPRINT_DEPLOYMENT).to(AzureBlueprintCreateTaskHandler.class);
-    bind(AzureARMBaseHelper.class).to(AzureARMBaseHelperImpl.class);
+    bind(AzureResourceCreationBaseHelper.class).to(AzureARMBaseHelperImpl.class);
 
     // HelmNG Task Handlers
 
@@ -1783,7 +1783,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.SERVERLESS_COMMAND_TASK).toInstance(ServerlessCommandTask.class);
     mapBinder.addBinding(TaskType.AZURE_WEB_APP_TASK_NG).toInstance(AzureWebAppTaskNG.class);
     mapBinder.addBinding(TaskType.COMMAND_TASK_NG).toInstance(CommandTaskNG.class);
-    mapBinder.addBinding(TaskType.AZURE_NG_ARM).toInstance(AzureARMTaskNG.class);
+    mapBinder.addBinding(TaskType.AZURE_NG_ARM).toInstance(AzureResourceCreationTaskNG.class);
   }
 
   private void registerSecretManagementBindings() {

@@ -25,7 +25,7 @@ import lombok.experimental.NonFinal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class AzureTaskNGResponse implements DelegateTaskNotifyResponseData {
+public abstract class AzureResourceCreationTaskNGResponse implements DelegateTaskNotifyResponseData {
   CommandExecutionStatus commandExecutionStatus;
   @NonFinal @Setter UnitProgressData unitProgressData;
   @NonFinal @Setter DelegateMetaInfo delegateMetaInfo;

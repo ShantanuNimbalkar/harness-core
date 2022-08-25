@@ -19,8 +19,8 @@ import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData;
 import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.AzureARMPreDeploymentDataBuilder;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGResponse;
-import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
-import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGParameters;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentManagementGroupContext;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentResourceGroupContext;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentSubscriptionContext;
@@ -31,18 +31,20 @@ import io.harness.exception.TimeoutException;
 import io.harness.logging.CommandExecutionStatus;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(CDP)
-
-public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
+@Singleton
+public class AzureARMCreateTaskHandler extends AzureResourceCreationAbstractTaskHandler {
   @Inject protected AzureConnectorMapper azureConnectorMapper;
   @Inject private AzureARMDeploymentService azureARMDeploymentService;
 
   @Override
-  public AzureTaskNGResponse executeTaskInternal(AzureTaskNGParameters taskNGParameters, String delegateId,
-      String taskId, AzureLogCallbackProvider logCallback) throws IOException, TimeoutException, InterruptedException {
+  public AzureResourceCreationTaskNGResponse executeTaskInternal(AzureResourceCreationTaskNGParameters taskNGParameters,
+      String delegateId, String taskId, AzureLogCallbackProvider logCallback)
+      throws IOException, TimeoutException, InterruptedException {
     AzureARMTaskNGParameters azureARMTaskNGParameters = (AzureARMTaskNGParameters) taskNGParameters;
     ARMScopeType deploymentScope = azureARMTaskNGParameters.getDeploymentScope();
     AzureConfig azureConfig = azureConnectorMapper.toAzureConfig(azureARMTaskNGParameters.getAzureConnectorDTO());
@@ -60,8 +62,8 @@ public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
     }
   }
 
-  private AzureTaskNGResponse deployAtResourceGroupScope(AzureConfig azureConfig, AzureLogCallbackProvider logCallback,
-      AzureARMTaskNGParameters azureARMTaskNGParameters) {
+  private AzureResourceCreationTaskNGResponse deployAtResourceGroupScope(AzureConfig azureConfig,
+      AzureLogCallbackProvider logCallback, AzureARMTaskNGParameters azureARMTaskNGParameters) {
     AzureARMPreDeploymentDataBuilder preDeploymentData =
         AzureARMPreDeploymentData.builder()
             .resourceGroup(azureARMTaskNGParameters.getResourceGroupName())
@@ -88,8 +90,8 @@ public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
     }
   }
 
-  private AzureTaskNGResponse deployAtSubscriptionScope(AzureConfig azureConfig, AzureLogCallbackProvider logCallback,
-      AzureARMTaskNGParameters azureARMTaskNGParameters) {
+  private AzureResourceCreationTaskNGResponse deployAtSubscriptionScope(AzureConfig azureConfig,
+      AzureLogCallbackProvider logCallback, AzureARMTaskNGParameters azureARMTaskNGParameters) {
     DeploymentSubscriptionContext context =
         azureARMBaseHelper.toDeploymentSubscriptionContext(azureARMTaskNGParameters, azureConfig, logCallback);
     try {
@@ -102,7 +104,7 @@ public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
     }
   }
 
-  private AzureTaskNGResponse deployAtManagementGroupScope(AzureConfig azureConfig,
+  private AzureResourceCreationTaskNGResponse deployAtManagementGroupScope(AzureConfig azureConfig,
       AzureLogCallbackProvider logCallback, AzureARMTaskNGParameters azureARMTaskNGParameters) {
     DeploymentManagementGroupContext context =
         azureARMBaseHelper.toDeploymentManagementGroupContext(azureARMTaskNGParameters, azureConfig, logCallback);
@@ -116,8 +118,8 @@ public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
     }
   }
 
-  private AzureTaskNGResponse deployAtTenantScope(AzureConfig azureConfig, AzureLogCallbackProvider logCallback,
-      AzureARMTaskNGParameters azureARMTaskNGParameters) {
+  private AzureResourceCreationTaskNGResponse deployAtTenantScope(AzureConfig azureConfig,
+      AzureLogCallbackProvider logCallback, AzureARMTaskNGParameters azureARMTaskNGParameters) {
     DeploymentTenantContext context =
         azureARMBaseHelper.toDeploymentTenantContext(azureARMTaskNGParameters, azureConfig, logCallback);
     try {

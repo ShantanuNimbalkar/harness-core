@@ -33,7 +33,7 @@ import io.harness.delegate.beans.connector.azureconnector.AzureInheritFromDelega
 import io.harness.delegate.beans.connector.azureconnector.AzureMSIAuthUADTO;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.exception.TaskNGDataException;
-import io.harness.delegate.task.azure.arm.handlers.AzureARMAbstractTaskHandler;
+import io.harness.delegate.task.azure.arm.handlers.AzureResourceCreationAbstractTaskHandler;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProviderFactory;
 import io.harness.exception.UnexpectedTypeException;
@@ -60,8 +60,8 @@ import org.mockito.Spy;
 
 @OwnedBy(HarnessTeam.CDP)
 public class AzureArmTaskNGTest extends CategoryTest {
-  @Spy private Map<AzureARMTaskType, AzureARMAbstractTaskHandler> handlerMap = new HashMap<>();
-  @Mock private AzureARMAbstractTaskHandler handler;
+  @Spy private Map<AzureARMTaskType, AzureResourceCreationAbstractTaskHandler> handlerMap = new HashMap<>();
+  @Mock private AzureResourceCreationAbstractTaskHandler handler;
   @Mock private ILogStreamingTaskClient logStreamingTaskClient;
 
   @Mock private AzureLogCallbackProvider mockLogStreamingTaskClient;
@@ -73,11 +73,11 @@ public class AzureArmTaskNGTest extends CategoryTest {
   @Mock private LogCallback mockLogCallback;
 
   @InjectMocks
-  AzureARMTaskNG azureARMTaskNG =
-      new AzureARMTaskNG(DelegateTaskPackage.builder().data(TaskData.builder().build()).build(), logStreamingTaskClient,
-          mock(Consumer.class), mock(BooleanSupplier.class));
+  AzureResourceCreationTaskNG azureARMTaskNG =
+      new AzureResourceCreationTaskNG(DelegateTaskPackage.builder().data(TaskData.builder().build()).build(),
+          logStreamingTaskClient, mock(Consumer.class), mock(BooleanSupplier.class));
 
-  AzureTaskNGParameters taskNGParameters;
+  AzureResourceCreationTaskNGParameters taskNGParameters;
   private Future<?> future;
 
   @Before
@@ -125,7 +125,8 @@ public class AzureArmTaskNGTest extends CategoryTest {
         .when(handler)
         .executeTask(eq(taskNGParameters), any(), any(), any());
 
-    AzureTaskNGResponse response = (AzureTaskNGResponse) azureARMTaskNG.run(taskNGParameters);
+    AzureResourceCreationTaskNGResponse response =
+        (AzureResourceCreationTaskNGResponse) azureARMTaskNG.run(taskNGParameters);
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
   }

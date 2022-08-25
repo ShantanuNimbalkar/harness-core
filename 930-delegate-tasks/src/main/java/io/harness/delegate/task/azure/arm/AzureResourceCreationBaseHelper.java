@@ -19,7 +19,7 @@ import io.harness.delegate.task.azure.arm.deployment.context.DeploymentTenantCon
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 
 @OwnedBy(CDP)
-public interface AzureARMBaseHelper {
+public interface AzureResourceCreationBaseHelper {
   DeploymentResourceGroupContext toDeploymentResourceGroupContext(
       AzureARMTaskNGParameters azureARMTaskNGParameters, AzureConfig azureConfig, AzureLogCallbackProvider logCallback);
   AzureClientContext getAzureClientContext(AzureARMTaskNGParameters azureARMTaskNGParameters, AzureConfig azureConfig);

@@ -26,15 +26,15 @@ import io.harness.azure.model.AzureConfig;
 import io.harness.azure.model.AzureDeploymentMode;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
-import io.harness.delegate.task.azure.arm.AzureARMBaseHelper;
 import io.harness.delegate.task.azure.arm.AzureARMBaseHelperImpl;
 import io.harness.delegate.task.azure.arm.AzureARMDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters;
-o import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters.AzureARMTaskNGParametersBuilder;
+import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters.AzureARMTaskNGParametersBuilder;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGResponse;
 import io.harness.delegate.task.azure.arm.AzureARMTaskType;
-import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
-import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationBaseHelper;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGParameters;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentManagementGroupContext;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentResourceGroupContext;
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentSubscriptionContext;
@@ -65,7 +65,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Mock private LogCallback mockLogCallback;
   @Mock private AzureARMDeploymentService azureARMDeploymentService;
 
-  @Spy private AzureARMBaseHelper azureARMBaseHelper = new AzureARMBaseHelperImpl();
+  @Spy private AzureResourceCreationBaseHelper azureARMBaseHelper = new AzureARMBaseHelperImpl();
   @Mock private AzureConnectorMapper azureConnectorMapper;
   @Spy @InjectMocks AzureARMCreateTaskHandler handler;
 
@@ -155,7 +155,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testExecuteTaskInternalAtResourceGroupScope() throws IOException, InterruptedException {
-    AzureTaskNGParameters parameters = getAzureARMTaskParametersAtResourceGroupScope();
+    AzureResourceCreationTaskNGParameters parameters = getAzureARMTaskParametersAtResourceGroupScope();
 
     ArgumentCaptor<DeploymentResourceGroupContext> contextArgumentCaptor =
         ArgumentCaptor.forClass(DeploymentResourceGroupContext.class);
@@ -163,7 +163,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
         .when(azureARMDeploymentService)
         .deployAtResourceGroupScope(any());
 
-    AzureTaskNGResponse response =
+    AzureResourceCreationTaskNGResponse response =
         handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
     verify(azureARMDeploymentService, times(1)).deployAtResourceGroupScope(contextArgumentCaptor.capture());
 
@@ -180,7 +180,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     assertThat(capturedDeploymentResourceGroupContext.getMode()).isEqualTo(AzureDeploymentMode.INCREMENTAL);
 
     assertThat(response).isNotNull();
-    assertThat(response).isInstanceOf(AzureTaskNGResponse.class);
+    assertThat(response).isInstanceOf(AzureResourceCreationTaskNGResponse.class);
     AzureARMTaskNGResponse armDeploymentResponse = (AzureARMTaskNGResponse) response;
     assertThat(armDeploymentResponse.getOutputs()).isNotEmpty();
     assertThat(armDeploymentResponse.getOutputs()).isEqualTo("{propertyName={type=String, value=propertyValue}}");
@@ -190,7 +190,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testExecuteTaskInternalAtSubsctiptionScope() throws IOException, InterruptedException {
-    AzureTaskNGParameters parameters = getAzureARMTaskParametersAtSubscriptionScope();
+    AzureResourceCreationTaskNGParameters parameters = getAzureARMTaskParametersAtSubscriptionScope();
 
     ArgumentCaptor<DeploymentSubscriptionContext> contextArgumentCaptor =
         ArgumentCaptor.forClass(DeploymentSubscriptionContext.class);
@@ -198,7 +198,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
         .when(azureARMDeploymentService)
         .deployAtSubscriptionScope(any());
 
-    AzureTaskNGResponse response =
+    AzureResourceCreationTaskNGResponse response =
         handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
     verify(azureARMDeploymentService, times(1)).deployAtSubscriptionScope(contextArgumentCaptor.capture());
 
@@ -212,7 +212,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     assertThat(contextArgumentCaptorValue.getMode()).isEqualTo(AzureDeploymentMode.INCREMENTAL);
 
     assertThat(response).isNotNull();
-    assertThat(response).isInstanceOf(AzureTaskNGResponse.class);
+    assertThat(response).isInstanceOf(AzureResourceCreationTaskNGResponse.class);
     AzureARMTaskNGResponse armDeploymentResponse = (AzureARMTaskNGResponse) response;
     assertThat(armDeploymentResponse.getOutputs()).isNotEmpty();
     assertThat(armDeploymentResponse.getOutputs()).isEqualTo("{propertyName={type=String, value=propertyValue}}");
@@ -222,7 +222,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testExecuteTaskInternalAtManagementScope() throws IOException, InterruptedException {
-    AzureTaskNGParameters parameters = getAzureARMTaskParametersAtManagementGroupScope();
+    AzureResourceCreationTaskNGParameters parameters = getAzureARMTaskParametersAtManagementGroupScope();
 
     ArgumentCaptor<DeploymentManagementGroupContext> contextArgumentCaptor =
         ArgumentCaptor.forClass(DeploymentManagementGroupContext.class);
@@ -230,7 +230,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
         .when(azureARMDeploymentService)
         .deployAtManagementGroupScope(any());
 
-    AzureTaskNGResponse response =
+    AzureResourceCreationTaskNGResponse response =
         handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
     verify(azureARMDeploymentService, times(1)).deployAtManagementGroupScope(contextArgumentCaptor.capture());
 
@@ -244,7 +244,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     assertThat(contextArgumentCaptorValue.getMode()).isEqualTo(AzureDeploymentMode.INCREMENTAL);
 
     assertThat(response).isNotNull();
-    assertThat(response).isInstanceOf(AzureTaskNGResponse.class);
+    assertThat(response).isInstanceOf(AzureResourceCreationTaskNGResponse.class);
     AzureARMTaskNGResponse armDeploymentResponse = (AzureARMTaskNGResponse) response;
     assertThat(armDeploymentResponse.getOutputs()).isNotEmpty();
     assertThat(armDeploymentResponse.getOutputs()).isEqualTo("{propertyName={type=String, value=propertyValue}}");
@@ -254,7 +254,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testExecuteTaskInternalAtTenantScope() throws IOException, InterruptedException {
-    AzureTaskNGParameters parameters = getAzureARMTaskParametersAtTenantScope();
+    AzureResourceCreationTaskNGParameters parameters = getAzureARMTaskParametersAtTenantScope();
 
     ArgumentCaptor<DeploymentTenantContext> contextArgumentCaptor =
         ArgumentCaptor.forClass(DeploymentTenantContext.class);
@@ -262,7 +262,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
         .when(azureARMDeploymentService)
         .deployAtTenantScope(any());
 
-    AzureTaskNGResponse response =
+    AzureResourceCreationTaskNGResponse response =
         handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
     verify(azureARMDeploymentService, times(1)).deployAtTenantScope(contextArgumentCaptor.capture());
 
@@ -275,7 +275,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     assertThat(contextArgumentCaptorValue.getMode()).isEqualTo(AzureDeploymentMode.INCREMENTAL);
 
     assertThat(response).isNotNull();
-    assertThat(response).isInstanceOf(AzureTaskNGResponse.class);
+    assertThat(response).isInstanceOf(AzureResourceCreationTaskNGResponse.class);
     AzureARMTaskNGResponse armDeploymentResponse = (AzureARMTaskNGResponse) response;
     assertThat(armDeploymentResponse.getOutputs()).isNotEmpty();
     assertThat(armDeploymentResponse.getOutputs()).isEqualTo("{propertyName={type=String, value=propertyValue}}");
@@ -285,7 +285,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testExecuteTaskInternalThrowExceptions() {
-    AzureTaskNGParameters parameters = getAzureARMTaskParametersAtResourceGroupScope();
+    AzureResourceCreationTaskNGParameters parameters = getAzureARMTaskParametersAtResourceGroupScope();
     doThrow(new InvalidRequestException("InvalidRequestException"))
         .when(azureARMDeploymentService)
         .deployAtResourceGroupScope(any());

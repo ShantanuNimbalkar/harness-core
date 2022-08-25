@@ -27,7 +27,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @OwnedBy(CDP)
-public class AzureARMBaseHelperImpl implements AzureARMBaseHelper {
+public class AzureARMBaseHelperImpl implements AzureResourceCreationBaseHelper {
   private static final Random rand = new Random();
 
   @Override

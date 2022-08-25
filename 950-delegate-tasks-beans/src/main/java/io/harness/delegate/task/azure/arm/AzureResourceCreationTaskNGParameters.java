@@ -25,7 +25,7 @@ import lombok.NonNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AzureTaskNGParameters
+public class AzureResourceCreationTaskNGParameters
     implements TaskParameters, ExecutionCapabilityDemander, ExpressionReflectionUtils.NestedAnnotationResolver {
   @NonNull String accountId;
   @NonNull AzureARMTaskType azureARMTaskType;

@@ -15,9 +15,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.model.AzureConstants;
-import io.harness.delegate.task.azure.arm.AzureARMBaseHelper;
-import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
-import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationBaseHelper;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGParameters;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.TimeoutException;
@@ -31,15 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(CDP)
-public abstract class AzureARMAbstractTaskHandler {
-  @Inject AzureARMBaseHelper azureARMBaseHelper;
+public abstract class AzureResourceCreationAbstractTaskHandler {
+  @Inject AzureResourceCreationBaseHelper azureARMBaseHelper;
 
-  public abstract AzureTaskNGResponse executeTaskInternal(AzureTaskNGParameters taskNGParameters, String delegateId,
-      String taskId, AzureLogCallbackProvider logCallback) throws IOException, TimeoutException, InterruptedException;
+  public abstract AzureResourceCreationTaskNGResponse executeTaskInternal(
+      AzureResourceCreationTaskNGParameters taskNGParameters, String delegateId, String taskId,
+      AzureLogCallbackProvider logCallback) throws IOException, TimeoutException, InterruptedException;
 
-  public AzureTaskNGResponse executeTask(AzureTaskNGParameters azureTaskNGParameters, String delegateId, String taskId,
-      AzureLogCallbackProvider logCallback) throws Exception {
-    AzureTaskNGResponse response = executeTaskInternal(azureTaskNGParameters, delegateId, taskId, logCallback);
+  public AzureResourceCreationTaskNGResponse executeTask(AzureResourceCreationTaskNGParameters azureTaskNGParameters,
+      String delegateId, String taskId, AzureLogCallbackProvider logCallback) throws Exception {
+    AzureResourceCreationTaskNGResponse response =
+        executeTaskInternal(azureTaskNGParameters, delegateId, taskId, logCallback);
     if (SUCCESS.equals(response.getCommandExecutionStatus())) {
       logCallback.obtainLogCallback("Create").saveExecutionLog("Execution finished successfully.", LogLevel.INFO);
     } else {

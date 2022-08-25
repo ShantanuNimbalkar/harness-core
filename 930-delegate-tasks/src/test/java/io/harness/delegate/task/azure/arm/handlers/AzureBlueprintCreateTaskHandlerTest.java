@@ -27,7 +27,7 @@ import io.harness.delegate.task.azure.arm.AzureARMTaskType;
 import io.harness.delegate.task.azure.arm.AzureBlueprintDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGParameters;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGResponse;
-import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse;
 import io.harness.delegate.task.azure.common.AzureConnectorMapper;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 import io.harness.exception.InvalidArgumentsException;
@@ -215,7 +215,7 @@ public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
         ArgumentCaptor.forClass(DeploymentBlueprintContext.class);
     doNothing().when(azureBlueprintDeploymentService).deployBlueprintAtResourceScope(any());
 
-    AzureTaskNGResponse azureARMTaskResponse = azureBlueprintCreateTaskHandler.executeTaskInternal(
+    AzureResourceCreationTaskNGResponse azureARMTaskResponse = azureBlueprintCreateTaskHandler.executeTaskInternal(
         blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
 
     verify(azureBlueprintDeploymentService, times(1)).deployBlueprintAtResourceScope(deploymentContextCaptor.capture());

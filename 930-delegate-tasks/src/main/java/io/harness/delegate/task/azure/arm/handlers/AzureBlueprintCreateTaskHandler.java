@@ -7,16 +7,19 @@
 
 package io.harness.delegate.task.azure.arm.handlers;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
 import static java.lang.String.format;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.model.AzureConfig;
 import io.harness.azure.model.blueprint.assignment.Assignment;
 import io.harness.azure.utility.AzureResourceUtility;
 import io.harness.delegate.task.azure.arm.AzureBlueprintDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGParameters;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGResponse;
-import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
-import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGParameters;
+import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNGResponse;
 import io.harness.delegate.task.azure.arm.deployment.validator.ArtifactsJsonValidator;
 import io.harness.delegate.task.azure.arm.deployment.validator.AssignmentJsonValidator;
 import io.harness.delegate.task.azure.arm.deployment.validator.BlueprintJsonValidator;
@@ -31,17 +34,21 @@ import io.harness.serializer.JsonUtils;
 import software.wings.delegatetasks.azure.arm.deployment.context.DeploymentBlueprintContext;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-public class AzureBlueprintCreateTaskHandler extends AzureARMAbstractTaskHandler {
+@OwnedBy(CDP)
+@Singleton
+public class AzureBlueprintCreateTaskHandler extends AzureResourceCreationAbstractTaskHandler {
   @Inject private AzureBlueprintDeploymentService azureBlueprintDeploymentService;
   @Inject protected AzureConnectorMapper azureConnectorMapper;
 
   @Override
-  public AzureTaskNGResponse executeTaskInternal(AzureTaskNGParameters taskNGParameters, String delegateId,
-      String taskId, AzureLogCallbackProvider logCallback) throws IOException, TimeoutException, InterruptedException {
+  public AzureResourceCreationTaskNGResponse executeTaskInternal(AzureResourceCreationTaskNGParameters taskNGParameters,
+      String delegateId, String taskId, AzureLogCallbackProvider logCallback)
+      throws IOException, TimeoutException, InterruptedException {
     AzureBlueprintTaskNGParameters azureBlueprintTaskNGParameters = (AzureBlueprintTaskNGParameters) taskNGParameters;
     AzureConfig azureConfig = azureConnectorMapper.toAzureConfig(azureBlueprintTaskNGParameters.getAzureConnectorDTO());
 
@@ -50,7 +57,6 @@ public class AzureBlueprintCreateTaskHandler extends AzureARMAbstractTaskHandler
     return AzureBlueprintTaskNGResponse.builder().build();
   }
 
-  // TODO: Candidate
   private DeploymentBlueprintContext toDeploymentBlueprintContext(
       AzureBlueprintTaskNGParameters azureBlueprintTaskNGParameters, AzureConfig azureConfig,
       AzureLogCallbackProvider logCallback) {
@@ -97,7 +103,6 @@ public class AzureBlueprintCreateTaskHandler extends AzureARMAbstractTaskHandler
     return deploymentBlueprintContext;
   }
 
-  // TODO: Candidate
   private void checkBlueprintNameInBlueprintJson(String blueprintJson, String blueprintName) {
     Optional<String> blueprintNameFromBlueprintJson =
         AzureResourceUtility.getBlueprintNameFromBlueprintJson(blueprintJson);
