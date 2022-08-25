@@ -14,7 +14,6 @@ import static software.wings.beans.LogHelper.color;
 import static software.wings.beans.LogHelper.doneColoring;
 import static software.wings.beans.LogWeight.Bold;
 
-import static java.lang.System.currentTimeMillis;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.HarnessModule;
@@ -30,18 +29,8 @@ import io.harness.network.SafeHttpCall;
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.delegatetasks.DelegateLogService;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -67,13 +56,10 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
   private final String token;
   private final String accountId;
   private final String baseLogKey;
-  private ScheduledExecutorService scheduledExecutorService;
   @Deprecated private final String appId;
   @Deprecated private final String activityId;
 
   private final ITaskProgressClient taskProgressClient;
-
-  @Default private final Map<String, List<LogLine>> logCache = new HashMap<>();
 
   @Override
   public void openStream(String baseLogKeySuffix) {
@@ -84,9 +70,6 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
     } catch (Exception ex) {
       log.error("Unable to open log stream for account {} and key {}", accountId, logKey, ex);
     }
-    scheduledExecutorService = new ScheduledThreadPoolExecutor(1,
-        new ThreadFactoryBuilder().setNameFormat("log-streaming-client-%d").setPriority(Thread.NORM_PRIORITY).build());
-    scheduledExecutorService.scheduleAtFixedRate(this::dispatchLogs, 0, 100, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -94,27 +77,15 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
     String logKey = getLogKey(baseLogKeySuffix);
 
     // we don't want workflow steps to hang because of any log reasons. Putting a safety net just in case
-    long startTime = currentTimeMillis();
-    synchronized (logCache) {
-      while (logCache.containsKey(logKey) && currentTimeMillis() < startTime + TimeUnit.SECONDS.toMillis(5)) {
-        log.debug("for {} the logs are not drained yet. sleeping...", logKey);
-        try {
-          logCache.wait(100);
-        } catch (InterruptedException e) {
-          // ignore
-        }
-      }
+    if (delegateLogStreamingDispatcher.dispatchAllLogsBeforeClosingStream(logKey)) {
+      log.debug("for {} the logs are not drained yet. sleeping for 100ms...", logKey);
+      // sleep it for 100 ms
     }
-    if (logCache.containsKey(logKey)) {
-      log.error("log cache was not drained for {}. num of keys in map {}. This will result in missing logs", logKey,
-          logCache.size());
-    }
+
     try {
       SafeHttpCall.executeWithExceptions(logStreamingClient.closeLogStream(token, accountId, logKey, true));
     } catch (Exception ex) {
       log.error("Unable to close log stream for account {} and key {}", accountId, logKey, ex);
-    } finally {
-      scheduledExecutorService.shutdownNow();
     }
   }
 
@@ -129,29 +100,12 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
     logStreamingSanitizer.sanitizeLogMessage(logLine);
     colorLog(logLine);
 
-    synchronized (logCache) {
-      if (!logCache.containsKey(logKey)) {
-        logCache.put(logKey, new ArrayList<>());
-      }
-      logCache.get(logKey).add(logLine);
-    }
+    delegateLogStreamingDispatcher.saveLogsInCache(logKey, logLine);
   }
 
   @Override
   public void dispatchLogs() {
-    synchronized (logCache) {
-      for (Iterator<Map.Entry<String, List<LogLine>>> iterator = logCache.entrySet().iterator(); iterator.hasNext();) {
-        Map.Entry<String, List<LogLine>> next = iterator.next();
-        try {
-          SafeHttpCall.executeWithExceptions(
-              logStreamingClient.pushMessage(token, accountId, next.getKey(), next.getValue()));
-        } catch (Exception ex) {
-          log.error("Unable to push message to log stream for account {} and key {}", accountId, next.getKey(), ex);
-        }
-        iterator.remove();
-      }
-      logCache.notifyAll();
-    }
+    delegateLogStreamingDispatcher.swapMapsAndDispatchLogs();
   }
 
   @NotNull

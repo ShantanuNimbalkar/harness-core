@@ -1,3 +1,11 @@
+/*
+ * Copyright 2022 Harness Inc. All rights reserved.
+ * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+ * that can be found in the licenses directory at the root of this repository, also available at
+ * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+ */
+
+// rename package
 package io.harness.logStreaming;
 
 import io.harness.logging.LoggingListener;
@@ -53,14 +61,10 @@ public class DelegateLogStreamingDispatcher {
 
     @Override
     protected void runOneIteration() throws Exception {
-      swapMaps();
-      if (isWritingInPrimaryLogCache.get()) {
-        dispatchLogs(secondaryLogCache);
-      } else {
-        dispatchLogs(primaryLogCache);
-      }
+      swapMapsAndDispatchLogs();
     }
 
+    // question? what should be ideal time
     @Override
     protected Scheduler scheduler() {
       return Scheduler.newFixedRateSchedule(0, 1, TimeUnit.SECONDS);
@@ -80,25 +84,26 @@ public class DelegateLogStreamingDispatcher {
   }
 
   // assumption is that no one is writing logs after calling closeStream
-  public void dispatchAllLogsBeforeClosingStream(String logKey) {
+  public boolean dispatchAllLogsBeforeClosingStream(String logKey) {
     // it was currently writing in primaryLogCache, hence dispatch from primaryLogCache
     if (isWritingInPrimaryLogCache.get()) {
-      dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, primaryLogCache);
-    } else {
-      dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, secondaryLogCache);
+      return dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, primaryLogCache);
     }
+    return dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, secondaryLogCache);
   }
 
-  private void dispatchAllLogsFromPrimaryCacheBeforeClosingStream(
+  private boolean dispatchAllLogsFromPrimaryCacheBeforeClosingStream(
       String logKey, Map<String, List<LogLine>> primaryLogCache) {
     if (!primaryLogCache.containsKey(logKey)) {
-      return;
+      return false;
     }
     logStreamingExecutor.submit(() -> sendLogsToLogStreaming(logKey, primaryLogCache.get(logKey)));
     primaryLogCache.remove(logKey);
+    return true;
   }
 
   public void saveLogsInCache(String logKey, LogLine logLine) {
+    // add a reader/writer lock here
     if (isWritingInPrimaryLogCache.get()) {
       if (!primaryLogCache.containsKey(logKey)) {
         primaryLogCache.put(logKey, new ArrayList<>());
@@ -121,7 +126,8 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
-  private void swapMaps() {
+  public void swapMapsAndDispatchLogs() {
+    // swap primary cache
     if (isWritingInPrimaryLogCache.get()) {
       synchronized (primaryLogCache) {
         isWritingInPrimaryLogCache.set(false);
@@ -131,10 +137,14 @@ public class DelegateLogStreamingDispatcher {
         isWritingInPrimaryLogCache.set(true);
       }
     }
+
+    // now send from secondary cache
+    dispatchLogs(isWritingInPrimaryLogCache.get() ? secondaryLogCache : primaryLogCache);
   }
 
   public void start() {
     if (running.compareAndSet(false, true)) {
+      log.info("Starting log streaming dispatcher.");
       DelegateLogStreamingDispatcherService delegateLogStreamingDispatcherService =
           new DelegateLogStreamingDispatcherService();
       delegateLogStreamingDispatcherService.startAsync();
@@ -148,6 +158,7 @@ public class DelegateLogStreamingDispatcher {
 
   public void stop() {
     if (running.compareAndSet(true, false)) {
+      log.info("Stopping log streaming dispatcher");
       DelegateLogStreamingDispatcherService delegateLogStreamingDispatcherService = this.svcHolder.get();
       delegateLogStreamingDispatcherService.stopAsync().awaitTerminated();
     }

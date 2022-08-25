@@ -138,6 +138,7 @@ import io.harness.exception.UnexpectedException;
 import io.harness.expression.ExpressionReflectionUtils;
 import io.harness.filesystem.FileIo;
 import io.harness.grpc.util.RestartableServiceManager;
+import io.harness.logStreaming.DelegateLogStreamingDispatcher;
 import io.harness.logging.AutoLogContext;
 import io.harness.logstreaming.LogStreamingClient;
 import io.harness.logstreaming.LogStreamingHelper;
@@ -333,6 +334,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   private static volatile String delegateId;
   private static final String delegateInstanceId = generateUuid();
 
+  private static volatile String logStreamingToken;
+
   @Inject
   @Getter(value = PACKAGE, onMethod = @__({ @VisibleForTesting }))
   private DelegateConfiguration delegateConfiguration;
@@ -365,6 +368,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject private ExecutionConfigOverrideFromFileOnDelegate delegateLocalConfigService;
   @Inject(optional = true) @Nullable private PerpetualTaskWorker perpetualTaskWorker;
   @Inject(optional = true) @Nullable private LogStreamingClient logStreamingClient;
+
+  private DelegateLogStreamingDispatcher delegateLogStreamingDispatcher;
+
   @Inject DelegateTaskFactory delegateTaskFactory;
   @Inject(optional = true) @Nullable private DelegateServiceAgentClient delegateServiceAgentClient;
   @Inject private KryoSerializer kryoSerializer;
@@ -1324,6 +1330,12 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       chronicleEventTailer.stopAsync().awaitTerminated();
       log.info("Stopped chronicle event trailer");
     }
+
+    if (delegateLogStreamingDispatcher != null) {
+      log.info("Stopping log streaming dispatcher");
+      delegateLogStreamingDispatcher.stop();
+      log.info("Stopped log streaming dispatcher");
+    }
   }
 
   private void handleStopAcquiringMessage(String sender) {
@@ -1353,6 +1365,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       });
       if (perpetualTaskWorker != null) {
         perpetualTaskWorker.stop();
+      }
+      if (delegateLogStreamingDispatcher != null) {
+        delegateLogStreamingDispatcher.stop();
       }
     }
   }
@@ -2205,6 +2220,18 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         ? LogStreamingHelper.generateLogBaseKey(delegateTaskPackage.getLogStreamingAbstractions())
         : EMPTY;
 
+    if (delegateLogStreamingDispatcher == null) {
+      delegateLogStreamingDispatcher = new DelegateLogStreamingDispatcher(
+          delegateTaskPackage.getAccountId(), logStreamingClient, logStreamingExecutor);
+    }
+
+    if (!delegateTaskPackage.getLogStreamingToken().equals(logStreamingToken)) {
+      logStreamingToken = delegateTaskPackage.getLogStreamingToken();
+      delegateLogStreamingDispatcher.setToken(logStreamingToken);
+    }
+
+    delegateLogStreamingDispatcher.start();
+
     LogStreamingTaskClientBuilder taskClientBuilder =
         LogStreamingTaskClient.builder()
             .logStreamingClient(logStreamingClient)
@@ -2217,6 +2244,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             .baseLogKey(logBaseKey)
             .logService(delegateLogService)
             .taskProgressExecutor(taskProgressExecutor)
+            .delegateLogStreamingDispatcher(delegateLogStreamingDispatcher)
             .appId(appId)
             .activityId(activityId);
 
@@ -2542,6 +2570,10 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     DelegateStackdriverLogAppender.setManagerClient(null);
     if (perpetualTaskWorker != null) {
       perpetualTaskWorker.stop();
+    }
+
+    if (delegateLogStreamingDispatcher != null) {
+      delegateLogStreamingDispatcher.stop();
     }
   }
 
