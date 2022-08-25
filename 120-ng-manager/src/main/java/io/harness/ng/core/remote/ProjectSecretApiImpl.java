@@ -27,6 +27,8 @@ import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 
 import com.google.inject.Inject;
+
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -46,6 +48,26 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     return createSecret(account, body, privateSecret);
+  }
+
+  @Override
+  public Response createProjectScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String org, String project, String account, Boolean privateSecret) {
+    if (!Objects.equals(org, secretRequest.getSecret().getOrg())
+            || !Objects.equals(project, secretRequest.getSecret().getProject())) {
+      throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
+    }
+    secretPermissionValidator.checkForAccessOrThrow(
+            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()), Resource.of(SECRET_RESOURCE_TYPE, null),
+            SECRET_EDIT_PERMISSION, privateSecret ? SecurityContextBuilder.getPrincipal() : null);
+    SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
+
+    if (privateSecret) {
+      secretDto.setOwner(SecurityContextBuilder.getPrincipal());
+    }
+
+    return Response.ok()
+            .entity(ngSecretService.createFile(account, secretDto, fileInputStream))
+            .build();
   }
 
   @Override
