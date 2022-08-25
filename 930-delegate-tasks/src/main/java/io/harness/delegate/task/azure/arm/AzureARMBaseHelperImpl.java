@@ -52,7 +52,7 @@ public class AzureARMBaseHelperImpl implements AzureARMBaseHelper {
   @Override
   public String getDeploymentName(AzureARMTaskNGParameters deploymentParameters) {
     if (!isEmpty(deploymentParameters.getDeploymentName())) {
-      deploymentParameters.getDeploymentName();
+      return deploymentParameters.getDeploymentName();
     }
     int randomNum = rand.nextInt(1000);
     return deploymentParameters.isRollback()

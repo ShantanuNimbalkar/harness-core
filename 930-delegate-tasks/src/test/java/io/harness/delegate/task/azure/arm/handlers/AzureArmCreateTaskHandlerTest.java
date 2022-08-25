@@ -30,6 +30,7 @@ import io.harness.delegate.task.azure.arm.AzureARMBaseHelper;
 import io.harness.delegate.task.azure.arm.AzureARMBaseHelperImpl;
 import io.harness.delegate.task.azure.arm.AzureARMDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters;
+import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters.AzureARMTaskNGParametersBuilder;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGResponse;
 import io.harness.delegate.task.azure.arm.AzureARMTaskType;
 import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
@@ -107,7 +108,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
   private AzureARMTaskNGParameters getAzureARMTaskParametersAtTenantScope() {
     return getAzureARMDeploymentParametersBuilder().scopeType(ARMScopeType.TENANT).build();
   }
-  private AzureARMTaskNGParameters.AzureARMTaskNGParametersBuilder getAzureARMDeploymentParametersBuilder() {
+  private AzureARMTaskNGParametersBuilder getAzureARMDeploymentParametersBuilder() {
     String template = "{\n"
         + "  \"$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",\n"
         + "  \"contentVersion\": \"1.0.0.0\",\n"

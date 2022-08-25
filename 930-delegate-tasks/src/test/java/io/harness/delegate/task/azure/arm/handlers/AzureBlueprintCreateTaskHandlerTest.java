@@ -7,7 +7,6 @@
 
 package io.harness.delegate.task.azure.arm.handlers;
 
-import static io.harness.rule.OwnerRule.IVAN;
 import static io.harness.rule.OwnerRule.NGONZALEZ;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,14 +23,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.model.AzureConfig;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
-import io.harness.delegate.task.azure.arm.AzureARMTaskResponse;
 import io.harness.delegate.task.azure.arm.AzureARMTaskType;
 import io.harness.delegate.task.azure.arm.AzureBlueprintDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGParameters;
 import io.harness.delegate.task.azure.arm.AzureBlueprintTaskNGResponse;
 import io.harness.delegate.task.azure.arm.AzureTaskNGResponse;
-import io.harness.delegate.task.azure.arm.request.AzureBlueprintDeploymentParameters;
-import io.harness.delegate.task.azure.arm.response.AzureBlueprintDeploymentResponse;
 import io.harness.delegate.task.azure.common.AzureConnectorMapper;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 import io.harness.exception.InvalidArgumentsException;
@@ -41,7 +37,6 @@ import io.harness.serializer.JsonUtils;
 
 import software.wings.delegatetasks.azure.arm.deployment.context.DeploymentBlueprintContext;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.management.network.ResourceIdentityType;
@@ -119,7 +114,7 @@ public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
         + "    },\n"
         + "    \"location\": \"westus2\",\n"
         + "    \"properties\": {\n"
-        + "      \"blueprintId\": \"/providers/Microsoft.Management/managementGroups/CD Non-Production/providers/Microsoft.Blueprint/blueprints/101-boilerplate-mng/versions/v2\",\n"
+        + "      \"blueprintId\": \"/providers/Microsoft.Management/managementGroups/HarnessARMTest/providers/Microsoft.Blueprint/blueprints/101-boilerplate-mng/versions/v2\",\n"
         + "      \"resourceGroups\": {\n"
         + "        \"SingleRG\": {\n"
         + "          \"name\": \"mng-001\",\n"

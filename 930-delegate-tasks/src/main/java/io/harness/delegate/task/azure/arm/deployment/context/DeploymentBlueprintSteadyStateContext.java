@@ -9,9 +9,7 @@ package io.harness.delegate.task.azure.arm.deployment.context;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.azure.model.AzureConfig;
 
 import lombok.AllArgsConstructor;

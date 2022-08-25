@@ -66,7 +66,6 @@ import org.mockito.Spy;
 public class AzureArmTaskNGTest extends CategoryTest {
   @Spy private Map<AzureARMTaskType, AzureARMAbstractTaskHandler> handlerMap = new HashMap<>();
   @Mock private AzureARMAbstractTaskHandler handler;
-  ;
   @Mock private ILogStreamingTaskClient logStreamingTaskClient;
 
   @Mock private AzureLogCallbackProvider mockLogStreamingTaskClient;

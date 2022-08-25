@@ -9,14 +9,11 @@ package software.wings.delegatetasks.azure.arm.taskhandler;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import io.harness.annotations.dev.HarnessModule;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.azure.client.AzureManagementClient;
 import io.harness.azure.model.AzureConfig;
 import io.harness.azure.model.AzureConstants;
 import io.harness.azure.model.management.ManagementGroupInfo;
 import io.harness.delegate.beans.azure.ManagementGroupData;
-import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.task.azure.arm.AzureARMTaskParameters;
 import io.harness.delegate.task.azure.arm.AzureARMTaskResponse;
 import io.harness.delegate.task.azure.arm.response.AzureARMListManagementGroupResponse;

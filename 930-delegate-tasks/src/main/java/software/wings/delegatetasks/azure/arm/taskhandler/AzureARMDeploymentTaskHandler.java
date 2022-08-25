@@ -15,9 +15,7 @@ import static io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.build
 
 import static java.lang.String.format;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.azure.context.AzureClientContext;
 import io.harness.azure.model.ARMScopeType;
 import io.harness.azure.model.AzureConfig;

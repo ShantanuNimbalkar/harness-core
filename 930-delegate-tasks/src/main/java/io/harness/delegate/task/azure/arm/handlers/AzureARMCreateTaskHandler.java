@@ -16,6 +16,7 @@ import io.harness.azure.model.ARMScopeType;
 import io.harness.azure.model.AzureConfig;
 import io.harness.delegate.task.azure.arm.AzureARMDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData;
+import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.AzureARMPreDeploymentDataBuilder;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGParameters;
 import io.harness.delegate.task.azure.arm.AzureARMTaskNGResponse;
 import io.harness.delegate.task.azure.arm.AzureTaskNGParameters;
@@ -61,7 +62,7 @@ public class AzureARMCreateTaskHandler extends AzureARMAbstractTaskHandler {
 
   private AzureTaskNGResponse deployAtResourceGroupScope(AzureConfig azureConfig, AzureLogCallbackProvider logCallback,
       AzureARMTaskNGParameters azureARMTaskNGParameters) {
-    AzureARMPreDeploymentData.AzureARMPreDeploymentDataBuilder preDeploymentData =
+    AzureARMPreDeploymentDataBuilder preDeploymentData =
         AzureARMPreDeploymentData.builder()
             .resourceGroup(azureARMTaskNGParameters.getResourceGroupName())
             .subscriptionId(azureARMTaskNGParameters.getSubscriptionId());
