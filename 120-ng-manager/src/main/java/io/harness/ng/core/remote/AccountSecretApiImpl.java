@@ -1,18 +1,6 @@
 package io.harness.ng.core.remote;
 
-import static io.harness.exception.WingsException.USER;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretResponse;
-import static io.harness.secrets.SecretPermissions.SECRET_DELETE_PERMISSION;
-import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
-import static io.harness.secrets.SecretPermissions.SECRET_RESOURCE_TYPE;
-import static io.harness.secrets.SecretPermissions.SECRET_VIEW_PERMISSION;
-import static io.harness.utils.PageUtils.getNGPageResponse;
-
-import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
-import static java.util.Objects.nonNull;
-
+import com.google.inject.Inject;
 import io.harness.accesscontrol.acl.api.Resource;
 import io.harness.accesscontrol.acl.api.ResourceScope;
 import io.harness.exception.InvalidRequestException;
@@ -25,13 +13,25 @@ import io.harness.security.SecurityContextBuilder;
 import io.harness.spec.server.ng.AccountSecretApi;
 import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
+import lombok.AllArgsConstructor;
 
-import com.google.inject.Inject;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import lombok.AllArgsConstructor;
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static io.harness.exception.WingsException.USER;
+import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
+import static io.harness.ng.core.remote.SecretApiMapper.toSecretResponse;
+import static io.harness.secrets.SecretPermissions.SECRET_DELETE_PERMISSION;
+import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
+import static io.harness.secrets.SecretPermissions.SECRET_RESOURCE_TYPE;
+import static io.harness.secrets.SecretPermissions.SECRET_VIEW_PERMISSION;
+import static io.harness.utils.PageUtils.getNGPageResponse;
+import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 public class AccountSecretApiImpl implements AccountSecretApi {
@@ -44,6 +44,25 @@ public class AccountSecretApiImpl implements AccountSecretApi {
       throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
     }
     return createSecret(account, body, privateSecret);
+  }
+
+  @Override
+  public Response createAccountScopedSecret(SecretRequest secretRequest, InputStream fileInputStream, String account, Boolean privateSecret) {
+    if (nonNull(secretRequest.getSecret().getOrg()) || nonNull(secretRequest.getSecret().getProject())) {
+      throw new InvalidRequestException("Invalid request, scope in payload and params do not match.", USER);
+    }
+    secretPermissionValidator.checkForAccessOrThrow(
+            ResourceScope.of(account, secretRequest.getSecret().getOrg(), secretRequest.getSecret().getProject()), Resource.of(SECRET_RESOURCE_TYPE, null),
+            SECRET_EDIT_PERMISSION, privateSecret ? SecurityContextBuilder.getPrincipal() : null);
+    SecretDTOV2 secretDto = toSecretDto(secretRequest.getSecret());
+
+    if (privateSecret) {
+      secretDto.setOwner(SecurityContextBuilder.getPrincipal());
+    }
+
+    return Response.ok()
+            .entity(ngSecretService.createFile(account, secretDto, fileInputStream))
+            .build();
   }
 
   @Override
