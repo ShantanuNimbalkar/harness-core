@@ -91,8 +91,7 @@ public class AzureARMBaseHelperImpl implements AzureResourceCreationBaseHelper {
    *     azure
    * and the data for a rollback scenario if supported.
    */
-  public AzureARMTaskNGResponse
-  populateDeploymentResponse(String outputs) {
+  public AzureARMTaskNGResponse populateDeploymentResponse(String outputs) {
     return AzureARMTaskNGResponse.builder()
         .outputs(outputs)
         .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
