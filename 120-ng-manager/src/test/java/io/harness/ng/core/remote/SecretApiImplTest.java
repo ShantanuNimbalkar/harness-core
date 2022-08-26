@@ -17,6 +17,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.api.client.util.Lists;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -28,14 +29,20 @@ import io.harness.ng.core.api.impl.SecretPermissionValidator;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.rule.Owner;
+import io.harness.secretmanagerclient.SecretType;
 import io.harness.spec.server.ng.model.Secret;
 import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 import io.harness.spec.server.ng.model.SecretSpec;
 import io.harness.spec.server.ng.model.SecretTextSpec;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import software.wings.service.impl.security.NGEncryptorService;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Validator;
 import javax.ws.rs.NotFoundException;
@@ -61,6 +68,8 @@ public class SecretApiImplTest extends CategoryTest {
   private String name = "secret_name";
   private String secretManagerSlug = "secretManagerSlug";
   private String secretValue = "secret_value";
+  private Integer page = 0;
+  private Integer limit = 50;
 
   @Before
   public void setup() {
@@ -246,6 +255,33 @@ public class SecretApiImplTest extends CategoryTest {
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
     assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testGetAccountScopedSecretList() {
+    Secret textSecret = getTextSecret(org, project);
+    SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
+    Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
+
+    List<String> slugs = Collections.singletonList(slug);
+    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
+    List<String> types = Collections.singletonList("SSHKeyPath");
+
+    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null)).thenReturn(pages);
+
+    Response response = accountSecretApi.getAccountScopedSecrets(account, org, project, slugs, types, false, null, page, limit);
+
+    List<SecretResponse> secretResponse = (List<SecretResponse>) response.getEntity();
+    assertThat(secretResponse.size()).isEqualTo(1);
+    assertThat(secretResponse.get(0).getSecret().getProject()).isEqualTo(project);
+    assertThat(secretResponse.get(0).getSecret().getOrg()).isEqualTo(org);
+    assertThat(secretResponse.get(0).getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.get(0).getSecret().getName()).isEqualTo(name);
+    assertThat(secretResponse.get(0).getCreated()).isNotNull();
+    assertThat(secretResponse.get(0).getUpdated()).isNotNull();
   }
 
   @Test(expected = NotFoundException.class)
