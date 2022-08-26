@@ -246,7 +246,8 @@ public class ExecutionHelper {
       // PROVIDE THESE VALUES BEFORE THE EXECUTIONS.
       List<FQN> missingFQNs = InputSetErrorsHelper.getMissingFQNsInInputSet(pipelineYamlConfig);
       if (EmptyPredicate.isNotEmpty(missingFQNs)) {
-        throw new InvalidRequestException("Pipeline needs runtime input values");
+        throw new InvalidRequestException("Pipeline need runtime input values for "
+            + missingFQNs.stream().map(e -> e.getExpressionFqn()).collect(Collectors.toList()));
       }
       pipelineYamlConfigForSchemaValidations = pipelineYamlConfig;
     } else {

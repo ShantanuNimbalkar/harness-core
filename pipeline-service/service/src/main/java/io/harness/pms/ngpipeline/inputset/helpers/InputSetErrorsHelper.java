@@ -167,8 +167,8 @@ public class InputSetErrorsHelper {
         if (key.isType() || key.isIdentifierOrVariableName()) {
           if (!value.toString().equals(templateValue.toString())) {
             errorMap.put(key,
-                "The value for " + key.getExpressionFqn() + " is " + templateValue.toString()
-                    + "in the pipeline yaml, but the input set has it as " + value.toString());
+                "The value for " + key.getExpressionFqn() + " is " + templateValue
+                    + "in the pipeline yaml, but the input set has it as " + value);
           }
         } else {
           String error = validateStaticValues(templateValue, value);
@@ -195,7 +195,7 @@ public class InputSetErrorsHelper {
     return getMissingFQNsInInputSetFromTemplateConfig(templateYamlConfig);
   }
 
-  List<FQN> getMissingFQNsInInputSetFromTemplateConfig(YamlConfig templateConfig) {
+  private List<FQN> getMissingFQNsInInputSetFromTemplateConfig(YamlConfig templateConfig) {
     List<FQN> errors = new LinkedList<>();
     if (EmptyPredicate.isEmpty(templateConfig.getFqnToValueMap())) {
       return errors;
