@@ -13,6 +13,7 @@ import static io.harness.pms.merger.helpers.InputSetTemplateHelper.createTemplat
 import static io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType.INPUT_SET;
 import static io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType.OVERLAY_INPUT_SET;
 import static io.harness.pms.ngpipeline.inputset.helpers.InputSetErrorsHelper.getInvalidFQNsInInputSet;
+import static io.harness.rule.OwnerRule.FERNANDOD;
 import static io.harness.rule.OwnerRule.NAMAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +24,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
 import io.harness.pms.inputset.InputSetErrorResponseDTOPMS;
 import io.harness.pms.inputset.InputSetErrorWrapperDTOPMS;
+import io.harness.pms.merger.YamlConfig;
 import io.harness.pms.merger.fqn.FQN;
 import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntity;
 import io.harness.rule.Owner;
@@ -226,5 +228,102 @@ public class InputSetErrorsHelperTest extends CategoryTest {
         "pipeline.stages.stage[identifier:d1].spec.serviceConfig.serviceDefinition.spec.manifests.manifest[identifier:m2].spec.store.spec.paths.";
     assertThat(invalidFQNStrings.contains(invalidFQN1)).isTrue();
     assertThat(invalidFQNStrings.contains(invalidFQN2)).isTrue();
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldNotDetectMissingFQNs() {
+    String yamlFile = "missing-runtime-none.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectVariableInput() {
+    String yamlFile = "missing-runtime-variable-input.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(1);
+    assertThat(errors.get(0).getExpressionFqn()).isEqualTo("pipeline.variables.var1");
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldNotDetectMissingFQNsWhenVariableHasDefaultValue() {
+    String yamlFile = "missing-runtime-variable-default-value.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectVariableInputAllowedValues() {
+    String yamlFile = "missing-runtime-variable-allowedValues.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(1);
+    assertThat(errors.get(0).getExpressionFqn()).isEqualTo("pipeline.variables.var2");
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectStepRuntimeInput() {
+    String yamlFile = "missing-runtime-step-input.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(1);
+    assertThat(errors.get(0).getExpressionFqn()).isEqualTo("pipeline.stages.StageA.spec.execution.steps.Ping.timeout");
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectStepAndVariableRuntimeInput() {
+    String yamlFile = "missing-runtime-step-n-var-input.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(2);
+    assertThat(errors.get(0).getExpressionFqn()).isEqualTo("pipeline.stages.StageA.spec.execution.steps.Ping.timeout");
+    assertThat(errors.get(1).getExpressionFqn()).isEqualTo("pipeline.stages.StageA.variables.var2");
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectStepExpression() {
+    String yamlFile = "missing-runtime-step-expression.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(1);
+    assertThat(errors.get(0).getExpressionFqn()).isEqualTo("pipeline.stages.StageA.variables.var3");
+  }
+
+  @Test
+  @Owner(developers = FERNANDOD)
+  @Category(UnitTests.class)
+  public void shouldMissingFQNsDetectStepEnvVariable() {
+    String yamlFile = "missing-runtime-step-env-input.yaml";
+    YamlConfig yamlConfig = new YamlConfig(readFile(yamlFile));
+
+    final List<FQN> errors = InputSetErrorsHelper.getMissingFQNsInInputSet(yamlConfig);
+    assertThat(errors).hasSize(2);
+    assertThat(errors.get(0).getExpressionFqn())
+        .isEqualTo("pipeline.stages.StageA.spec.execution.steps.Ping.spec.environmentVariables.var1");
+    assertThat(errors.get(1).getExpressionFqn()).isEqualTo("pipeline.stages.StageA.variables.var3");
   }
 }

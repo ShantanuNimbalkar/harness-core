@@ -28,6 +28,7 @@ import io.harness.pms.ngpipeline.inputset.beans.entity.InputSetEntityType;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -184,5 +185,28 @@ public class InputSetErrorsHelper {
     });
     inputSetFQNs.forEach(fqn -> errorMap.put(fqn, "Field not a runtime input"));
     return errorMap;
+  }
+
+  /**
+   * Return a list of {@link FQN} of declared runtime input from a pipeline.
+   */
+  public List<FQN> getMissingFQNsInInputSet(YamlConfig pipelineYamlConfig) {
+    YamlConfig templateYamlConfig = RuntimeInputFormHelper.createRuntimeInputFormYamlConfig(pipelineYamlConfig, true);
+    return getMissingFQNsInInputSetFromTemplateConfig(templateYamlConfig);
+  }
+
+  List<FQN> getMissingFQNsInInputSetFromTemplateConfig(YamlConfig templateConfig) {
+    List<FQN> errors = new LinkedList<>();
+    if (EmptyPredicate.isEmpty(templateConfig.getFqnToValueMap())) {
+      return errors;
+    }
+    for (FQN key : templateConfig.getFqnToValueMap().keySet()) {
+      if (key.isType() || key.isIdentifierOrVariableName()) {
+        continue;
+      } else {
+        errors.add(key);
+      }
+    }
+    return errors;
   }
 }
