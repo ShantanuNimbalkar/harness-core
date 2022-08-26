@@ -21,7 +21,6 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.beans.taskprogress.ITaskProgressClient;
 import io.harness.exception.InvalidArgumentsException;
-import io.harness.logStreaming.DelegateLogStreamingDispatcher;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
 import io.harness.network.SafeHttpCall;
@@ -79,7 +78,7 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
     // we don't want workflow steps to hang because of any log reasons. Putting a safety net just in case
     if (delegateLogStreamingDispatcher.dispatchAllLogsBeforeClosingStream(logKey)) {
       log.debug("for {} the logs are not drained yet. sleeping for 100ms...", logKey);
-      // sleep it for 100 ms
+      // Question? how to sleep it for 100 ms
     }
 
     try {

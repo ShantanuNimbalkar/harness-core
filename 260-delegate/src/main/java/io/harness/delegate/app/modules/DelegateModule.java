@@ -928,6 +928,7 @@ public class DelegateModule extends AbstractModule {
                                                 .build());
   }
 
+  // Question? IMO we should use common task executor threadPool
   @Provides
   @Singleton
   @Named("logStreamingExecutor")

@@ -6,11 +6,9 @@
  */
 
 // rename package
-package io.harness.logStreaming;
+package io.harness.logstreaming;
 
 import io.harness.logging.LoggingListener;
-import io.harness.logstreaming.LogLine;
-import io.harness.logstreaming.LogStreamingClient;
 import io.harness.network.SafeHttpCall;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
@@ -25,6 +23,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,12 +39,12 @@ public class DelegateLogStreamingDispatcher {
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicReference<DelegateLogStreamingDispatcherService> svcHolder = new AtomicReference<>();
 
-  // save logs in primaryLogCache
-  // give a better name
   private final AtomicBoolean isWritingInPrimaryLogCache = new AtomicBoolean(true);
 
   private final Map<String, List<LogLine>> primaryLogCache = new HashMap<>();
   private final Map<String, List<LogLine>> secondaryLogCache = new HashMap<>();
+
+  ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   public DelegateLogStreamingDispatcher(
       String accountId, LogStreamingClient logStreamingClient, ThreadPoolExecutor logStreamingExecutor) {
@@ -71,6 +71,23 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
+  public void swapMapsAndDispatchLogs() {
+    // swap primary cache
+    try {
+      readWriteLock.writeLock().lock();
+      if (isWritingInPrimaryLogCache.get()) {
+        isWritingInPrimaryLogCache.set(false);
+      } else {
+        isWritingInPrimaryLogCache.set(true);
+      }
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+
+    // now dispatch from secondary cache
+    dispatchLogs(isWritingInPrimaryLogCache.get() ? secondaryLogCache : primaryLogCache);
+  }
+
   private void dispatchLogs(Map<String, List<LogLine>> logCache) {
     if (logCache.isEmpty()) {
       return;
@@ -78,14 +95,14 @@ public class DelegateLogStreamingDispatcher {
     for (Iterator<Map.Entry<String, List<LogLine>>> iterator = logCache.entrySet().iterator(); iterator.hasNext();) {
       Map.Entry<String, List<LogLine>> next = iterator.next();
       // Question? are we able to send logs before removing from iterator
-      logStreamingExecutor.submit(() -> sendLogsToLogStreaming(next.getKey(), next.getValue()));
+      logStreamingExecutor.submit(() -> sendLogsOverHttp(next.getKey(), next.getValue()));
       iterator.remove();
     }
   }
 
-  // assumption is that no one is writing logs after calling closeStream
   public boolean dispatchAllLogsBeforeClosingStream(String logKey) {
     // it was currently writing in primaryLogCache, hence dispatch from primaryLogCache
+    // no need of lock here since it will not be writing logs after calling closeStream
     if (isWritingInPrimaryLogCache.get()) {
       return dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, primaryLogCache);
     }
@@ -97,49 +114,37 @@ public class DelegateLogStreamingDispatcher {
     if (!primaryLogCache.containsKey(logKey)) {
       return false;
     }
-    logStreamingExecutor.submit(() -> sendLogsToLogStreaming(logKey, primaryLogCache.get(logKey)));
+    logStreamingExecutor.submit(() -> sendLogsOverHttp(logKey, primaryLogCache.get(logKey)));
     primaryLogCache.remove(logKey);
     return true;
   }
 
   public void saveLogsInCache(String logKey, LogLine logLine) {
-    // add a reader/writer lock here
-    if (isWritingInPrimaryLogCache.get()) {
-      if (!primaryLogCache.containsKey(logKey)) {
-        primaryLogCache.put(logKey, new ArrayList<>());
+    try {
+      readWriteLock.readLock().lock();
+      if (isWritingInPrimaryLogCache.get()) {
+        if (!primaryLogCache.containsKey(logKey)) {
+          primaryLogCache.put(logKey, new ArrayList<>());
+        }
+        primaryLogCache.get(logKey).add(logLine);
+      } else {
+        if (!secondaryLogCache.containsKey(logKey)) {
+          secondaryLogCache.put(logKey, new ArrayList<>());
+        }
+        secondaryLogCache.get(logKey).add(logLine);
       }
-      primaryLogCache.get(logKey).add(logLine);
-    } else {
-      if (!secondaryLogCache.containsKey(logKey)) {
-        secondaryLogCache.put(logKey, new ArrayList<>());
-      }
-      secondaryLogCache.get(logKey).add(logLine);
+    } finally {
+      readWriteLock.readLock().unlock();
     }
   }
 
   // Question? should we add a retry logic in case of failure
-  private void sendLogsToLogStreaming(String logKey, List<LogLine> logLines) {
+  private void sendLogsOverHttp(String logKey, List<LogLine> logLines) {
     try {
       SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
     } catch (Exception ex) {
       log.error("Unable to push message to log stream for account {} and key {}", accountId, logKey, ex);
     }
-  }
-
-  public void swapMapsAndDispatchLogs() {
-    // swap primary cache
-    if (isWritingInPrimaryLogCache.get()) {
-      synchronized (primaryLogCache) {
-        isWritingInPrimaryLogCache.set(false);
-      }
-    } else {
-      synchronized (secondaryLogCache) {
-        isWritingInPrimaryLogCache.set(true);
-      }
-    }
-
-    // now send from secondary cache
-    dispatchLogs(isWritingInPrimaryLogCache.get() ? secondaryLogCache : primaryLogCache);
   }
 
   public void start() {
@@ -152,15 +157,15 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
-  public void setToken(String token) {
-    this.token = token;
-  }
-
   public void stop() {
     if (running.compareAndSet(true, false)) {
       log.info("Stopping log streaming dispatcher");
       DelegateLogStreamingDispatcherService delegateLogStreamingDispatcherService = this.svcHolder.get();
       delegateLogStreamingDispatcherService.stopAsync().awaitTerminated();
     }
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 }
