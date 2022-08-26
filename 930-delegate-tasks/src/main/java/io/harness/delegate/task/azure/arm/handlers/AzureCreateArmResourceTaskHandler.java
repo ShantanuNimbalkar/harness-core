@@ -10,10 +10,12 @@ package io.harness.delegate.task.azure.arm.handlers;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.model.ARMScopeType;
 import io.harness.azure.model.AzureConfig;
+import io.harness.azure.model.AzureConstants;
 import io.harness.delegate.task.azure.arm.AzureARMDeploymentService;
 import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData;
 import io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.AzureARMPreDeploymentDataBuilder;
@@ -27,17 +29,21 @@ import io.harness.delegate.task.azure.arm.deployment.context.DeploymentSubscript
 import io.harness.delegate.task.azure.arm.deployment.context.DeploymentTenantContext;
 import io.harness.delegate.task.azure.common.AzureConnectorMapper;
 import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
+import io.harness.exception.InvalidRequestException;
 import io.harness.exception.TimeoutException;
 import io.harness.logging.CommandExecutionStatus;
+import io.harness.logging.LogCallback;
+import io.harness.logging.LogLevel;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @OwnedBy(CDP)
 @Singleton
-public class AzureARMCreateTaskHandler extends AzureResourceCreationAbstractTaskHandler {
+public class AzureCreateArmResourceTaskHandler extends AzureResourceCreationAbstractTaskHandler {
   @Inject protected AzureConnectorMapper azureConnectorMapper;
   @Inject private AzureARMDeploymentService azureARMDeploymentService;
 
@@ -130,5 +136,32 @@ public class AzureARMCreateTaskHandler extends AzureResourceCreationAbstractTask
           ex, context.getLogStreamingTaskClient(), context.getRunningCommandUnit());
       throw ex;
     }
+  }
+
+  protected void printDefaultFailureMsgForARMDeploymentUnits(
+      Exception ex, AzureLogCallbackProvider logStreamingTaskClient, final String runningCommandUnit) {
+    if ((ex instanceof InvalidRequestException) || isBlank(runningCommandUnit)) {
+      return;
+    }
+
+    if (AzureConstants.EXECUTE_ARM_DEPLOYMENT.equals(runningCommandUnit)) {
+      printErrorMsg(logStreamingTaskClient, runningCommandUnit, format("%nError while executing ARM deployment"));
+    }
+
+    if (AzureConstants.ARM_DEPLOYMENT_STEADY_STATE.equals(runningCommandUnit)) {
+      printErrorMsg(logStreamingTaskClient, runningCommandUnit, format("%nError during ARM deployment steady check"));
+    }
+
+    if (AzureConstants.ARM_DEPLOYMENT_OUTPUTS.equals(runningCommandUnit)) {
+      printErrorMsg(logStreamingTaskClient, runningCommandUnit, format("%nError while getting ARM deployment outputs"));
+    }
+  }
+  protected void printErrorMsg(
+      AzureLogCallbackProvider logStreamingTaskClient, final String runningCommandUnit, final String errorMsg) {
+    if (isBlank(runningCommandUnit)) {
+      return;
+    }
+    LogCallback logCallback = logStreamingTaskClient.obtainLogCallback(runningCommandUnit);
+    logCallback.saveExecutionLog(errorMsg, LogLevel.ERROR, CommandExecutionStatus.FAILURE);
   }
 }

@@ -190,8 +190,8 @@ import io.harness.delegate.task.azure.arm.AzureARMBaseHelperImpl;
 import io.harness.delegate.task.azure.arm.AzureARMTaskType;
 import io.harness.delegate.task.azure.arm.AzureResourceCreationBaseHelper;
 import io.harness.delegate.task.azure.arm.AzureResourceCreationTaskNG;
-import io.harness.delegate.task.azure.arm.handlers.AzureARMCreateTaskHandler;
-import io.harness.delegate.task.azure.arm.handlers.AzureBlueprintCreateTaskHandler;
+import io.harness.delegate.task.azure.arm.handlers.AzureCreateArmResourceTaskHandler;
+import io.harness.delegate.task.azure.arm.handlers.AzureCreateBlueprintTaskHandler;
 import io.harness.delegate.task.azure.arm.handlers.AzureResourceCreationAbstractTaskHandler;
 import io.harness.delegate.task.azure.artifact.AzureArtifactDownloadService;
 import io.harness.delegate.task.azure.artifact.AzureArtifactDownloadServiceImpl;
@@ -1243,8 +1243,8 @@ public class DelegateModule extends AbstractModule {
     // Azure ARM/BP Task handlers
     MapBinder<AzureARMTaskType, AzureResourceCreationAbstractTaskHandler> azTaskTypeToHandlerMap =
         MapBinder.newMapBinder(binder(), AzureARMTaskType.class, AzureResourceCreationAbstractTaskHandler.class);
-    azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.ARM_DEPLOYMENT).to(AzureARMCreateTaskHandler.class);
-    azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.BLUEPRINT_DEPLOYMENT).to(AzureBlueprintCreateTaskHandler.class);
+    azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.ARM_DEPLOYMENT).to(AzureCreateArmResourceTaskHandler.class);
+    azTaskTypeToHandlerMap.addBinding(AzureARMTaskType.BLUEPRINT_DEPLOYMENT).to(AzureCreateBlueprintTaskHandler.class);
     bind(AzureResourceCreationBaseHelper.class).to(AzureARMBaseHelperImpl.class);
 
     // HelmNG Task Handlers

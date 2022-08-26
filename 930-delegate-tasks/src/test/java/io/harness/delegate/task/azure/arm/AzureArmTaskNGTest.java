@@ -141,10 +141,11 @@ public class AzureArmTaskNGTest extends CategoryTest {
 
     assertThatThrownBy(() -> azureARMTaskNG.run(taskNGParameters)).isInstanceOf(TaskNGDataException.class);
   }
+
   @Test(expected = UnexpectedTypeException.class)
   @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
-  public void testCFTaskNGWithParamsAndNoTaskType() throws Exception {
+  public void testAzureTaskNGWithParamsAndNoTaskType() throws Exception {
     handlerMap.remove(AzureARMTaskType.ARM_DEPLOYMENT);
     azureARMTaskNG.run(taskNGParameters);
   }

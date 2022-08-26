@@ -11,7 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.azure.model.AzureConstants.AZURE_ARM_ROLLBACK_PATTERN;
 import static io.harness.azure.model.AzureConstants.DEPLOYMENT_NAME_PATTERN;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.delegate.task.azure.arm.AzureARMPreDeploymentData.builder;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.azure.context.AzureClientContext;
@@ -82,11 +81,22 @@ public class AzureARMBaseHelperImpl implements AzureResourceCreationBaseHelper {
   }
 
   @Override
-  public AzureARMTaskNGResponse populateDeploymentResponse(String outputs) {
+  /*
+   * populateDeploymentResponse returns the response for successful deployments at Subscription, ManagementGroup
+   * and Tenant. The AzureARMTaskResponse is used in the manager to determine the result of the execution and store
+   *  the azureARMPreDeploymentData for future rollbacks. Because this 3 deployments type don't support rollback,
+   *  the azureARMPreDeploymentData is empty.
+   * @param  outputs Output received from Azure
+   * @return AzureARMTaskNGResponse the response containing the status of the deployment operation, the output from
+   *     azure
+   * and the data for a rollback scenario if supported.
+   */
+  public AzureARMTaskNGResponse
+  populateDeploymentResponse(String outputs) {
     return AzureARMTaskNGResponse.builder()
         .outputs(outputs)
         .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
-        .azureARMPreDeploymentData(builder().build())
+        .azureARMPreDeploymentData(AzureARMPreDeploymentData.builder().build())
         .build();
   }
 

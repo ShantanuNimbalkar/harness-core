@@ -10,6 +10,7 @@ package io.harness.delegate.task.azure.arm.handlers;
 import static io.harness.rule.OwnerRule.NGONZALEZ;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -67,7 +68,7 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
 
   @Spy private AzureResourceCreationBaseHelper azureARMBaseHelper = new AzureARMBaseHelperImpl();
   @Mock private AzureConnectorMapper azureConnectorMapper;
-  @Spy @InjectMocks AzureARMCreateTaskHandler handler;
+  @Spy @InjectMocks AzureCreateArmResourceTaskHandler handler;
 
   @Before
   public void setup() {
@@ -78,77 +79,6 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     doNothing().when(mockLogCallback).saveExecutionLog(anyString());
     AzureConfig azureConfig = buildAzureConfig();
     doReturn(azureConfig).when(azureConnectorMapper).toAzureConfig(any());
-  }
-  private AzureConfig buildAzureConfig() {
-    return AzureConfig.builder().clientId(CLIENT_ID).key(KEY.toCharArray()).tenantId(TENANT_ID).build();
-  }
-
-  private AzureARMTaskNGParameters getAzureARMTaskParametersAtResourceGroupScope() {
-    return getAzureARMDeploymentParametersBuilder()
-        .scopeType(ARMScopeType.RESOURCE_GROUP)
-        .subscriptionId("SUBSCRIPTION_ID")
-        .resourceGroupName("RESOURCE_GROUP_NAME")
-        .build();
-  }
-
-  private AzureARMTaskNGParameters getAzureARMTaskParametersAtSubscriptionScope() {
-    return getAzureARMDeploymentParametersBuilder()
-        .scopeType(ARMScopeType.SUBSCRIPTION)
-        .subscriptionId("SUBSCRIPTION_ID")
-        .build();
-  }
-
-  private AzureARMTaskNGParameters getAzureARMTaskParametersAtManagementGroupScope() {
-    return getAzureARMDeploymentParametersBuilder()
-        .scopeType(ARMScopeType.MANAGEMENT_GROUP)
-        .managementGroupId("MANAGEMENT_GROUP_ID")
-        .build();
-  }
-
-  private AzureARMTaskNGParameters getAzureARMTaskParametersAtTenantScope() {
-    return getAzureARMDeploymentParametersBuilder().scopeType(ARMScopeType.TENANT).build();
-  }
-  private AzureARMTaskNGParametersBuilder getAzureARMDeploymentParametersBuilder() {
-    String template = "{\n"
-        + "  \"$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",\n"
-        + "  \"contentVersion\": \"1.0.0.0\",\n"
-        + "  \"resources\": [\n"
-        + "    {\n"
-        + "      \"type\": \"Microsoft.Storage/storageAccounts\",\n"
-        + "      \"apiVersion\": \"2019-04-01\",\n"
-        + "      \"name\": \"{provide-unique-name}\",\n"
-        + "      \"location\": \"eastus\",\n"
-        + "      \"sku\": {\n"
-        + "        \"name\": \"Standard_LRS\"\n"
-        + "      },\n"
-        + "      \"kind\": \"StorageV2\",\n"
-        + "      \"properties\": {\n"
-        + "        \"supportsHttpsTrafficOnly\": true\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-
-    String parameters = "{\n"
-        + "  \"location\": \"westus\",\n"
-        + "  \"sku\": {\n"
-        + "    \"name\": \"Standard_LRS\"\n"
-        + "  },\n"
-        + "  \"kind\": \"StorageV2\",\n"
-        + "  \"properties\": {}\n"
-        + "}";
-
-    return AzureARMTaskNGParameters.builder()
-        .accountId("ACCOUNT_ID")
-        .connectorDTO(AzureConnectorDTO.builder().build())
-        .taskType(AzureARMTaskType.ARM_DEPLOYMENT)
-        .timeoutInMs(100000)
-        .deploymentName("DEPLOYMENT_NAME")
-        .deploymentDataLocation("DEPLOYMENT_DATA_LOCATION")
-        .deploymentMode(AzureDeploymentMode.INCREMENTAL)
-        .parametersBody(parameters)
-        .templateBody(template)
-        .encryptedDataDetails(Collections.emptyList());
   }
 
   @Test
@@ -289,48 +219,114 @@ public class AzureArmCreateTaskHandlerTest extends CategoryTest {
     doThrow(new InvalidRequestException("InvalidRequestException"))
         .when(azureARMDeploymentService)
         .deployAtResourceGroupScope(any());
-    try {
-      handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-    } catch (Exception e) {
-      assertThat(e).isInstanceOf(InvalidRequestException.class);
-      assertThat(e.getMessage()).isEqualTo("InvalidRequestException");
-    }
+    AzureResourceCreationTaskNGParameters finalParameters = parameters;
+    assertThatThrownBy(
+        () -> handler.executeTaskInternal(finalParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidRequestException.class);
+
     verify(handler, times(1)).printDefaultFailureMsgForARMDeploymentUnits(any(), any(), any());
 
     parameters = getAzureARMTaskParametersAtSubscriptionScope();
     doThrow(new InvalidRequestException("InvalidRequestException"))
         .when(azureARMDeploymentService)
         .deployAtSubscriptionScope(any());
-    try {
-      handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-    } catch (Exception e) {
-      assertThat(e).isInstanceOf(InvalidRequestException.class);
-      assertThat(e.getMessage()).isEqualTo("InvalidRequestException");
-    }
+    assertThatThrownBy(
+        () -> handler.executeTaskInternal(finalParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidRequestException.class);
+
     verify(handler, times(2)).printDefaultFailureMsgForARMDeploymentUnits(any(), any(), any());
 
     parameters = getAzureARMTaskParametersAtManagementGroupScope();
     doThrow(new InvalidRequestException("InvalidRequestException"))
         .when(azureARMDeploymentService)
         .deployAtManagementGroupScope(any());
-    try {
-      handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-    } catch (Exception e) {
-      assertThat(e).isInstanceOf(InvalidRequestException.class);
-      assertThat(e.getMessage()).isEqualTo("InvalidRequestException");
-    }
+    assertThatThrownBy(
+        () -> handler.executeTaskInternal(finalParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidRequestException.class);
+
     verify(handler, times(3)).printDefaultFailureMsgForARMDeploymentUnits(any(), any(), any());
 
     parameters = getAzureARMTaskParametersAtTenantScope();
     doThrow(new InvalidRequestException("InvalidRequestException"))
         .when(azureARMDeploymentService)
         .deployAtTenantScope(any());
-    try {
-      handler.executeTaskInternal(parameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-    } catch (Exception e) {
-      assertThat(e).isInstanceOf(InvalidRequestException.class);
-      assertThat(e.getMessage()).isEqualTo("InvalidRequestException");
-    }
+    assertThatThrownBy(
+        () -> handler.executeTaskInternal(finalParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidRequestException.class);
+
     verify(handler, times(4)).printDefaultFailureMsgForARMDeploymentUnits(any(), any(), any());
+  }
+
+  private AzureConfig buildAzureConfig() {
+    return AzureConfig.builder().clientId(CLIENT_ID).key(KEY.toCharArray()).tenantId(TENANT_ID).build();
+  }
+
+  private AzureARMTaskNGParameters getAzureARMTaskParametersAtResourceGroupScope() {
+    return getAzureARMDeploymentParametersBuilder()
+        .scopeType(ARMScopeType.RESOURCE_GROUP)
+        .subscriptionId("SUBSCRIPTION_ID")
+        .resourceGroupName("RESOURCE_GROUP_NAME")
+        .build();
+  }
+
+  private AzureARMTaskNGParameters getAzureARMTaskParametersAtSubscriptionScope() {
+    return getAzureARMDeploymentParametersBuilder()
+        .scopeType(ARMScopeType.SUBSCRIPTION)
+        .subscriptionId("SUBSCRIPTION_ID")
+        .build();
+  }
+
+  private AzureARMTaskNGParameters getAzureARMTaskParametersAtManagementGroupScope() {
+    return getAzureARMDeploymentParametersBuilder()
+        .scopeType(ARMScopeType.MANAGEMENT_GROUP)
+        .managementGroupId("MANAGEMENT_GROUP_ID")
+        .build();
+  }
+
+  private AzureARMTaskNGParameters getAzureARMTaskParametersAtTenantScope() {
+    return getAzureARMDeploymentParametersBuilder().scopeType(ARMScopeType.TENANT).build();
+  }
+
+  private AzureARMTaskNGParametersBuilder getAzureARMDeploymentParametersBuilder() {
+    String template = "{\n"
+        + "  \"$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",\n"
+        + "  \"contentVersion\": \"1.0.0.0\",\n"
+        + "  \"resources\": [\n"
+        + "    {\n"
+        + "      \"type\": \"Microsoft.Storage/storageAccounts\",\n"
+        + "      \"apiVersion\": \"2019-04-01\",\n"
+        + "      \"name\": \"{provide-unique-name}\",\n"
+        + "      \"location\": \"eastus\",\n"
+        + "      \"sku\": {\n"
+        + "        \"name\": \"Standard_LRS\"\n"
+        + "      },\n"
+        + "      \"kind\": \"StorageV2\",\n"
+        + "      \"properties\": {\n"
+        + "        \"supportsHttpsTrafficOnly\": true\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}";
+
+    String parameters = "{\n"
+        + "  \"location\": \"westus\",\n"
+        + "  \"sku\": {\n"
+        + "    \"name\": \"Standard_LRS\"\n"
+        + "  },\n"
+        + "  \"kind\": \"StorageV2\",\n"
+        + "  \"properties\": {}\n"
+        + "}";
+
+    return AzureARMTaskNGParameters.builder()
+        .accountId("ACCOUNT_ID")
+        .connectorDTO(AzureConnectorDTO.builder().build())
+        .taskType(AzureARMTaskType.ARM_DEPLOYMENT)
+        .timeoutInMs(100000)
+        .deploymentName("DEPLOYMENT_NAME")
+        .deploymentDataLocation("DEPLOYMENT_DATA_LOCATION")
+        .deploymentMode(AzureDeploymentMode.INCREMENTAL)
+        .parametersBody(parameters)
+        .templateBody(template)
+        .encryptedDataDetails(Collections.emptyList());
   }
 }

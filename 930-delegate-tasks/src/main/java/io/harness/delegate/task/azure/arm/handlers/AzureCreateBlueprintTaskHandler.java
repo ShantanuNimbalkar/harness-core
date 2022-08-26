@@ -29,6 +29,7 @@ import io.harness.delegate.task.azure.common.AzureLogCallbackProvider;
 import io.harness.delegate.task.azure.common.validator.Validators;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.TimeoutException;
+import io.harness.logging.CommandExecutionStatus;
 import io.harness.serializer.JsonUtils;
 
 import software.wings.delegatetasks.azure.arm.deployment.context.DeploymentBlueprintContext;
@@ -38,10 +39,11 @@ import com.google.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @OwnedBy(CDP)
 @Singleton
-public class AzureBlueprintCreateTaskHandler extends AzureResourceCreationAbstractTaskHandler {
+public class AzureCreateBlueprintTaskHandler extends AzureResourceCreationAbstractTaskHandler {
   @Inject private AzureBlueprintDeploymentService azureBlueprintDeploymentService;
   @Inject protected AzureConnectorMapper azureConnectorMapper;
 
@@ -54,7 +56,7 @@ public class AzureBlueprintCreateTaskHandler extends AzureResourceCreationAbstra
 
     azureBlueprintDeploymentService.deployBlueprintAtResourceScope(
         toDeploymentBlueprintContext(azureBlueprintTaskNGParameters, azureConfig, logCallback));
-    return AzureBlueprintTaskNGResponse.builder().build();
+    return AzureBlueprintTaskNGResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).build();
   }
 
   private DeploymentBlueprintContext toDeploymentBlueprintContext(
@@ -96,7 +98,7 @@ public class AzureBlueprintCreateTaskHandler extends AzureResourceCreationAbstra
             .roleAssignmentName(AzureResourceUtility.getRandomUUID())
             .logStreamingTaskClient(logCallback)
             .steadyStateTimeoutInMin(
-                (int) azureBlueprintTaskNGParameters.getTimeoutInMs() * 1000) // TODO This may need to be in min
+                (int) TimeUnit.MILLISECONDS.toMinutes(azureBlueprintTaskNGParameters.getTimeoutInMs()))
             .build();
 
     Validators.validate(deploymentBlueprintContext, new DeploymentBlueprintContextValidator());

@@ -10,6 +10,7 @@ package io.harness.delegate.task.azure.arm.handlers;
 import static io.harness.rule.OwnerRule.NGONZALEZ;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -54,7 +55,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 @OwnedBy(HarnessTeam.CDP)
-
 public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
   public static final String CLIENT_ID = "CLIENT_ID";
   public static final String TENANT_ID = "TENANT_ID";
@@ -64,7 +64,7 @@ public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
   @Mock private AzureBlueprintDeploymentService azureBlueprintDeploymentService;
   @Mock private AzureConnectorMapper azureConnectorMapper;
 
-  @Spy @InjectMocks private AzureBlueprintCreateTaskHandler azureBlueprintCreateTaskHandler;
+  @Spy @InjectMocks private AzureCreateBlueprintTaskHandler azureBlueprintCreateTaskHandler;
 
   @Before
   public void setUp() throws Exception {
@@ -77,6 +77,138 @@ public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
     AzureConfig azureConfig = buildAzureConfig();
     doReturn(azureConfig).when(azureConnectorMapper).toAzureConfig(any());
   }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalAtResourceGroupScope() throws IOException, InterruptedException {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+    ArgumentCaptor<DeploymentBlueprintContext> deploymentContextCaptor =
+        ArgumentCaptor.forClass(DeploymentBlueprintContext.class);
+    doNothing().when(azureBlueprintDeploymentService).deployBlueprintAtResourceScope(any());
+
+    AzureResourceCreationTaskNGResponse azureARMTaskResponse = azureBlueprintCreateTaskHandler.executeTaskInternal(
+        blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
+
+    verify(azureBlueprintDeploymentService, times(1)).deployBlueprintAtResourceScope(deploymentContextCaptor.capture());
+
+    DeploymentBlueprintContext capturedDeploymentBlueprintContext = deploymentContextCaptor.getValue();
+
+    assertThat(azureARMTaskResponse).isNotNull();
+    assertThat(azureARMTaskResponse).isInstanceOf(AzureBlueprintTaskNGResponse.class);
+    assertThat(capturedDeploymentBlueprintContext).isNotNull();
+    assertThat(capturedDeploymentBlueprintContext.getAzureConfig()).isNotNull();
+    assertThat(capturedDeploymentBlueprintContext.getDefinitionResourceScope())
+        .isEqualTo("/providers/Microsoft.Management/managementGroups/HarnessARMTest");
+    assertThat(capturedDeploymentBlueprintContext.getBlueprintName()).isEqualTo("101-boilerplate-mng");
+    assertThat(capturedDeploymentBlueprintContext.getBlueprintJSON()).isNotNull();
+    assertThat(capturedDeploymentBlueprintContext.getBlueprintJSON()).contains("genericBlueprintParameter");
+
+    assertThat(capturedDeploymentBlueprintContext.getArtifacts()).isNotNull();
+    assertThat(capturedDeploymentBlueprintContext.getArtifacts().size()).isEqualTo(3);
+
+    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("policyAssignment")).contains("policyAssignment");
+    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("rbacAssignment")).contains("rbacAssignment");
+    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("myTemplate")).contains("myTemplate");
+
+    assertThat(capturedDeploymentBlueprintContext.getAssignment()).isNotNull();
+    assertThat(capturedDeploymentBlueprintContext.getAssignment().getName()).startsWith("assignmentName");
+    assertThat(capturedDeploymentBlueprintContext.getAssignment().getIdentity().type())
+        .isEqualTo(ResourceIdentityType.SYSTEM_ASSIGNED);
+    assertThat(capturedDeploymentBlueprintContext.getAssignmentJSON()).contains("569613dc-7ad8-4fad-ab03-d3117fcb6298");
+
+    assertThat(capturedDeploymentBlueprintContext.getRoleAssignmentName()).isNotEmpty();
+    assertThat(capturedDeploymentBlueprintContext.getAssignmentSubscriptionId())
+        .isEqualTo("5aef6b46-7daa-45ea-a8d0-783aab69dea3");
+
+    assertThat(capturedDeploymentBlueprintContext.getAssignmentResourceScope())
+        .isEqualTo("/subscriptions/5aef6b46-7daa-45ea-a8d0-783aab69dea3");
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithNotValidBlueprintId() throws IOException, InterruptedException {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
+    JsonNode properties = assignmentJson.get("properties");
+    ((ObjectNode) properties)
+        .put("blueprintId",
+            "/providers/Microsoft.Management/managementGroups/HarnessARMTest/providers/Microsoft.Blueprint/blueprints");
+    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
+    try {
+      azureBlueprintCreateTaskHandler.executeTaskInternal(
+          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
+
+    } catch (InvalidArgumentsException ex) {
+      assertThat(ex).isNotNull();
+      assertThat(ex).isInstanceOf(InvalidArgumentsException.class);
+      assertThat(ex.getMessage())
+          .isEqualTo("Not valid value of properties.blueprintId property. "
+              + "Required format /{resourceScope}/providers/Microsoft.Blueprint/blueprints/{blueprintName}/versions/{versionId}, "
+              + "but found - blueprintId: /providers/Microsoft.Management/managementGroups/HarnessARMTest/providers/Microsoft.Blueprint/blueprints");
+    }
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithEmptyScope() {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
+    JsonNode properties = assignmentJson.get("properties");
+    ((ObjectNode) properties).put("scope", "");
+    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
+    assertThatThrownBy(()
+                           -> azureBlueprintCreateTaskHandler.executeTaskInternal(
+                               blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidArgumentsException.class);
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithNotValidScope() {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
+    JsonNode properties = assignmentJson.get("properties");
+    ((ObjectNode) properties).put("scope", "/subscriptions");
+    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
+
+    assertThatThrownBy(()
+                           -> azureBlueprintCreateTaskHandler.executeTaskInternal(
+                               blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidArgumentsException.class);
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithNotValidAssignJsonFormat() throws IOException, InterruptedException {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+    blueprintDeploymentParameters.setAssignmentJson("{\"not valid\":\"assign json content\"}");
+    blueprintDeploymentParameters.setAssignmentJson("{not valid assign json content}");
+
+    assertThatThrownBy(()
+                           -> azureBlueprintCreateTaskHandler.executeTaskInternal(
+                               blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testExecuteTaskInternalWithNotValidBlueprintJson() {
+    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
+
+    blueprintDeploymentParameters.setBlueprintJson("{not valid blueprint json content}");
+
+    assertThatThrownBy(()
+                           -> azureBlueprintCreateTaskHandler.executeTaskInternal(
+                               blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient))
+        .isInstanceOf(InvalidArgumentsException.class);
+  }
+
   private AzureConfig buildAzureConfig() {
     return AzureConfig.builder().clientId(CLIENT_ID).key(KEY.toCharArray()).tenantId(TENANT_ID).build();
   }
@@ -204,158 +336,5 @@ public class AzureBlueprintCreateTaskHandlerTest extends CategoryTest {
         .artifacts(artifacts)
         .assignmentName("assignmentName")
         .build();
-  }
-
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalAtResourceGroupScope() throws IOException, InterruptedException {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-    ArgumentCaptor<DeploymentBlueprintContext> deploymentContextCaptor =
-        ArgumentCaptor.forClass(DeploymentBlueprintContext.class);
-    doNothing().when(azureBlueprintDeploymentService).deployBlueprintAtResourceScope(any());
-
-    AzureResourceCreationTaskNGResponse azureARMTaskResponse = azureBlueprintCreateTaskHandler.executeTaskInternal(
-        blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    verify(azureBlueprintDeploymentService, times(1)).deployBlueprintAtResourceScope(deploymentContextCaptor.capture());
-
-    DeploymentBlueprintContext capturedDeploymentBlueprintContext = deploymentContextCaptor.getValue();
-
-    assertThat(azureARMTaskResponse).isNotNull();
-    assertThat(azureARMTaskResponse).isInstanceOf(AzureBlueprintTaskNGResponse.class);
-    assertThat(capturedDeploymentBlueprintContext).isNotNull();
-    assertThat(capturedDeploymentBlueprintContext.getAzureConfig()).isNotNull();
-    assertThat(capturedDeploymentBlueprintContext.getDefinitionResourceScope())
-        .isEqualTo("/providers/Microsoft.Management/managementGroups/HarnessARMTest");
-    assertThat(capturedDeploymentBlueprintContext.getBlueprintName()).isEqualTo("101-boilerplate-mng");
-    assertThat(capturedDeploymentBlueprintContext.getBlueprintJSON()).isNotNull();
-    assertThat(capturedDeploymentBlueprintContext.getBlueprintJSON()).contains("genericBlueprintParameter");
-
-    assertThat(capturedDeploymentBlueprintContext.getArtifacts()).isNotNull();
-    assertThat(capturedDeploymentBlueprintContext.getArtifacts().size()).isEqualTo(3);
-
-    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("policyAssignment")).contains("policyAssignment");
-    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("rbacAssignment")).contains("rbacAssignment");
-    assertThat(capturedDeploymentBlueprintContext.getArtifacts().get("myTemplate")).contains("myTemplate");
-
-    assertThat(capturedDeploymentBlueprintContext.getAssignment()).isNotNull();
-    assertThat(capturedDeploymentBlueprintContext.getAssignment().getName()).startsWith("assignmentName");
-    assertThat(capturedDeploymentBlueprintContext.getAssignment().getIdentity().type())
-        .isEqualTo(ResourceIdentityType.SYSTEM_ASSIGNED);
-    assertThat(capturedDeploymentBlueprintContext.getAssignmentJSON()).contains("569613dc-7ad8-4fad-ab03-d3117fcb6298");
-
-    assertThat(capturedDeploymentBlueprintContext.getRoleAssignmentName()).isNotEmpty();
-    assertThat(capturedDeploymentBlueprintContext.getAssignmentSubscriptionId())
-        .isEqualTo("5aef6b46-7daa-45ea-a8d0-783aab69dea3");
-
-    assertThat(capturedDeploymentBlueprintContext.getAssignmentResourceScope())
-        .isEqualTo("/subscriptions/5aef6b46-7daa-45ea-a8d0-783aab69dea3");
-  }
-
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalWithNotValidBlueprintId() throws IOException, InterruptedException {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
-    JsonNode properties = assignmentJson.get("properties");
-    ((ObjectNode) properties)
-        .put("blueprintId",
-            "/providers/Microsoft.Management/managementGroups/HarnessARMTest/providers/Microsoft.Blueprint/blueprints");
-    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
-    try {
-      azureBlueprintCreateTaskHandler.executeTaskInternal(
-          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    } catch (InvalidArgumentsException ex) {
-      assertThat(ex).isNotNull();
-      assertThat(ex).isInstanceOf(InvalidArgumentsException.class);
-      assertThat(ex.getMessage())
-          .isEqualTo("Not valid value of properties.blueprintId property. "
-              + "Required format /{resourceScope}/providers/Microsoft.Blueprint/blueprints/{blueprintName}/versions/{versionId}, "
-              + "but found - blueprintId: /providers/Microsoft.Management/managementGroups/HarnessARMTest/providers/Microsoft.Blueprint/blueprints");
-    }
-  }
-
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalWithEmptyScope() {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
-    JsonNode properties = assignmentJson.get("properties");
-    ((ObjectNode) properties).put("scope", "");
-    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
-
-    try {
-      azureBlueprintCreateTaskHandler.executeTaskInternal(
-          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    } catch (InvalidArgumentsException | IOException | InterruptedException ex) {
-      assertThat(ex).isNotNull();
-      assertThat(ex).isInstanceOf(InvalidArgumentsException.class);
-      assertThat(ex.getMessage())
-          .isEqualTo("Assignment properties.scope cannot be null or empty for management group resource scope");
-    }
-  }
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalWithNotValidScope() {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-    JsonNode assignmentJson = JsonUtils.readTree(blueprintDeploymentParameters.getAssignmentJson());
-    JsonNode properties = assignmentJson.get("properties");
-    ((ObjectNode) properties).put("scope", "/subscriptions");
-    blueprintDeploymentParameters.setAssignmentJson(assignmentJson.toString());
-
-    try {
-      azureBlueprintCreateTaskHandler.executeTaskInternal(
-          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    } catch (InvalidArgumentsException | IOException | InterruptedException ex) {
-      assertThat(ex).isNotNull();
-      assertThat(ex).isInstanceOf(InvalidArgumentsException.class);
-      assertThat(ex.getMessage())
-          .isEqualTo("Not valid value of properties.scope property. "
-              + "Required format /subscriptions/{subscriptionId}, but found - scope: /subscriptions");
-    }
-  }
-
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalWithNotValidAssignJsonFormat() throws IOException, InterruptedException {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-    blueprintDeploymentParameters.setAssignmentJson("{\"not valid\":\"assign json content\"}");
-    blueprintDeploymentParameters.setAssignmentJson("{not valid assign json content}");
-
-    try {
-      azureBlueprintCreateTaskHandler.executeTaskInternal(
-          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    } catch (Exception ex) {
-      assertThat(ex).isNotNull();
-      assertThat(ex).isInstanceOf(RuntimeException.class);
-    }
-  }
-
-  @Test
-  @Owner(developers = NGONZALEZ)
-  @Category(UnitTests.class)
-  public void testExecuteTaskInternalWithNotValidBlueprintJson() {
-    AzureBlueprintTaskNGParameters blueprintDeploymentParameters = getAzureBlueprintTaskNGParametersBuilder();
-
-    blueprintDeploymentParameters.setBlueprintJson("{not valid blueprint json content}");
-
-    try {
-      azureBlueprintCreateTaskHandler.executeTaskInternal(
-          blueprintDeploymentParameters, "delegateId", "taskId", mockLogStreamingTaskClient);
-
-    } catch (InvalidArgumentsException | IOException | InterruptedException ex) {
-      assertThat(ex).isNotNull();
-      assertThat(ex).isInstanceOf(InvalidArgumentsException.class);
-      assertThat(ex.getMessage()).isEqualTo("Invalid Blueprint JSON file");
-    }
   }
 }
