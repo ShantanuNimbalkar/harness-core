@@ -13,6 +13,7 @@ import static io.harness.beans.ExecutionInterruptType.PAUSE_ALL;
 import static io.harness.beans.ExecutionInterruptType.PAUSE_FOR_INPUTS;
 import static io.harness.beans.ExecutionInterruptType.RESUME_ALL;
 import static io.harness.beans.ExecutionInterruptType.RETRY;
+import static io.harness.beans.ExecutionInterruptType.ROLLBACK;
 import static io.harness.beans.ExecutionStatus.ABORTED;
 import static io.harness.beans.ExecutionStatus.DISCONTINUING;
 import static io.harness.beans.ExecutionStatus.ERROR;
@@ -1022,6 +1023,10 @@ public class StateMachineExecutor implements StateInspectionListener {
         }
         throw new WingsException(INVALID_ARGUMENT).addParam("args", "rollbackStateMachineId or rollbackStateName");
       }
+      case ROLLBACK_PREVIOUS_STAGES_ON_PIPELINE: {
+        rollbackPreviousPipelineStages(context, executionEventAdvice);
+        break;
+      }
       case ROLLBACK_DONE: {
         if (checkIfOnDemand(context.getAppId(), context.getWorkflowExecutionId())) {
           updateEndStatus(stateExecutionInstance, SUCCESS, asList(status));
@@ -1064,6 +1069,29 @@ public class StateMachineExecutor implements StateInspectionListener {
     }
 
     return stateExecutionInstance;
+  }
+
+  private StateExecutionInstance rollbackPreviousPipelineStages(ExecutionContextImpl context, ExecutionEventAdvice executionEventAdvice) {
+    StateMachine sm = context.getStateMachine();
+    State nextState =
+        sm.getState(null, executionEventAdvice.getNextStateName());
+
+    if (nextState == null) {
+      throw new StateMachineIssueException(
+          String.format("The advice suggests as next state %s, that is not in state machine: %s.",
+              executionEventAdvice.getNextStateName(), executionEventAdvice.getNextChildStateMachineId()),
+          ErrorCode.STATE_MACHINE_ISSUE);
+    }
+
+    StateExecutionInstance cloned =
+        clone(context.getStateExecutionInstance(), null, nextState);
+    if (executionEventAdvice.getNextStateDisplayName() != null) {
+      cloned.setDisplayName(executionEventAdvice.getNextStateDisplayName());
+    }
+    if (executionEventAdvice.getRollbackPhaseName() != null) {
+      cloned.setRollbackPhaseName(executionEventAdvice.getRollbackPhaseName());
+    }
+    return triggerExecution(sm, cloned);
   }
 
   public static String getContinuePipelineWaitId(String pipelineStageElementId, String pipelineExecutionId) {

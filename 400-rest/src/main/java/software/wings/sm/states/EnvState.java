@@ -64,6 +64,7 @@ import software.wings.beans.ExecutionArgs;
 import software.wings.beans.HelmChartInputType;
 import software.wings.beans.ManifestVariable;
 import software.wings.beans.NameValuePair;
+import software.wings.beans.Pipeline;
 import software.wings.beans.VariableType;
 import software.wings.beans.Workflow;
 import software.wings.beans.WorkflowExecution;
@@ -78,6 +79,7 @@ import software.wings.service.impl.workflow.WorkflowServiceHelper;
 import software.wings.service.intfc.ApplicationManifestService;
 import software.wings.service.intfc.ArtifactService;
 import software.wings.service.intfc.ArtifactStreamServiceBindingService;
+import software.wings.service.intfc.PipelineService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.WorkflowService;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputService;
@@ -147,6 +149,7 @@ public class EnvState extends State implements WorkflowState {
 
   @Inject private Injector injector;
   @Transient @Inject private WorkflowService workflowService;
+  @Transient @Inject private PipelineService pipelineService;
   @Transient @Inject private WorkflowExecutionService executionService;
   @Transient @Inject private WorkflowExecutionUpdate executionUpdate;
   @Transient @Inject private ArtifactService artifactService;
@@ -231,6 +234,7 @@ public class EnvState extends State implements WorkflowState {
       }
       WorkflowExecution execution = executionService.triggerOrchestrationExecution(
           appId, null, workflowId, context.getWorkflowExecutionId(), executionArgs, null);
+
       envStateExecutionData.setWorkflowExecutionId(execution.getUuid());
       return ExecutionResponse.builder()
           .async(true)
@@ -469,11 +473,13 @@ public class EnvState extends State implements WorkflowState {
 
   @Override
   public ExecutionResponse handleAsyncResponse(ExecutionContext context, Map<String, ResponseData> response) {
+    Pipeline pipeline = pipelineService.getPipeline(context.getAppId(), pipelineId);
     EnvExecutionResponseData responseData = (EnvExecutionResponseData) response.values().iterator().next();
     ExecutionResponseBuilder executionResponseBuilder =
         ExecutionResponse.builder().executionStatus(responseData.getStatus());
 
     if (responseData.getStatus() != SUCCESS) {
+
       return executionResponseBuilder.build();
     }
 

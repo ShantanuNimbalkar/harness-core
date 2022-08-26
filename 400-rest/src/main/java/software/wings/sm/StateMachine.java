@@ -252,6 +252,25 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
           }
         }
       }
+
+      prevState = null;
+      int stage = pipeline.getPipelineStages().size();
+
+      for (int i = pipeline.getPipelineStages().size() - 2; i >= 0; i--) {
+        stage += 1;
+        PipelineStage pipelineStage = pipeline.getPipelineStages().get(i);
+        if (pipelineStage.getPipelineStageElements().size() == 1) {
+          State state = convertToRollbackState(pipelineStage.getPipelineStageElements().get(0), pipeline, stencilMap, "Stage " + stage);
+          if (prevState != null) {
+            addTransition(aTransition()
+                .withTransitionType(TransitionType.SUCCESS)
+                .withFromState(prevState)
+                .withToState(state)
+                .build());
+          }
+          prevState = state;
+        }
+      }
     }
 
     setInitialStateName(originStateName);
@@ -289,6 +308,36 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
     return forkName;
   }
 
+  private State convertToRollbackState(PipelineStageElement pipelineStageElement, Pipeline pipeline,
+      Map<String, StateTypeDescriptor> stencilMap, String stageName) {
+    StateTypeDescriptor stateTypeDesc = stencilMap.get(pipelineStageElement.getType());
+
+    State state = stateTypeDesc.newInstance("Rollback " + pipelineStageElement.getName());
+
+    Map<String, Object> properties = pipelineStageElement.getProperties();
+
+    properties = MapUtils.putToImmutable(EnvStateKeys.pipelineId, pipeline.getUuid(), properties);
+    properties.put(EnvStateKeys.pipelineStageElementId, pipelineStageElement.getUuid());
+    properties.put(EnvStateKeys.pipelineStageParallelIndex, pipelineStageElement.getParallelIndex());
+    properties.put(EnvStateKeys.stageName, stageName);
+    properties.put(EnvStateKeys.disableAssertion, pipelineStageElement.getDisableAssertion());
+    properties.put(EnvStateKeys.disable, pipelineStageElement.isDisable());
+
+    if (pipelineStageElement.getWorkflowVariables() != null) {
+      properties.put(EnvStateKeys.workflowVariables, pipelineStageElement.getWorkflowVariables());
+    }
+    if (pipelineStageElement.getRuntimeInputsConfig() != null) {
+      properties.put(
+          EnvStateKeys.runtimeInputVariables, pipelineStageElement.getRuntimeInputsConfig().getRuntimeInputVariables());
+      properties.put(EnvStateKeys.timeout, pipelineStageElement.getRuntimeInputsConfig().getTimeout());
+      properties.put(EnvStateKeys.timeoutAction, pipelineStageElement.getRuntimeInputsConfig().getTimeoutAction());
+      properties.put(EnvStateKeys.userGroupIds, pipelineStageElement.getRuntimeInputsConfig().getUserGroupIds());
+    }
+    state.parseProperties(properties);
+    state.resolveProperties();
+    addState(state);
+    return state;
+  }
   private State convertToState(PipelineStageElement pipelineStageElement, Pipeline pipeline,
       Map<String, StateTypeDescriptor> stencilMap, String stageName) {
     StateTypeDescriptor stateTypeDesc = stencilMap.get(pipelineStageElement.getType());

@@ -10,6 +10,7 @@ package software.wings.beans;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.beans.ExecutionInterruptType.MARK_FAILED;
 import static io.harness.beans.ExecutionInterruptType.PAUSE_FOR_INPUTS;
+import static io.harness.beans.ExecutionInterruptType.ROLLBACK_PREVIOUS_STAGES_ON_PIPELINE;
 import static io.harness.beans.ExecutionStatus.FAILED;
 import static io.harness.beans.ExecutionStatus.PAUSED;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -22,9 +23,11 @@ import static software.wings.sm.StateType.ENV_STATE;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.beans.ExecutionStatus;
 import io.harness.context.ContextElementType;
 
 import software.wings.api.EnvStateExecutionData;
+import software.wings.service.intfc.PipelineService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.WorkflowService;
 import software.wings.sm.ExecutionContextImpl;
@@ -34,6 +37,7 @@ import software.wings.sm.ExecutionEventAdvisor;
 import software.wings.sm.ExecutionResponse;
 import software.wings.sm.State;
 import software.wings.sm.StateExecutionInstance;
+import software.wings.sm.StateMachine;
 import software.wings.sm.WorkflowStandardParams;
 import software.wings.sm.states.WorkflowState;
 
@@ -47,6 +51,9 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineStageExecutionAdvisor implements ExecutionEventAdvisor {
   @Inject private transient WorkflowExecutionService workflowExecutionService;
   @Inject private transient WorkflowService workflowService;
+  @Inject private transient PipelineService pipelineService;
+
+  public static final String ROLLBACK_PREFIX = "Rollback ";
 
   @Override
   public ExecutionEventAdvice onExecutionEvent(ExecutionEvent executionEvent) {
@@ -69,6 +76,16 @@ public class PipelineStageExecutionAdvisor implements ExecutionEventAdvisor {
       return anExecutionEventAdvice()
           .withExecutionInterruptType(executionResponse.getExecutionStatus() == FAILED ? MARK_FAILED : null)
           .withExecutionResponse(executionResponse)
+          .build();
+    }
+    // todo: add feature flag
+    if (shouldRollback(
+            context.getAppId(), workflowExecution.getPipelineSummary().getPipelineId(), stateExecutionInstance)) {
+      StateMachine sm = context.getStateMachine();
+      State prevState = sm.getStates().get(sm.getStates().indexOf(state) - 1);
+      return anExecutionEventAdvice()
+          .withExecutionInterruptType(ROLLBACK_PREVIOUS_STAGES_ON_PIPELINE)
+          .withNextStateName(ROLLBACK_PREFIX + prevState.getName())
           .build();
     }
 
@@ -97,5 +114,13 @@ public class PipelineStageExecutionAdvisor implements ExecutionEventAdvisor {
     }
 
     return null;
+  }
+
+  private boolean shouldRollback(String appId, String pipelineId, StateExecutionInstance instance) {
+    Pipeline pipeline = pipelineService.getPipeline(appId, pipelineId);
+    if (pipeline.rollbackPreviousStages && FAILED.equals(instance.getStatus())) {
+      return true;
+    }
+    return false;
   }
 }
