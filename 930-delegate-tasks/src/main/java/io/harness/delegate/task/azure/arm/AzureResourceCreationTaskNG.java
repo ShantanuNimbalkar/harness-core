@@ -64,7 +64,7 @@ public class AzureResourceCreationTaskNG extends AbstractDelegateRunnableTask {
 
   @Override
   public DelegateResponseData run(Object[] parameters) {
-    return null;
+    throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override

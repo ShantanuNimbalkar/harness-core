@@ -156,6 +156,7 @@ public class AzureCreateArmResourceTaskHandler extends AzureResourceCreationAbst
       printErrorMsg(logStreamingTaskClient, runningCommandUnit, format("%nError while getting ARM deployment outputs"));
     }
   }
+
   protected void printErrorMsg(
       AzureLogCallbackProvider logStreamingTaskClient, final String runningCommandUnit, final String errorMsg) {
     if (isBlank(runningCommandUnit)) {

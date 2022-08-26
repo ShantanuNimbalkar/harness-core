@@ -80,7 +80,6 @@ public class AzureARMBaseHelperImpl implements AzureResourceCreationBaseHelper {
         .build();
   }
 
-  @Override
   /*
    * populateDeploymentResponse returns the response for successful deployments at Subscription, ManagementGroup
    * and Tenant. The AzureARMTaskResponse is used in the manager to determine the result of the execution and store
@@ -91,6 +90,7 @@ public class AzureARMBaseHelperImpl implements AzureResourceCreationBaseHelper {
    *     azure
    * and the data for a rollback scenario if supported.
    */
+  @Override
   public AzureARMTaskNGResponse populateDeploymentResponse(String outputs) {
     return AzureARMTaskNGResponse.builder()
         .outputs(outputs)
