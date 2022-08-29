@@ -813,11 +813,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     TerraformBackendConfig inlineConfig = TerraformStepDataGenerator.generateInlineBackendConfigFile();
     Optional<EntityDetail> entityDetail =
         helper.prepareEntityDetailForBackendConfigFiles("test-account", "test-org", "test-project", inlineConfig);
-    assertThat(entityDetail.isPresent()).isTrue();
-    assertThat(entityDetail.get().getEntityRef().getIdentifier()).isEqualTo("ConnectorRef");
-    assertThat(entityDetail.get().getEntityRef().getOrgIdentifier()).isEqualTo("test-org");
-    assertThat(entityDetail.get().getEntityRef().getProjectIdentifier()).isEqualTo("test-project");
-    assertThat(entityDetail.get().getEntityRef().getAccountIdentifier()).isEqualTo("test-account");
+    assertThat(entityDetail.isPresent()).isFalse();
   }
 
   @Test
