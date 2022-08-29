@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.ng.core.remote.SecretApiUtils.toSecretDto;
 import static io.harness.rule.OwnerRule.ASHISHSANODIA;
 
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -186,7 +187,7 @@ public class SecretApiImplTest extends CategoryTest {
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
 
-    when(ngSecretService.get(account, null, null, slug)).thenReturn(Optional.of(secretResponseWrapper));
+    when(ngSecretService.get(account, null, null, slug)).thenReturn(of(secretResponseWrapper));
 
     Response response = accountSecretApi.getAccountScopedSecret(slug, account);
 
@@ -212,7 +213,7 @@ public class SecretApiImplTest extends CategoryTest {
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
 
-    when(ngSecretService.get(account, org, null, slug)).thenReturn(Optional.of(secretResponseWrapper));
+    when(ngSecretService.get(account, org, null, slug)).thenReturn(of(secretResponseWrapper));
 
     Response response = orgSecretApi.getOrgScopedSecret(org, slug, account);
 
@@ -238,7 +239,7 @@ public class SecretApiImplTest extends CategoryTest {
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
     SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
 
-    when(ngSecretService.get(account, org, project, slug)).thenReturn(Optional.of(secretResponseWrapper));
+    when(ngSecretService.get(account, org, project, slug)).thenReturn(of(secretResponseWrapper));
 
     Response response = projectSecretApi.getProjectScopedSecret(org, project, slug, account);
 
@@ -400,6 +401,28 @@ public class SecretApiImplTest extends CategoryTest {
     when(ngSecretService.update(any(), any(), any(), any(), any())).thenReturn(secretResponseWrapper);
 
     Response response = projectSecretApi.updateProjectScopedSecret(secretRequest, org, project, slug, account);
+
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
+    assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
+    assertThat(secretResponse.getSecret().getProject()).isEqualTo(project);
+    assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testDeleteProjectScopedSecret() {
+    SecretRequest secretRequest = new SecretRequest();
+    secretRequest.setSecret(getTextSecret(org, project));
+
+    SecretDTOV2 secretDTOV2 = toSecretDto(secretRequest.getSecret());
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
+
+    when(ngSecretService.get(any(), any(), any(), any())).thenReturn(of(secretResponseWrapper));
+    when(ngSecretService.delete(any(), any(), any(), any())).thenReturn(true);
+
+    Response response = projectSecretApi.deleteProjectScopedSecret(org, project, slug, account);
 
     SecretResponse secretResponse = (SecretResponse) response.getEntity();
     assertThat(secretResponse.getSecret().getOrg()).isEqualTo(org);
