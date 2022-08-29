@@ -125,7 +125,7 @@ public class AccountSecretApiImpl implements AccountSecretApi {
 
     SecretResponseWrapper updatedSecret =
         ngSecretService.update(account, org, project, secret, toSecretDto(body.getSecret()));
-    return Response.ok().entity(updatedSecret).build();
+    return Response.ok().entity(toSecretResponse(updatedSecret)).build();
   }
 
   private Response deleteSecret(String org, String project, String secret, String account) {
