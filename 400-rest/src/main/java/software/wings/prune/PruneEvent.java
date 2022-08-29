@@ -19,7 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 @Value
 @EqualsAndHashCode(callSuper = true)

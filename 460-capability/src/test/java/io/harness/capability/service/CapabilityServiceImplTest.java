@@ -51,7 +51,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mongodb.morphia.FindAndModifyOptions;
+import dev.morphia.FindAndModifyOptions;
 
 public class CapabilityServiceImplTest extends CapabilityTestBase {
   @Mock Subject<CapabilitySubjectPermissionCrudObserver> capSubjectPermissionTaskCrudSubject;

@@ -665,7 +665,7 @@ if [[ "$GRAPHQL_ENABLED" == "false" ]]; then
 fi
 
 if [[ "$MONGO_DEBUGGING_ENABLED" == "true" ]]; then
-  yq write -i $CONFIG_FILE logging.loggers.[org.mongodb.morphia.query] TRACE
+  yq write -i $CONFIG_FILE logging.loggers.[dev.morphia.query] TRACE
   yq write -i $CONFIG_FILE logging.loggers.connection TRACE
 fi
 

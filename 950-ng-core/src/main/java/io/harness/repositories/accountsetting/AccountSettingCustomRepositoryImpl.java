@@ -75,11 +75,12 @@ public class AccountSettingCustomRepositoryImpl implements AccountSettingCustomR
                             .is(type);
     final AccountSettings result = mongoTemplate.findOne(new Query(criteria), AccountSettings.class);
 
-    if (result == null) {
-      log.error("AccountSettings for account {} in project {}, org {}, type {} not found", accountId, orgIdentifier,
-          projectIdentifier, type);
-      throw new NotFoundException(String.format("[%s] Settings for account [%s] not found", type, accountId));
-    }
+    //    if (result == null) {
+    //      log.error("AccountSettings for account {} in project {}, org {}, type {} not found", accountId,
+    //      orgIdentifier,
+    //          projectIdentifier, type);
+    //      throw new NotFoundException(String.format("[%s] Settings for account [%s] not found", type, accountId));
+    //    }
     return result;
   }
 

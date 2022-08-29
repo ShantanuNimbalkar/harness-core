@@ -12,7 +12,7 @@ import static software.wings.utils.CryptoUtils.secureRandAlphaNumString;
 
 import io.harness.annotation.HarnessEntity;
 
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 /**
  * Created by rsingh on 06/21/17.

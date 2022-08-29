@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.annotations.Transient;
-import org.mongodb.morphia.query.FindOptions;
+import dev.morphia.annotations.Transient;
+import dev.morphia.query.FindOptions;
 
 @OwnedBy(CDC)
 @Singleton

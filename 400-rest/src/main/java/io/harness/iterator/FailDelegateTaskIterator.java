@@ -76,9 +76,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.query.FindOptions;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.Key;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
 
 @Singleton
 @Slf4j

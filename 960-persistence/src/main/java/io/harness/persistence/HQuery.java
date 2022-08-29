@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.query.CountOptions;
-import org.mongodb.morphia.query.Criteria;
-import org.mongodb.morphia.query.FindOptions;
-import org.mongodb.morphia.query.MorphiaIterator;
-import org.mongodb.morphia.query.MorphiaKeyIterator;
-import org.mongodb.morphia.query.Query;
-import org.mongodb.morphia.query.QueryImpl;
+import dev.morphia.Datastore;
+import dev.morphia.Key;
+import dev.morphia.query.CountOptions;
+import dev.morphia.query.Criteria;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.MorphiaIterator;
+import dev.morphia.query.MorphiaKeyIterator;
+import dev.morphia.query.Query;
+import dev.morphia.query.QueryImpl;
 
 /**
  * The type H query.
@@ -82,11 +82,11 @@ public class HQuery<T> extends QueryImpl<T> {
     this.traceMode = traceMode;
     this.tracerSubject = tracerSubject;
   }
-
-  public MorphiaIterator<T, T> iterator() {
-    log.error("Do not use the query as iterator directly.", new Exception(""));
-    return this.fetch();
-  }
+    // TODO[MORPHIA_UPGRADE] (prashant) : Figure out the iterator
+//  public MorphiaIterator<T, T> iterator() {
+//    log.error("Do not use the query as iterator directly.", new Exception(""));
+//    return this.fetch();
+//  }
 
   private void checkKeyListSize(List<Key<T>> list) {
     if (!queryChecks.contains(COUNT)) {
@@ -200,10 +200,11 @@ public class HQuery<T> extends QueryImpl<T> {
       return;
     }
 
-    if (!this.getChildren().stream().map(Criteria::getFieldName).anyMatch(requiredFilterArgs::contains)) {
-      log.error("QUERY-ENFORCEMENT: appId or accountId must be present in List(Object/Key)/Get/Count/Search query",
-          new Exception(""));
-    }
+    // TODO[MORPHIA_UPGRADE] (prashant) : GetChildren what wass it returning? This usage just logs so can ignore as well
+//    if (!this.getChildren().stream().map(Criteria::getFieldName).anyMatch(requiredFilterArgs::contains)) {
+//      log.error("QUERY-ENFORCEMENT: appId or accountId must be present in List(Object/Key)/Get/Count/Search query",
+//          new Exception(""));
+//    }
   }
 
   private void traceQuery() {

@@ -7,11 +7,12 @@
 
 package io.harness.morphia;
 
-import org.mongodb.morphia.mapping.MappedClass;
-import org.mongodb.morphia.mapping.Mapper;
+import dev.morphia.mapping.MappedClass;
+import dev.morphia.mapping.Mapper;
 
 public class HMappedClass extends MappedClass {
   private final String collectionName;
+
 
   public HMappedClass(String collectionName, Class<?> clazz, Mapper mapper) {
     super(clazz, mapper);

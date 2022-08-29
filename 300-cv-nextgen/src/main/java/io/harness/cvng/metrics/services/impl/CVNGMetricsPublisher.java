@@ -7,9 +7,9 @@
 
 package io.harness.cvng.metrics.services.impl;
 
-import static org.mongodb.morphia.aggregation.Accumulator.accumulator;
-import static org.mongodb.morphia.aggregation.Group.grouping;
-import static org.mongodb.morphia.aggregation.Group.id;
+import static dev.morphia.aggregation.Accumulator.accumulator;
+import static dev.morphia.aggregation.Group.grouping;
+import static dev.morphia.aggregation.Group.id;
 
 import io.harness.cvng.analysis.entities.LearningEngineTask;
 import io.harness.cvng.analysis.entities.LearningEngineTask.LearningEngineTaskKeys;
@@ -46,8 +46,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.annotations.Id;
+import dev.morphia.query.Query;
 
 @Slf4j
 public class CVNGMetricsPublisher implements MetricsPublisher, MetricDefinitionInitializer {

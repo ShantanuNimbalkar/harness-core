@@ -44,14 +44,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.annotations.Id;
+import dev.morphia.annotations.Id;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"validUntil"})
-@org.mongodb.morphia.annotations.Entity(value = "timeSeriesRawData", noClassnameStored = true)
+@dev.morphia.annotations.Entity(value = "timeSeriesRawData", noClassnameStored = true)
 @FieldNameConstants(innerTypeName = "TimeSeriesRawDataKeys")
 @Slf4j
 public class TimeSeriesRawData implements GoogleDataStoreAware, UuidAware, AccountAccess {
@@ -89,7 +89,7 @@ public class TimeSeriesRawData implements GoogleDataStoreAware, UuidAware, Accou
   @Override
   public Entity convertToCloudStorageEntity(Datastore datastore) {
     Key taskKey = datastore.newKeyFactory()
-                      .setKind(this.getClass().getAnnotation(org.mongodb.morphia.annotations.Entity.class).value())
+                      .setKind(this.getClass().getAnnotation(dev.morphia.annotations.Entity.class).value())
                       .newKey(getKey());
     com.google.cloud.datastore.Entity.Builder recordBuilder = com.google.cloud.datastore.Entity.newBuilder(taskKey);
     addFieldIfNotEmpty(recordBuilder, TimeSeriesRawDataKeys.accountId, accountId, false);

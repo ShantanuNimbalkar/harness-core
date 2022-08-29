@@ -40,7 +40,7 @@ import com.mongodb.DuplicateKeyException;
 import java.time.Duration;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.query.Query;
 
 /**
  * @author marklu on 2019-08-01

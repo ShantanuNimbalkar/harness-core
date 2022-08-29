@@ -16,7 +16,7 @@ import io.harness.beans.EmbeddedUser;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 @EqualsAndHashCode(callSuper = true)
 @FieldNameConstants(innerTypeName = "EmailVerificationTokenKeys")

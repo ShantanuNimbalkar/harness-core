@@ -120,8 +120,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mongodb.morphia.query.MorphiaIterator;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.query.MorphiaIterator;
+import dev.morphia.query.Query;
 
 @OwnedBy(CDC)
 public class ArtifactCollectionServiceTest extends WingsBaseTest {

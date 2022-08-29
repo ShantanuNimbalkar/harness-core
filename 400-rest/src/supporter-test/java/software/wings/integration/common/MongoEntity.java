@@ -11,7 +11,7 @@ import software.wings.beans.Base;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 @Entity(value = "!!!testMongo", noClassnameStored = true)
 public class MongoEntity extends Base {

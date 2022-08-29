@@ -40,12 +40,12 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.mapping.MappedClass;
-import org.mongodb.morphia.mapping.Mapper;
-import org.mongodb.morphia.query.Criteria;
-import org.mongodb.morphia.query.FieldEnd;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.Datastore;
+import dev.morphia.mapping.MappedClass;
+import dev.morphia.mapping.Mapper;
+import dev.morphia.query.Criteria;
+import dev.morphia.query.FieldEnd;
+import dev.morphia.query.Query;
 
 @UtilityClass
 @Slf4j
@@ -168,7 +168,9 @@ public class PageController {
                 || opSearchFilter.getOp() == ELEMENT_MATCH) {
               Query<T> tQuery = applySearchFilters(datastore, datastore.createQuery(cls).disableValidation(),
                   Arrays.asList(opSearchFilter), cls, mapper);
-              criteria.addAll(((HQuery) tQuery).getChildren());
+
+              // TODO[MORPHIA_UPGRADE] (prashant) : figure out what get children is doing and fix it
+//              criteria.addAll(((HQuery) tQuery).getChildren());
             } else {
               criteria.add(applyOperator(query.criteria(opSearchFilter.getFieldName()), opSearchFilter));
             }

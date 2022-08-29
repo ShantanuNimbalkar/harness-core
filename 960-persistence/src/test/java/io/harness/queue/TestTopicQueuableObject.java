@@ -8,7 +8,7 @@
 package io.harness.queue;
 
 import lombok.Value;
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 @Value
 @Entity(value = "!!!testTopicQueue", noClassnameStored = true)

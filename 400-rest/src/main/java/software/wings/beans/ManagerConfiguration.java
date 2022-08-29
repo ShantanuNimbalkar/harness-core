@@ -12,7 +12,7 @@ import io.harness.annotation.HarnessEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.mongodb.morphia.annotations.Entity;
+import dev.morphia.annotations.Entity;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data

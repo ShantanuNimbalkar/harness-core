@@ -97,7 +97,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.mongodb.morphia.query.Query;
+import dev.morphia.query.Query;
 
 @FieldNameConstants(innerTypeName = "CloudFormationStateKeys")
 @OwnedBy(CDP)
