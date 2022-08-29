@@ -35,8 +35,8 @@ else
   phase_injected=`echo "${jira_response}" | jq ".fields.customfield_10748" | tr -d '"'`
 fi
 
-myArray=("P2","P3","P4")
-if [[ "${BRANCH_PREFIX}" = "release/"  && ( ${myArray[*]} =~ "${prioritytype}" ) ]]
+PRIORITY_LIST=("P2","P3","P4")
+if [[ "${BRANCH_PREFIX}" = "release/"  && ( ${PRIORITY_LIST[*]} =~ "${prioritytype}" ) ]]
 then
   echo "ERROR: Hotfix merge to target branch: release/* is blocked unless it is P0 or P1."
   exit 1
