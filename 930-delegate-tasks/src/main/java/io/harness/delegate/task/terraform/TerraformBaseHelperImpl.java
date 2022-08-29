@@ -854,7 +854,6 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
 
   public List<String> checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo configFileInfo,
       String scriptDir, LogCallback logCallback, String accountId, String tfConfigDirectory) throws IOException {
-    Path tfConfigDirAbsPath = Paths.get(tfConfigDirectory).toAbsolutePath();
     if (configFileInfo == null) {
       return Collections.emptyList();
     }
@@ -866,6 +865,7 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
           ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent(), scriptDir,
           TERRAFORM_BACKEND_CONFIGS_FILE_NAME));
     } else if (configFileInfo instanceof RemoteTerraformFileInfo) {
+      Path tfConfigDirAbsPath = Paths.get(tfConfigDirectory).toAbsolutePath();
       checkoutRemoteTerraformFileAndConvertToFilePath((RemoteTerraformFileInfo) configFileInfo, logCallback, accountId,
           tfConfigDirectory, tfBackendConfigFilePaths, tfConfigDirAbsPath);
     }

@@ -117,14 +117,12 @@ public class TerraformTaskNGParameters
         }
       }
     }
-    if (backendConfigFileInfo != null) {
-      if (backendConfigFileInfo instanceof RemoteTerraformBackendConfigFileInfo) {
-        GitFetchFilesConfig gitFetchFilesConfig =
-            ((RemoteTerraformBackendConfigFileInfo) backendConfigFileInfo).getGitFetchFilesConfig();
-        FileStoreFetchFilesConfig fileStoreFetchConfig =
-            ((RemoteTerraformBackendConfigFileInfo) backendConfigFileInfo).getFilestoreFetchFilesConfig();
-        capabilities.addAll(getCapabilities(maskingEvaluator, gitFetchFilesConfig, fileStoreFetchConfig));
-      }
+    if (backendConfigFileInfo != null && backendConfigFileInfo instanceof RemoteTerraformBackendConfigFileInfo) {
+      GitFetchFilesConfig gitFetchFilesConfig =
+          ((RemoteTerraformBackendConfigFileInfo) backendConfigFileInfo).getGitFetchFilesConfig();
+      FileStoreFetchFilesConfig fileStoreFetchConfig =
+          ((RemoteTerraformBackendConfigFileInfo) backendConfigFileInfo).getFilestoreFetchFilesConfig();
+      capabilities.addAll(getCapabilities(maskingEvaluator, gitFetchFilesConfig, fileStoreFetchConfig));
     }
     if (encryptionConfig != null) {
       capabilities.addAll(

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
 @JsonSubTypes({
   @JsonSubTypes.Type(value = InlineTerraformBackendConfigSpec.class, name = TerraformVarFileTypes.Inline)
-  , @JsonSubTypes.Type(value = RemoteTerraformBackendConfigSpec.class, name = TerraformVarFileTypes.Remote),
+  , @JsonSubTypes.Type(value = RemoteTerraformBackendConfigSpec.class, name = TerraformVarFileTypes.Remote)
 })
 public interface TerraformBackendConfigSpec {
   String getType();

@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @OwnedBy(HarnessTeam.CDP)
 @SuperBuilder
-public abstract class RemoteTerraformFileInfo {
+public class RemoteTerraformFileInfo {
   GitFetchFilesConfig gitFetchFilesConfig;
   FileStoreFetchFilesConfig filestoreFetchFilesConfig;
 }

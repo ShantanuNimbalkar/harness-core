@@ -24,7 +24,6 @@ import lombok.experimental.FieldDefaults;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonTypeName("Remote")
 @RecasterAlias("io.harness.cdng.provision.terraform.RemoteTerraformBackendConfigSpec")
 public class RemoteTerraformBackendConfigSpec implements TerraformBackendConfigSpec {
   @NotNull StoreConfigWrapper store;

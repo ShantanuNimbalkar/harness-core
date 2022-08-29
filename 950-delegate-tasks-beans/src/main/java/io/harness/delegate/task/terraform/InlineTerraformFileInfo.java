@@ -19,6 +19,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @OwnedBy(HarnessTeam.CDP)
 @SuperBuilder
-public abstract class InlineTerraformFileInfo {
+public class InlineTerraformFileInfo {
   @Expression(ALLOW_SECRETS) String varFileContent;
 }
