@@ -453,6 +453,28 @@ public class SecretApiImplTest extends CategoryTest {
     assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
   }
 
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testDeleteAccountScopedSecret() {
+    SecretRequest secretRequest = new SecretRequest();
+    secretRequest.setSecret(getTextSecret(null, null));
+
+    SecretDTOV2 secretDTOV2 = toSecretDto(secretRequest.getSecret());
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).build();
+
+    when(ngSecretService.get(any(), any(), any(), any())).thenReturn(of(secretResponseWrapper));
+    when(ngSecretService.delete(any(), any(), any(), any())).thenReturn(true);
+
+    Response response = accountSecretApi.deleteAccountScopedSecret(slug, account);
+
+    SecretResponse secretResponse = (SecretResponse) response.getEntity();
+    assertThat(secretResponse.getSecret().getOrg()).isNull();
+    assertThat(secretResponse.getSecret().getProject()).isNull();
+    assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
   private Secret getTextSecret(String org, String project) {
     Secret secret = new Secret();
     secret.setSlug(slug);
