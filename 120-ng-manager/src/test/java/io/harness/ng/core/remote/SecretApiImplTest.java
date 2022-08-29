@@ -8,7 +8,7 @@
 package io.harness.ng.core.remote;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
+import static io.harness.ng.core.remote.SecretApiUtils.toSecretDto;
 import static io.harness.rule.OwnerRule.ASHISHSANODIA;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +48,6 @@ import org.springframework.data.domain.PageImpl;
 @OwnedBy(PL)
 public class SecretApiImplTest extends CategoryTest {
   private SecretCrudService ngSecretService;
-  private SecretPermissionValidator secretPermissionValidator;
 
   private AccountSecretApiImpl accountSecretApi;
   private OrgSecretApiImpl orgSecretApi;
@@ -68,13 +67,12 @@ public class SecretApiImplTest extends CategoryTest {
   @Before
   public void setup() {
     ngSecretService = mock(SecretCrudServiceImpl.class);
-    secretPermissionValidator = mock(SecretPermissionValidator.class);
 
-    doNothing().when(secretPermissionValidator).checkForAccessOrThrow(any(), any(), any(), any());
+    doNothing().when(mock(SecretPermissionValidator.class)).checkForAccessOrThrow(any(), any(), any(), any());
 
-    accountSecretApi = new AccountSecretApiImpl(ngSecretService, secretPermissionValidator);
-    orgSecretApi = new OrgSecretApiImpl(ngSecretService, secretPermissionValidator);
-    projectSecretApi = new ProjectSecretApiImpl(ngSecretService, secretPermissionValidator);
+    accountSecretApi = new AccountSecretApiImpl(ngSecretService, mock(SecretPermissionValidator.class));
+    orgSecretApi = new OrgSecretApiImpl(ngSecretService, mock(SecretPermissionValidator.class));
+    projectSecretApi = new ProjectSecretApiImpl(ngSecretService, mock(SecretPermissionValidator.class));
   }
 
   @Test
@@ -262,7 +260,7 @@ public class SecretApiImplTest extends CategoryTest {
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
-    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
+    List<SecretType> secretTypes = SecretApiUtils.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
     when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))
@@ -292,7 +290,7 @@ public class SecretApiImplTest extends CategoryTest {
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
-    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
+    List<SecretType> secretTypes = SecretApiUtils.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
     when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))
@@ -321,7 +319,7 @@ public class SecretApiImplTest extends CategoryTest {
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
-    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
+    List<SecretType> secretTypes = SecretApiUtils.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
     when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))

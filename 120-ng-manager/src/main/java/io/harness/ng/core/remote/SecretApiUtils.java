@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SecretApiMapper {
+public class SecretApiUtils {
   public static SecretDTOV2 toSecretDto(Secret secret) {
     SecretDTOV2Builder secretDTOV2Builder = SecretDTOV2.builder()
                                                 .identifier(secret.getSlug())
@@ -418,7 +418,7 @@ public class SecretApiMapper {
     if (isEmpty(type)) {
       return new ArrayList<>();
     }
-    return type.stream().map(SecretApiMapper::toSecretType).collect(Collectors.toList());
+    return type.stream().map(SecretApiUtils::toSecretType).collect(Collectors.toList());
   }
 
   public static SecretType toSecretType(String type) {

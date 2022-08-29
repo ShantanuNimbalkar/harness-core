@@ -1,8 +1,8 @@
 package io.harness.ng.core.remote;
 
 import static io.harness.exception.WingsException.USER;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretDto;
-import static io.harness.ng.core.remote.SecretApiMapper.toSecretResponse;
+import static io.harness.ng.core.remote.SecretApiUtils.toSecretDto;
+import static io.harness.ng.core.remote.SecretApiUtils.toSecretResponse;
 import static io.harness.secrets.SecretPermissions.SECRET_DELETE_PERMISSION;
 import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
 import static io.harness.secrets.SecretPermissions.SECRET_RESOURCE_TYPE;
@@ -65,7 +65,7 @@ public class AccountSecretApiImpl implements AccountSecretApi {
 
     SecretResponseWrapper secretResponseWrapper = ngSecretService.createFile(account, secretDto, fileInputStream);
 
-    return Response.ok().entity(SecretApiMapper.toSecretResponse(secretResponseWrapper)).build();
+    return Response.ok().entity(toSecretResponse(secretResponseWrapper)).build();
   }
 
   @Override
@@ -156,14 +156,14 @@ public class AccountSecretApiImpl implements AccountSecretApi {
 
   private Response getSecrets(String account, String org, String project, List<String> secret, List<String> type,
       Boolean recursive, String searchTerm, Integer page, Integer limit) {
-    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(type);
+    List<SecretType> secretTypes = SecretApiUtils.toSecretTypes(type);
 
     List<SecretResponseWrapper> content = getNGPageResponse(
         ngSecretService.list(account, org, project, secret, secretTypes, recursive, searchTerm, page, limit, null))
                                               .getContent();
 
     List<SecretResponse> secretResponse =
-        content.stream().map(SecretApiMapper::toSecretResponse).collect(Collectors.toList());
+        content.stream().map(SecretApiUtils::toSecretResponse).collect(Collectors.toList());
     return Response.ok().entity(secretResponse).build();
   }
 
