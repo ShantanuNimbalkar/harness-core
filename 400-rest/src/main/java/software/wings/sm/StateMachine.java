@@ -15,6 +15,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static software.wings.sm.ExpressionProcessor.EXPRESSION_PREFIX;
 import static software.wings.sm.ExpressionProcessor.EXPRESSION_SUFFIX;
 import static software.wings.sm.ExpressionProcessor.SUBFIELD_ACCESS;
+import static software.wings.sm.StateType.ENV_ROLLBACK_STATE;
 import static software.wings.sm.StateType.REPEAT;
 import static software.wings.sm.Transition.Builder.aTransition;
 import static software.wings.sm.states.RepeatState.Builder.aRepeatState;
@@ -310,7 +311,7 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
 
   private State convertToRollbackState(PipelineStageElement pipelineStageElement, Pipeline pipeline,
       Map<String, StateTypeDescriptor> stencilMap, String stageName) {
-    StateTypeDescriptor stateTypeDesc = stencilMap.get(pipelineStageElement.getType());
+    StateTypeDescriptor stateTypeDesc = stencilMap.get(ENV_ROLLBACK_STATE.getType());
 
     State state = stateTypeDesc.newInstance("Rollback " + pipelineStageElement.getName());
 
