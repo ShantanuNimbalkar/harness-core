@@ -5,7 +5,7 @@ set +e
 PROJECTS="BT|CCE|CCM|CDC|CDNG|CDP|CE|CI|CV|CVNG|DEL|DOC|DX|ER|OPS|PIE|PL|SEC|SWAT|GTM|FFM|ONP|LWG|ART"
 
 # Check commit message if there's a single commit
-if [ $(git rev-list --count $ghprbActualCommit ^origin/master)  -eq 1 ]; then
+if [ $(git rev-list --count $ghprbActualCommit ^origin/master)  = 1 ]; then
     ghprbPullTitle=$(git log -1 --format="%s" $ghprbActualCommit)
 fi
 KEY=`echo "${ghprbPullTitle}" | grep -o -iE "\[(${PROJECTS})-[0-9]+]:" | grep -o -iE "(${PROJECTS})-[0-9]+"`
