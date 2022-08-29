@@ -501,6 +501,18 @@ public class SecretApiImplTest extends CategoryTest {
     assertThat(validateSecretSlugResponse.isValid()).isTrue();
   }
 
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testValidateProjectScopedSecretSlug() {
+    when(ngSecretService.validateTheIdentifierIsUnique(any(), any(), any(), any())).thenReturn(true);
+
+    Response response = projectSecretApi.validateUniqueProjectScopedSecretSlug(org, project, slug, account);
+
+    ValidateSecretSlugResponse validateSecretSlugResponse = (ValidateSecretSlugResponse) response.getEntity();
+    assertThat(validateSecretSlugResponse.isValid()).isTrue();
+  }
+
   private Secret getTextSecret(String org, String project) {
     Secret secret = new Secret();
     secret.setSlug(slug);

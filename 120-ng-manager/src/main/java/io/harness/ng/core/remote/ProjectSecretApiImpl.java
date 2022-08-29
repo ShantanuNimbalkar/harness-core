@@ -109,7 +109,7 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
 
   @Override
   public Response validateUniqueProjectScopedSecretSlug(String org, String project, String secret, String account) {
-    return validateSecretSlug(secret, account, org, null);
+    return validateSecretSlug(secret, account, org, project);
   }
 
   private Response validateSecretSlug(String secret, String account, String org, String project) {
