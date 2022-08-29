@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+
+import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -473,6 +475,18 @@ public class SecretApiImplTest extends CategoryTest {
     assertThat(secretResponse.getSecret().getProject()).isNull();
     assertThat(secretResponse.getSecret().getSlug()).isEqualTo(slug);
     assertThat(secretResponse.getSecret().getName()).isEqualTo(name);
+  }
+
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testValidateAccountScopedSecretSlug() {
+    when(ngSecretService.validateTheIdentifierIsUnique(any(), any(), any(), any())).thenReturn(true);
+
+    Response response = accountSecretApi.validateUniqueAccountScopedSecretSlug(slug, account);
+
+    ValidateSecretSlugResponse validateSecretSlugResponse = (ValidateSecretSlugResponse) response.getEntity();
+    assertThat(validateSecretSlugResponse.isValid()).isTrue();
   }
 
   private Secret getTextSecret(String org, String project) {

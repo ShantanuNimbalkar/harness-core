@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+
+import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -110,11 +112,12 @@ public class AccountSecretApiImpl implements AccountSecretApi {
 
   @Override
   public Response validateUniqueAccountScopedSecretSlug(String secret, String account) {
-    return validateSecretSlug(secret, account, null, null);
+    return validateSecretSlug(secret, account);
   }
 
-  private Response validateSecretSlug(String secret, String account, String org, String project) {
-    return Response.ok().entity(ngSecretService.validateTheIdentifierIsUnique(account, org, project, secret)).build();
+  private Response validateSecretSlug(String secret, String account) {
+    boolean isUnique = ngSecretService.validateTheIdentifierIsUnique(account, null, null, secret);
+    return Response.ok().entity(new ValidateSecretSlugResponse().valid(isUnique)).build();
   }
 
   private Response updateSecret(SecretRequest body, String org, String project, String secret, String account) {
