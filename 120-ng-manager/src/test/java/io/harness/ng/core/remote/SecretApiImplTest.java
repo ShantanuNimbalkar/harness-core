@@ -311,6 +311,33 @@ public class SecretApiImplTest extends CategoryTest {
     assertThat(secretResponse.get(0).getUpdated()).isNotNull();
   }
 
+  @Test
+  @Owner(developers = ASHISHSANODIA)
+  @Category(UnitTests.class)
+  public void testGetProjectScopedSecretList() {
+    Secret textSecret = getTextSecret(org, project);
+    SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
+    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
+    Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
+
+    List<String> slugs = Collections.singletonList(slug);
+    List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
+    List<String> types = Collections.singletonList("SSHKeyPath");
+
+    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null)).thenReturn(pages);
+
+    Response response = projectSecretApi.getProjectScopedSecrets(org, project, account, slugs, types, false, null, page, limit);
+
+    List<SecretResponse> secretResponse = (List<SecretResponse>) response.getEntity();
+    assertThat(secretResponse.size()).isEqualTo(1);
+    assertThat(secretResponse.get(0).getSecret().getProject()).isEqualTo(project);
+    assertThat(secretResponse.get(0).getSecret().getOrg()).isEqualTo(org);
+    assertThat(secretResponse.get(0).getSecret().getSlug()).isEqualTo(slug);
+    assertThat(secretResponse.get(0).getSecret().getName()).isEqualTo(name);
+    assertThat(secretResponse.get(0).getCreated()).isNotNull();
+    assertThat(secretResponse.get(0).getUpdated()).isNotNull();
+  }
+
   @Test(expected = NotFoundException.class)
   @Owner(developers = ASHISHSANODIA)
   @Category(UnitTests.class)
