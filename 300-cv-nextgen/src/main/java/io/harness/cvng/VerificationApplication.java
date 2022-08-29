@@ -201,6 +201,7 @@ import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.palominolabs.metrics.guice.MetricsInstrumentationModule;
+import dev.morphia.converters.TypeConverter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -234,7 +235,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.glassfish.jersey.server.model.Resource;
 import org.hibernate.validator.parameternameprovider.ReflectionParameterNameProvider;
-import dev.morphia.converters.TypeConverter;
 import org.springframework.core.convert.converter.Converter;
 import ru.vyarus.guice.validator.ValidationModule;
 

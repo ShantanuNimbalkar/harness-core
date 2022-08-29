@@ -20,8 +20,8 @@ import software.wings.dl.WingsPersistence;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.UpdateOperations;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Vaibhav Tulsyan

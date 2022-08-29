@@ -65,6 +65,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.inject.Inject;
+import dev.morphia.annotations.Transient;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -81,7 +82,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.annotations.Transient;
 
 @OwnedBy(CDC)
 @JsonTypeName("DOWNLOAD_ARTIFACT")

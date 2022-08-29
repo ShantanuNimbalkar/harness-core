@@ -81,6 +81,7 @@ import software.wings.sm.states.ApprovalState.ApprovalStateKeys;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +95,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import dev.morphia.query.Query;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;

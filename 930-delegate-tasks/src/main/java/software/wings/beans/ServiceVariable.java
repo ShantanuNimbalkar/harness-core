@@ -42,6 +42,9 @@ import software.wings.settings.SettingVariableTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,9 +59,6 @@ import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Transient;
 
 /**
  * Created by peeyushaggarwal on 9/14/16.

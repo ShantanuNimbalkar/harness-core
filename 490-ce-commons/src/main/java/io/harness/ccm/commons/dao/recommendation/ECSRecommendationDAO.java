@@ -28,6 +28,8 @@ import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -36,8 +38,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.jooq.DSLContext;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 @Singleton

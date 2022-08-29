@@ -22,6 +22,7 @@ import io.harness.ng.core.infrastructure.InfrastructureType;
 import io.harness.persistence.PersistentEntity;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -31,7 +32,6 @@ import lombok.Singular;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.Wither;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

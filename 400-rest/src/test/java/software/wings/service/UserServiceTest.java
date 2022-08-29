@@ -181,6 +181,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import dev.morphia.mapping.Mapper;
+import dev.morphia.query.FieldEnd;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
+import dev.morphia.query.UpdateOperations;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -213,11 +218,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import dev.morphia.mapping.Mapper;
-import dev.morphia.query.FieldEnd;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
-import dev.morphia.query.UpdateOperations;
 
 /**
  * Created by anubhaw on 3/9/16.

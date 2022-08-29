@@ -19,13 +19,13 @@ import io.harness.ng.core.invites.entities.Role;
 import io.harness.persistence.PersistentEntity;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.Wither;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.annotation.Version;

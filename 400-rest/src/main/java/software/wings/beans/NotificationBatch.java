@@ -9,13 +9,13 @@ package software.wings.beans;
 
 import io.harness.annotation.HarnessEntity;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Reference;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Reference;
 
 /**
  * Created by anubhaw on 4/13/17.

@@ -22,10 +22,10 @@ import software.wings.yaml.gitSync.YamlChangeSet.YamlChangeSetKeys;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class SetQueueKeyYamChangeSetMigration implements OnPrimaryManagerMigration {

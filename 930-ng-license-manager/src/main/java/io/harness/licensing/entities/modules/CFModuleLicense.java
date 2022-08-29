@@ -10,10 +10,10 @@ package io.harness.licensing.entities.modules;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

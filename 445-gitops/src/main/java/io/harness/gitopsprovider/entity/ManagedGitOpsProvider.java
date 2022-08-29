@@ -12,13 +12,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.GitOpsProviderType;
 import io.harness.gitopsprovider.SearchTerm;
 
+import dev.morphia.annotations.Entity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.NotBlank;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 
 @Value

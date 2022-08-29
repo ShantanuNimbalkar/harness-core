@@ -19,9 +19,9 @@ import software.wings.graphql.schema.type.aggregation.user.QLUserFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.List;
 import dev.morphia.query.FieldEnd;
 import dev.morphia.query.Query;
+import java.util.List;
 
 @Singleton
 @TargetModule(HarnessModule._380_CG_GRAPHQL)

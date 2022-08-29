@@ -12,10 +12,10 @@ import io.harness.beans.EmbeddedUser;
 
 import software.wings.beans.Base;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 /**
  * Keeps track of the manual sync job. These are short-lived.

@@ -13,11 +13,11 @@ import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAware;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @FieldNameConstants(innerTypeName = "DelegatePerpetualTaskUsageInsightsKeys")
 @JsonIgnoreProperties(ignoreUnknown = true)

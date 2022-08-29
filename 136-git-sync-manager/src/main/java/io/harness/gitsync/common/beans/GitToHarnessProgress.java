@@ -13,13 +13,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.mongo.index.FdIndex;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.TypeAlias;

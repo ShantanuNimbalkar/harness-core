@@ -13,11 +13,11 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.queue.Queuable;
 
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 @OwnedBy(CDC)
 @Data

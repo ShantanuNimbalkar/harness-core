@@ -20,6 +20,7 @@ import software.wings.dl.WingsPersistence;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
+import dev.morphia.query.FindOptions;
 import io.fabric8.utils.Lists;
 import java.sql.Array;
 import java.sql.Connection;
@@ -28,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.FindOptions;
 
 @Slf4j
 @Singleton

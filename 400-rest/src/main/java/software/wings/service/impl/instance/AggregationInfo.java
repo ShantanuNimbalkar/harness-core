@@ -14,10 +14,10 @@ import io.harness.delegate.task.helm.HelmChartInfo;
 
 import software.wings.beans.instance.dashboard.EntitySummary;
 
+import dev.morphia.annotations.Id;
 import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import dev.morphia.annotations.Id;
 
 @Data
 @NoArgsConstructor

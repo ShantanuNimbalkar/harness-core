@@ -13,11 +13,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.entities.Connector;
 import io.harness.delegate.beans.connector.awskmsconnector.AwsKmsCredentialType;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

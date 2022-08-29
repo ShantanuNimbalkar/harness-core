@@ -48,6 +48,7 @@ import software.wings.verification.CVConfiguration.CVConfigurationKeys;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import dev.morphia.query.Sort;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,7 +60,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Sort;
 
 @ValidateOnExecution
 @Slf4j

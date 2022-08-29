@@ -12,11 +12,11 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.persistence.PersistentEntity;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 /**
  * The current sync state representation

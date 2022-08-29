@@ -21,6 +21,8 @@ import io.harness.persistence.UuidAccess;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -28,8 +30,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 /**
  * Entity representing a pipeline governance standard.

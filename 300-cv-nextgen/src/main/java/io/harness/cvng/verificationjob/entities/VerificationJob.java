@@ -39,6 +39,8 @@ import io.harness.persistence.UuidAware;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
@@ -56,8 +58,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.apache.http.client.utils.URIBuilder;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @FieldNameConstants(innerTypeName = "VerificationJobKeys")

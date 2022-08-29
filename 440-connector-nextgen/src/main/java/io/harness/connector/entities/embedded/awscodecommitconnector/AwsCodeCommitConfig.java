@@ -10,11 +10,11 @@ package io.harness.connector.entities.embedded.awscodecommitconnector;
 import io.harness.connector.entities.Connector;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitUrlType;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

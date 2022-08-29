@@ -13,6 +13,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.mongo.index.FdUniqueIndex;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,7 +21,6 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.Wither;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

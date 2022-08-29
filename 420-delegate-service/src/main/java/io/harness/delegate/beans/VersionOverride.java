@@ -14,6 +14,8 @@ import io.harness.mongo.index.FdTtlIndex;
 import io.harness.persistence.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.Date;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
@@ -21,8 +23,6 @@ import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.joda.time.DateTime;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldNameConstants(innerTypeName = "VersionOverrideKeys")

@@ -14,8 +14,8 @@ import io.harness.cvng.migration.beans.ChecklistItem;
 import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.annotations.Entity;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RecreateMetricPackAndThresholdMigration implements CVNGMigration {

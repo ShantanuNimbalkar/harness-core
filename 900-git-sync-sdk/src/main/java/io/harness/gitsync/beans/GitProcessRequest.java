@@ -17,6 +17,7 @@ import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.Arrays;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -24,7 +25,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;

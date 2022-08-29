@@ -9,10 +9,10 @@ package io.harness.queue;
 
 import io.harness.persistence.PersistentEntity;
 
-import lombok.Builder;
-import lombok.Value;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder

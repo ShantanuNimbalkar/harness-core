@@ -28,11 +28,11 @@ import software.wings.security.annotations.AuthRule;
 import software.wings.service.impl.DelegateConnectionDao;
 
 import com.google.inject.Inject;
-import graphql.schema.DataFetchingEnvironment;
-import java.util.List;
 import dev.morphia.query.FieldEnd;
 import dev.morphia.query.Query;
 import dev.morphia.query.Sort;
+import graphql.schema.DataFetchingEnvironment;
+import java.util.List;
 
 @OwnedBy(DEL)
 public class DelegateListDataFetcher

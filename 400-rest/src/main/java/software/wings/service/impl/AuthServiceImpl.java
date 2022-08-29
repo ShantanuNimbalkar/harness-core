@@ -118,6 +118,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import dev.morphia.Key;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64.Decoder;
 import java.util.Collection;
@@ -139,7 +140,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import dev.morphia.Key;
 
 @Singleton
 @Slf4j

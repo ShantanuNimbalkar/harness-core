@@ -13,11 +13,11 @@ import io.harness.queue.Queuable;
 import software.wings.api.ondemandrollback.OnDemandRollbackInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 /**
  * This is used as request for capturing deployment and instance information.

@@ -49,6 +49,11 @@ import io.harness.persistence.HQuery.QueryChecks;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import dev.morphia.annotations.Id;
+import dev.morphia.query.Criteria;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -66,11 +71,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.annotations.Id;
-import dev.morphia.query.Criteria;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
 
 // TODO: merge ChangeEventService and ActivityService
 public class ChangeEventServiceImpl implements ChangeEventService {

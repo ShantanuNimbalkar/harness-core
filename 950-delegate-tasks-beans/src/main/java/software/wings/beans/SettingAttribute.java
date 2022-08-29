@@ -103,6 +103,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Transient;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -116,9 +119,6 @@ import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Transient;
 
 @TargetModule(HarnessModule._957_CG_BEANS)
 @OwnedBy(CDC)

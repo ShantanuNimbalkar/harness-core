@@ -15,11 +15,11 @@ import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdUniqueIndex;
 import io.harness.persistence.PersistentEntity;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @OwnedBy(HarnessTeam.PL)
 @Data

@@ -31,6 +31,8 @@ import io.harness.persistence.HPersistence;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -42,8 +44,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 public class CVConfigServiceImpl implements CVConfigService {

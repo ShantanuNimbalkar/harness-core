@@ -9,11 +9,11 @@ package io.harness.connector.entities.embedded.customhealthconnector;
 import io.harness.connector.entities.Connector;
 import io.harness.delegate.beans.connector.customhealthconnector.CustomHealthMethod;
 
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

@@ -20,6 +20,7 @@ import io.harness.pms.preflight.PreFlightStatus;
 import io.harness.pms.preflight.connector.ConnectorCheckResponse;
 import io.harness.pms.preflight.inputset.PipelineInputResponse;
 
+import dev.morphia.annotations.Entity;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;

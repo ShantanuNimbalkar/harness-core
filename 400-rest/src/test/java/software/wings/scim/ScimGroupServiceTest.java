@@ -45,6 +45,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,8 +60,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j

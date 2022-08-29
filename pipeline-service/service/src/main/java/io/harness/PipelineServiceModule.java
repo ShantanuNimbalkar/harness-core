@@ -198,6 +198,7 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import dev.morphia.converters.TypeConverter;
 import io.dropwizard.jackson.Jackson;
 import java.util.HashSet;
 import java.util.List;
@@ -215,7 +216,6 @@ import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.ExecuteListener;
-import dev.morphia.converters.TypeConverter;
 import org.redisson.api.RedissonClient;
 import org.springframework.core.convert.converter.Converter;
 

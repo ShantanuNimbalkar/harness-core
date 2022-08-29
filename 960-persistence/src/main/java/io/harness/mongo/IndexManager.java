@@ -18,12 +18,12 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.mongodb.DBCollection;
-import java.util.Map;
-import javax.annotation.Nullable;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.AdvancedDatastore;
 import dev.morphia.Morphia;
 import dev.morphia.mapping.MappedClass;
+import java.util.Map;
+import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j

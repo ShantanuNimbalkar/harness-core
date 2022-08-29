@@ -13,11 +13,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.mongo.index.FdUniqueIndex;
 import io.harness.ng.DbAliases;
 
+import dev.morphia.annotations.Entity;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;

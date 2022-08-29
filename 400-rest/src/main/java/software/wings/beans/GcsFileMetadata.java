@@ -17,6 +17,7 @@ import io.harness.file.GcsHarnessFileMetadata;
 import io.harness.mongo.index.FdIndex;
 import io.harness.persistence.AccountAccess;
 
+import dev.morphia.annotations.Entity;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +27,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 
 /**
  * Since artifacts etc. will be initially dual-written into Mongo GridFs and Google Cloud Storage, and each file id has

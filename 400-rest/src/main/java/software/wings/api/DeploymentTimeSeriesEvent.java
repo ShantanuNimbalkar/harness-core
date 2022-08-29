@@ -13,10 +13,10 @@ import io.harness.queue.Queuable;
 import software.wings.service.impl.event.timeseries.TimeSeriesEventInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 /**
  * This event is used for capturing deployment information.

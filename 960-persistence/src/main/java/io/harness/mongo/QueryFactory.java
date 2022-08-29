@@ -16,11 +16,11 @@ import io.harness.persistence.HQuery;
 
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import lombok.Getter;
 import dev.morphia.Datastore;
 import dev.morphia.query.DefaultQueryFactory;
 import dev.morphia.query.Query;
 import dev.morphia.query.QueryImpl;
+import lombok.Getter;
 
 @OwnedBy(HarnessTeam.PL)
 public class QueryFactory extends DefaultQueryFactory {

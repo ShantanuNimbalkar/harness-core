@@ -31,6 +31,8 @@ import software.wings.ngmigration.NGMigrationEntity;
 import software.wings.yaml.BaseEntityYaml;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Transient;
 import java.util.List;
 import javax.annotation.Nullable;
 import lombok.Builder;
@@ -39,8 +41,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Transient;
 
 @Data
 @Builder

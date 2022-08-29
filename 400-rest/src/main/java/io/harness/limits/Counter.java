@@ -19,11 +19,11 @@ import io.harness.persistence.AccountAccess;
 
 import software.wings.beans.Base;
 
+import dev.morphia.annotations.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 @Getter
 @ToString

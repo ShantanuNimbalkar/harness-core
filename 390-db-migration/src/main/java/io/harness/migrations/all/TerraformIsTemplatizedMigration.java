@@ -25,9 +25,9 @@ import software.wings.service.intfc.InfrastructureProvisionerService;
 import software.wings.service.intfc.SettingsService;
 
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.annotations.Transient;
 import dev.morphia.query.Query;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @OwnedBy(CDP)

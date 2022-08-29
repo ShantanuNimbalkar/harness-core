@@ -19,6 +19,7 @@ import io.harness.mongo.index.MongoIndex;
 import io.harness.persistence.PersistentEntity;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -26,7 +27,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

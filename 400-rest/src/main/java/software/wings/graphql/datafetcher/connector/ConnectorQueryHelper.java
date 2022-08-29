@@ -23,9 +23,9 @@ import software.wings.graphql.schema.type.aggregation.connector.QLConnectorTypeF
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.List;
 import dev.morphia.query.FieldEnd;
 import dev.morphia.query.Query;
+import java.util.List;
 
 /**
  * @author rktummala on 07/12/19

@@ -17,8 +17,8 @@ import software.wings.beans.SettingAttribute.SettingCategory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.List;
 import dev.morphia.query.Query;
+import java.util.List;
 
 @Singleton
 @OwnedBy(HarnessTeam.CDC)

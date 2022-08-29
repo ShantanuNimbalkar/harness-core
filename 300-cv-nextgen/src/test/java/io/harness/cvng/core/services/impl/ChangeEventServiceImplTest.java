@@ -35,6 +35,7 @@ import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,7 +47,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import dev.morphia.query.Query;
 
 public class ChangeEventServiceImplTest extends CvNextGenTestBase {
   @Inject MonitoredServiceService monitoredServiceService;

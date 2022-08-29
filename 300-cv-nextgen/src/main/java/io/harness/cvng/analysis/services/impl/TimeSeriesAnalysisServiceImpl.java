@@ -65,6 +65,8 @@ import io.harness.persistence.HPersistence;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
@@ -82,8 +84,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 public class TimeSeriesAnalysisServiceImpl implements TimeSeriesAnalysisService {

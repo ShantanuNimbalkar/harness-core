@@ -11,10 +11,10 @@ import io.harness.beans.DelegateTask;
 import io.harness.delegate.beans.DelegateProgressData;
 import io.harness.delegate.beans.DelegateTaskResponse;
 
+import dev.morphia.query.Query;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
-import dev.morphia.query.Query;
 
 public interface DelegateTaskService {
   void touchExecutingTasks(String accountId, String delegateId, List<String> delegateTaskIds);

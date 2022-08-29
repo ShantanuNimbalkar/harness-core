@@ -26,6 +26,7 @@ import io.harness.steps.barriers.beans.BarrierSetupInfo.BarrierSetupInfoKeys;
 import io.harness.steps.barriers.beans.StageDetail.StageDetailKeys;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +36,6 @@ import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import lombok.experimental.Wither;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

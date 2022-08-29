@@ -37,6 +37,7 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import dev.morphia.converters.TypeConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.hibernate.validator.parameternameprovider.ReflectionParameterNameProvider;
-import dev.morphia.converters.TypeConverter;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import ru.vyarus.guice.validator.ValidationModule;
 

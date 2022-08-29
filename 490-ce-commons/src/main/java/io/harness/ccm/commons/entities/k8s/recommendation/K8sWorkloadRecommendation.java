@@ -31,6 +31,10 @@ import software.wings.graphql.datafetcher.ce.recommendation.entity.Cost;
 import software.wings.graphql.datafetcher.ce.recommendation.entity.ResourceRequirement;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.PostLoad;
+import dev.morphia.annotations.PrePersist;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -44,10 +48,6 @@ import lombok.Singular;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.PostLoad;
-import dev.morphia.annotations.PrePersist;
 
 @Data
 @Builder

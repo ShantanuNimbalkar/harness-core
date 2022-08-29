@@ -21,6 +21,7 @@ import io.harness.cvng.core.utils.analysisinfo.LiveMonitoringTransformer;
 import io.harness.cvng.core.utils.analysisinfo.SLIMetricTransformer;
 
 import com.google.common.base.Preconditions;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.query.UpdateOperations;
 
 @Data
 @FieldNameConstants(innerTypeName = "SplunkMetricCVConfigKeys")

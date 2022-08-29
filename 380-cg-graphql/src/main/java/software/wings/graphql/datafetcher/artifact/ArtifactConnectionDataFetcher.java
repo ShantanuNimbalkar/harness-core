@@ -29,10 +29,10 @@ import software.wings.security.PermissionAttribute;
 import software.wings.security.annotations.AuthRule;
 
 import com.google.inject.Inject;
-import graphql.schema.DataFetchingEnvironment;
-import java.util.List;
 import dev.morphia.query.Query;
 import dev.morphia.query.Sort;
+import graphql.schema.DataFetchingEnvironment;
+import java.util.List;
 
 @OwnedBy(CDC)
 public class ArtifactConnectionDataFetcher

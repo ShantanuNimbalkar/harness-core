@@ -128,6 +128,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.mongodb.MongoClient;
+import dev.morphia.converters.TypeConverter;
 import io.dropwizard.Configuration;
 import io.dropwizard.lifecycle.Managed;
 import java.io.Closeable;
@@ -147,7 +148,6 @@ import org.hibernate.validator.parameternameprovider.ReflectionParameterNameProv
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import dev.morphia.converters.TypeConverter;
 import org.springframework.core.convert.converter.Converter;
 import ru.vyarus.guice.validator.ValidationModule;
 

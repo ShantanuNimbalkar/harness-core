@@ -35,6 +35,9 @@ import software.wings.service.intfc.yaml.sync.GitSyncService;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,9 +45,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
 
 @Slf4j
 public class GitSyncEntitiesExpiryHandler implements Handler<Account> {

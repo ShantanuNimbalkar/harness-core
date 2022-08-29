@@ -47,6 +47,7 @@ import io.harness.rule.Owner;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import dev.morphia.query.Sort;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -61,7 +62,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import dev.morphia.query.Sort;
 
 public class SLIRecordServiceImplTest extends CvNextGenTestBase {
   @Spy @Inject private SLIRecordServiceImpl sliRecordService;

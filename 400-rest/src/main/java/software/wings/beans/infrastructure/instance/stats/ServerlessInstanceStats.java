@@ -29,6 +29,8 @@ import software.wings.beans.EntityType;
 import software.wings.beans.infrastructure.instance.InvocationCount.InvocationCountKey;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -43,8 +45,6 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.NonFinal;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

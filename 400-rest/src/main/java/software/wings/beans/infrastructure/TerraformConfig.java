@@ -25,6 +25,8 @@ import software.wings.beans.GitFileConfig;
 import software.wings.beans.NameValuePair;
 
 import com.github.reinert.jjschema.SchemaIgnore;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,8 +34,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @SuperBuilder(toBuilder = true)

@@ -26,11 +26,11 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.mongodb.MongoClient;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.AdvancedDatastore;
 import dev.morphia.Morphia;
 import dev.morphia.ObjectFactory;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TestMongoModule extends AbstractModule implements MongoRuleMixin {

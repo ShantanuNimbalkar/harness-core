@@ -15,9 +15,9 @@ import software.wings.beans.Base;
 
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.base.MoreObjects;
+import dev.morphia.annotations.Entity;
 import java.util.Objects;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 /**
  * Created by bsollish on 8/30/17

@@ -15,6 +15,7 @@ import io.harness.cvng.beans.DataSourceType;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.io.Resources;
+import dev.morphia.query.UpdateOperations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.query.UpdateOperations;
 
 @JsonTypeName("DATADOG_LOG")
 @Data

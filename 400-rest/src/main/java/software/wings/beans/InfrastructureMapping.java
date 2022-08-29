@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,6 @@ import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 
 @JsonTypeInfo(use = Id.NAME, property = "infraMappingType")
 @NoArgsConstructor

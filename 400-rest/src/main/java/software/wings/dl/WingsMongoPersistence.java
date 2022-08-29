@@ -62,6 +62,11 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import dev.morphia.AdvancedDatastore;
+import dev.morphia.DatastoreImpl;
+import dev.morphia.mapping.Mapper;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import io.dropwizard.lifecycle.Managed;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -77,11 +82,6 @@ import java.util.concurrent.Callable;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import dev.morphia.AdvancedDatastore;
-import dev.morphia.DatastoreImpl;
-import dev.morphia.mapping.Mapper;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 /**
  * The Class WingsMongoPersistence.

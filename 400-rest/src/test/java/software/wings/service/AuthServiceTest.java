@@ -92,6 +92,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.inject.Inject;
+import dev.morphia.AdvancedDatastore;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -107,7 +108,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import dev.morphia.AdvancedDatastore;
 
 /**
  * Created by anubhaw on 8/31/16.

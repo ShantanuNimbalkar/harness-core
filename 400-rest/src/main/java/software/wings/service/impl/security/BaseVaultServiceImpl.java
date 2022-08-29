@@ -44,10 +44,10 @@ import software.wings.settings.SettingVariableTypes;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.time.Duration;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Query;
 
 @Slf4j
 public class BaseVaultServiceImpl extends AbstractSecretServiceImpl {

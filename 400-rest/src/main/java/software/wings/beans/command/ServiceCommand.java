@@ -25,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.base.MoreObjects;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Transient;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -32,8 +34,6 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Transient;
 
 /**
  * Created by peeyushaggarwal on 11/16/16.

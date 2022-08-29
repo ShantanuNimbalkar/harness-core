@@ -11,10 +11,10 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.queue.Queuable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data

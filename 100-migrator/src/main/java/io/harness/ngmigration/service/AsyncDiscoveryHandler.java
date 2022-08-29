@@ -22,6 +22,8 @@ import software.wings.ngmigration.NGMigrationEntityType;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,8 +31,6 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.InternalServerErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)

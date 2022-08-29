@@ -47,6 +47,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets.SetView;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.Key;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,9 +60,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.Key;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Singleton
 @Slf4j

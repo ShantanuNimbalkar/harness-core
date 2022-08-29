@@ -17,6 +17,7 @@ import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.persistence.UuidAccess;
 
+import dev.morphia.annotations.Entity;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -24,7 +25,6 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

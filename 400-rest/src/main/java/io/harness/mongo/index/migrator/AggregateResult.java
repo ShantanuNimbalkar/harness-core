@@ -9,9 +9,9 @@ package io.harness.mongo.index.migrator;
 
 import io.harness.persistence.PersistentEntity;
 
-import lombok.Data;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import lombok.Data;
 
 @Data
 @Entity(noClassnameStored = true)

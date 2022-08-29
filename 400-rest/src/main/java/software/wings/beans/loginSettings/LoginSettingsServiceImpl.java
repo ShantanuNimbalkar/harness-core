@@ -40,6 +40,8 @@ import software.wings.service.intfc.UserService;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -51,8 +53,6 @@ import javax.annotation.Nonnull;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 import org.passay.PasswordData;
 
 @Slf4j

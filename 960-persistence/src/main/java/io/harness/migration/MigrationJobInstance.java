@@ -13,13 +13,13 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UpdatedAtAware;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.EnumSet;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @Builder

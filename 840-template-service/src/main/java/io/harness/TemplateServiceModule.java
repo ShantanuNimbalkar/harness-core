@@ -95,6 +95,7 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import dev.morphia.converters.TypeConverter;
 import io.dropwizard.jackson.Jackson;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.converters.TypeConverter;
 import org.springframework.core.convert.converter.Converter;
 
 @Slf4j

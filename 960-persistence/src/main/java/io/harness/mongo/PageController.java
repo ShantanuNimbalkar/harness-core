@@ -35,17 +35,17 @@ import io.harness.mongo.SampleEntity.SampleEntityKeys;
 import io.harness.persistence.HQuery;
 
 import com.google.common.base.Preconditions;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.Datastore;
 import dev.morphia.mapping.MappedClass;
 import dev.morphia.mapping.Mapper;
 import dev.morphia.query.Criteria;
 import dev.morphia.query.FieldEnd;
 import dev.morphia.query.Query;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @UtilityClass
 @Slf4j
@@ -170,7 +170,7 @@ public class PageController {
                   Arrays.asList(opSearchFilter), cls, mapper);
 
               // TODO[MORPHIA_UPGRADE] (prashant) : figure out what get children is doing and fix it
-//              criteria.addAll(((HQuery) tQuery).getChildren());
+              //              criteria.addAll(((HQuery) tQuery).getChildren());
             } else {
               criteria.add(applyOperator(query.criteria(opSearchFilter.getFieldName()), opSearchFilter));
             }

@@ -28,6 +28,7 @@ import io.harness.cvng.core.utils.analysisinfo.SLIMetricTransformer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,6 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.query.UpdateOperations;
 
 @JsonTypeName("APP_DYNAMICS")
 @Data

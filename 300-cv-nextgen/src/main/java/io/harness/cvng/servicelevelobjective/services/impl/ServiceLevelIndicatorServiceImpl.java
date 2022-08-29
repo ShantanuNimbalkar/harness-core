@@ -58,6 +58,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
+import dev.morphia.query.Criteria;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.lang.reflect.Type;
 import java.time.Clock;
 import java.time.Duration;
@@ -76,9 +79,6 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.query.Criteria;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 public class ServiceLevelIndicatorServiceImpl implements ServiceLevelIndicatorService {

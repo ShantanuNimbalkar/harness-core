@@ -28,6 +28,8 @@ import io.harness.persistence.UuidAware;
 import software.wings.graphql.datafetcher.ce.recommendation.entity.Cost;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -39,8 +41,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @Builder

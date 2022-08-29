@@ -22,6 +22,8 @@ import io.harness.persistence.UuidAware;
 import io.harness.validation.Update;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -29,8 +31,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @Builder

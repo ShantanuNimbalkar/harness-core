@@ -34,6 +34,11 @@ import software.wings.graphql.datafetcher.DataFetcherUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.Criteria;
+import dev.morphia.query.CriteriaContainer;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
+import dev.morphia.query.UpdateOperations;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,11 +53,6 @@ import java.util.Map;
 import javax.management.openmbean.InvalidKeyException;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Criteria;
-import dev.morphia.query.CriteriaContainer;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
-import dev.morphia.query.UpdateOperations;
 
 @Singleton
 @Slf4j

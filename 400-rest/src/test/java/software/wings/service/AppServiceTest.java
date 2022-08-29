@@ -43,6 +43,7 @@ import static software.wings.utils.WingsTestConstants.TEMPLATE_ID;
 import static software.wings.utils.WingsTestConstants.WORKFLOW_EXECUTION_ID;
 import static software.wings.utils.WingsTestConstants.mockChecker;
 
+import static dev.morphia.mapping.Mapper.ID_KEY;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -59,7 +60,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static dev.morphia.mapping.Mapper.ID_KEY;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
@@ -110,6 +110,10 @@ import software.wings.yaml.gitSync.YamlGitConfig;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import dev.morphia.Key;
+import dev.morphia.query.FieldEnd;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,10 +130,6 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import dev.morphia.Key;
-import dev.morphia.query.FieldEnd;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 /**
  * The type App service test.

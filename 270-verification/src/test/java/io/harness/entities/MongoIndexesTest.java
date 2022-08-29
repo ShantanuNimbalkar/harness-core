@@ -21,6 +21,8 @@ import io.harness.rule.Owner;
 import software.wings.beans.Account;
 
 import com.google.inject.Inject;
+import dev.morphia.Morphia;
+import dev.morphia.ObjectFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -30,8 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import dev.morphia.Morphia;
-import dev.morphia.ObjectFactory;
 
 @Slf4j
 public class MongoIndexesTest extends VerificationBase {

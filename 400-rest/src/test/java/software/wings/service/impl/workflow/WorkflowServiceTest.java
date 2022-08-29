@@ -430,6 +430,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import dev.morphia.query.FieldEnd;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
 import java.util.ArrayList;
@@ -454,9 +457,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.stubbing.Answer;
-import dev.morphia.query.FieldEnd;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 /**
  * The Class WorkflowServiceTest.

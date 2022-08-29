@@ -29,6 +29,8 @@ import software.wings.beans.DelegateTaskUsageInsights.DelegateTaskUsageInsightsK
 import software.wings.beans.DelegateTaskUsageInsightsEventType;
 
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -45,8 +47,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 /**
  * This job will process all delegate task and perpetual task related delegate insights events and summarize them into

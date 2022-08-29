@@ -16,13 +16,13 @@ import io.harness.annotations.dev.TargetModule;
 
 import software.wings.beans.DeploymentSpecification;
 
+import dev.morphia.annotations.Entity;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 @OwnedBy(CDP)
 @Data

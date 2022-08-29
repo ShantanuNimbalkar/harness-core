@@ -17,8 +17,8 @@ import software.wings.beans.User.UserKeys;
 import software.wings.dl.WingsPersistence;
 
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.UpdateOperations;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AddDisabledFieldMigration implements Migration {

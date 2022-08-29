@@ -25,6 +25,7 @@ import io.harness.ngtriggers.beans.target.TargetType;
 import io.harness.persistence.PersistentEntity;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.Size;
@@ -34,7 +35,6 @@ import lombok.Singular;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

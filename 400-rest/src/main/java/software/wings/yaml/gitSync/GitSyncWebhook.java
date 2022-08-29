@@ -12,13 +12,13 @@ import io.harness.persistence.AccountAccess;
 
 import software.wings.beans.Base;
 
+import dev.morphia.annotations.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 /**
  * Created by bsollish on 10/03/17

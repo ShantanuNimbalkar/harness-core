@@ -41,6 +41,8 @@ import software.wings.settings.SettingVariableTypes;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,8 +50,6 @@ import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Singleton
 @Slf4j

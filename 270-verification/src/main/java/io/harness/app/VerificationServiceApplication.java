@@ -118,6 +118,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.name.Named;
 import com.palominolabs.metrics.guice.MetricsInstrumentationModule;
+import dev.morphia.converters.TypeConverter;
 import io.dropwizard.Application;
 import io.dropwizard.bundles.assets.ConfiguredAssetsBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -145,7 +146,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.model.Resource;
 import org.hibernate.validator.parameternameprovider.ReflectionParameterNameProvider;
-import dev.morphia.converters.TypeConverter;
 import org.reflections.Reflections;
 import ru.vyarus.guice.validator.ValidationModule;
 

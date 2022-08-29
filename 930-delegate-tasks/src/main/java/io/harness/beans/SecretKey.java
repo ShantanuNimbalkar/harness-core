@@ -13,12 +13,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.persistence.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 
 @OwnedBy(PL)

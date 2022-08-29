@@ -128,6 +128,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import com.mongodb.DuplicateKeyException;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
+import dev.morphia.query.UpdateOperations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -163,9 +166,6 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
-import dev.morphia.query.UpdateOperations;
 
 @Slf4j
 public class MonitoredServiceServiceImpl implements MonitoredServiceService {

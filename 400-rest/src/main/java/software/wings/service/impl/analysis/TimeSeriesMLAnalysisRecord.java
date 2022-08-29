@@ -14,11 +14,11 @@ import io.harness.mongo.index.SortCompoundMongoIndex;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 /**
  * Class representing entity for TimeSeries Analysis Record.

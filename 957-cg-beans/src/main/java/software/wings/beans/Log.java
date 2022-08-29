@@ -55,6 +55,8 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LongValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -65,8 +67,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = {"validUntil"})

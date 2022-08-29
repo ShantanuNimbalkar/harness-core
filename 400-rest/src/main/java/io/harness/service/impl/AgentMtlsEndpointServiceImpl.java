@@ -25,12 +25,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.mongodb.DuplicateKeyException;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import javax.validation.executable.ValidateOnExecution;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Singleton
 @ValidateOnExecution

@@ -14,8 +14,8 @@ import io.harness.morphia.MorphiaRegistrar;
 import io.harness.serializer.kryo.ScmJavaClientKryoRegistrar;
 
 import com.google.common.collect.ImmutableSet;
-import lombok.experimental.UtilityClass;
 import dev.morphia.converters.TypeConverter;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 @OwnedBy(DX)

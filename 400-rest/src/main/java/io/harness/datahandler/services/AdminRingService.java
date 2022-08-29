@@ -12,11 +12,11 @@ import io.harness.delegate.beans.DelegateRing.DelegateRingKeys;
 import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
 import dev.morphia.query.UpdateResults;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(onConstructor = @__({ @Inject }))
 public class AdminRingService {

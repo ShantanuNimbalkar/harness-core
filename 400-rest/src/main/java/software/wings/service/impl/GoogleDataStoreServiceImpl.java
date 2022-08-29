@@ -111,9 +111,8 @@ public class GoogleDataStoreServiceImpl implements DataStoreService {
 
   @Override
   public <T extends GoogleDataStoreAware> T getEntity(Class<T> clazz, String id) {
-    Key keyToFetch = datastore.newKeyFactory()
-                         .setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value())
-                         .newKey(id);
+    Key keyToFetch =
+        datastore.newKeyFactory().setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value()).newKey(id);
     try {
       return (T) clazz.newInstance().readFromCloudStorageEntity(datastore.get(keyToFetch));
     } catch (Exception ex) {
@@ -125,9 +124,8 @@ public class GoogleDataStoreServiceImpl implements DataStoreService {
   public <T extends GoogleDataStoreAware> void incrementField(
       Class<T> clazz, String id, String fieldName, int incrementCount) {
     Transaction txn = datastore.newTransaction();
-    Key keyToFetch = datastore.newKeyFactory()
-                         .setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value())
-                         .newKey(id);
+    Key keyToFetch =
+        datastore.newKeyFactory().setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value()).newKey(id);
     Entity entity = txn.get(keyToFetch);
     Entity updatedEntity = Entity.newBuilder(entity).set(fieldName, entity.getLong(fieldName) + incrementCount).build();
     txn.put(updatedEntity);
@@ -138,9 +136,8 @@ public class GoogleDataStoreServiceImpl implements DataStoreService {
   public void delete(Class<? extends GoogleDataStoreAware> clazz, String id) {
     log.info("Deleting from GoogleDatastore table {}, id: {}",
         clazz.getAnnotation(dev.morphia.annotations.Entity.class).value(), id);
-    Key keyToDelete = datastore.newKeyFactory()
-                          .setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value())
-                          .newKey(id);
+    Key keyToDelete =
+        datastore.newKeyFactory().setKind(clazz.getAnnotation(dev.morphia.annotations.Entity.class).value()).newKey(id);
     datastore.delete(keyToDelete);
     log.info("Deleted from GoogleDatastore table {}, id: {}",
         clazz.getAnnotation(dev.morphia.annotations.Entity.class).value(), id);

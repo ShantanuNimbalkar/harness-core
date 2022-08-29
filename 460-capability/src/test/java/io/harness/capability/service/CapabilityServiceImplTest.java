@@ -34,6 +34,7 @@ import io.harness.delegate.beans.executioncapability.SelectorCapability;
 import io.harness.observer.Subject;
 import io.harness.rule.Owner;
 
+import dev.morphia.FindAndModifyOptions;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -51,7 +52,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import dev.morphia.FindAndModifyOptions;
 
 public class CapabilityServiceImplTest extends CapabilityTestBase {
   @Mock Subject<CapabilitySubjectPermissionCrudObserver> capSubjectPermissionTaskCrudSubject;

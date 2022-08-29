@@ -22,11 +22,11 @@ import io.harness.validation.Update;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.reinert.jjschema.SchemaIgnore;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 import org.springframework.data.annotation.TypeAlias;
 
 @Data

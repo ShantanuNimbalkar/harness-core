@@ -58,6 +58,8 @@ import software.wings.service.impl.artifact.ArtifactCollectionUtils;
 import software.wings.service.intfc.ArtifactService;
 
 import com.google.inject.Inject;
+import dev.morphia.query.MorphiaIterator;
+import dev.morphia.query.Query;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.assertj.core.util.Maps;
@@ -66,8 +68,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import dev.morphia.query.MorphiaIterator;
-import dev.morphia.query.Query;
 
 public class BuildSourceCleanupHelperTest extends WingsBaseTest {
   private static final String ARTIFACT_STREAM_ID_1 = "ARTIFACT_STREAM_ID_1";

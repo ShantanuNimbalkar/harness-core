@@ -18,10 +18,10 @@ import io.harness.mongo.iterator.MongoPersistenceIterator.SchedulingType;
 import io.harness.mongo.iterator.filter.SpringFilterExpander;
 
 import com.mongodb.BasicDBObject;
+import dev.morphia.query.FilterOperator;
 import java.time.Duration;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
-import dev.morphia.query.FilterOperator;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

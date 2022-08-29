@@ -23,6 +23,8 @@ import io.harness.template.entity.TemplateEntity;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import dev.morphia.Morphia;
+import dev.morphia.ObjectFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -32,8 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import dev.morphia.Morphia;
-import dev.morphia.ObjectFactory;
 
 @Slf4j
 @OwnedBy(HarnessTeam.CDC)

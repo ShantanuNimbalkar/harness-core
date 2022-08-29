@@ -9,10 +9,10 @@ package io.harness.connector.entities.embedded.dynatraceconnector;
 
 import io.harness.connector.entities.Connector;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

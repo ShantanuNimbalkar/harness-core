@@ -27,6 +27,7 @@ import io.harness.serializer.JsonUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.query.UpdateOperations;
 
 @JsonTypeName("STACKDRIVER")
 @Data

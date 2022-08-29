@@ -13,8 +13,8 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static software.wings.beans.AmiDeploymentType.AWS_ASG;
 import static software.wings.beans.AmiDeploymentType.SPOTINST;
 
-import static java.util.stream.Collectors.toList;
 import static dev.morphia.mapping.Mapper.ID_KEY;
+import static java.util.stream.Collectors.toList;
 
 import io.harness.beans.PageRequest;
 import io.harness.beans.PageResponse;
@@ -36,10 +36,10 @@ import software.wings.service.intfc.InfrastructureDefinitionService;
 import software.wings.service.intfc.InfrastructureMappingService;
 
 import com.google.inject.Inject;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AmiDeploymentTypeMigration implements Migration {

@@ -10,11 +10,11 @@ package io.harness.connector.entities.embedded.kubernetescluster;
 import io.harness.connector.entities.Connector;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesCredentialType;
 
+import dev.morphia.annotations.Entity;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

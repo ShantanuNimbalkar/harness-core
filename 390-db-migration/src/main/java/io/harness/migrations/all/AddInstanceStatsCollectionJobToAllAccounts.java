@@ -17,8 +17,8 @@ import software.wings.scheduler.InstanceStatsCollectorJob;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.Query;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author rktummala on 10/08/2018

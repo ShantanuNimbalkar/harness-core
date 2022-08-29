@@ -16,13 +16,13 @@ import io.harness.mongo.index.SortCompoundMongoIndex;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 
 /**
  * ExperimentalMetricAnalysisRecord is the payload send after ML Analysis of Experimental Task.

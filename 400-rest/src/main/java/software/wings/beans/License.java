@@ -10,10 +10,10 @@ package software.wings.beans;
 import io.harness.annotation.HarnessEntity;
 import io.harness.beans.EmbeddedUser;
 
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 /**
  * Created by peeyushaggarwal on 3/22/17.

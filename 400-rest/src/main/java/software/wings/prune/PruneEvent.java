@@ -14,12 +14,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.queue.Queuable;
 
+import dev.morphia.annotations.Entity;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import dev.morphia.annotations.Entity;
 
 @Value
 @EqualsAndHashCode(callSuper = true)

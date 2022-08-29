@@ -14,9 +14,9 @@ import software.wings.beans.artifact.Artifact;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import java.util.Date;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Reference;
+import java.util.Date;
 
 @Entity(value = "collectorQueue2", noClassnameStored = true)
 @HarnessEntity(exportable = false)

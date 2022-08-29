@@ -13,12 +13,12 @@ import io.harness.mongo.index.FdIndex;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.persistence.PersistentEntity;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.Date;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 // The capability that we are checking for
 @Data

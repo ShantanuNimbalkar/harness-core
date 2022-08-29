@@ -29,6 +29,7 @@ import software.wings.jersey.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.HashMap;
 import java.util.List;
 import lombok.EqualsAndHashCode;
@@ -36,7 +37,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.UtilityClass;
-import dev.morphia.annotations.Entity;
 
 /**
  * HttpAuditHeader bean class.

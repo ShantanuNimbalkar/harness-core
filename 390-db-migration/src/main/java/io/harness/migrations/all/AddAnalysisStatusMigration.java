@@ -18,11 +18,11 @@ import software.wings.service.impl.analysis.LogMLAnalysisRecord.LogMLAnalysisRec
 import software.wings.service.impl.analysis.LogMLAnalysisStatus;
 
 import com.google.inject.Inject;
-import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
 import dev.morphia.query.UpdateResults;
+import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AddAnalysisStatusMigration implements Migration {

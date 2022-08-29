@@ -45,6 +45,8 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LongValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -60,8 +62,6 @@ import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import org.apache.http.HttpStatus;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 /**
  * Created by rsingh on 1/8/18.

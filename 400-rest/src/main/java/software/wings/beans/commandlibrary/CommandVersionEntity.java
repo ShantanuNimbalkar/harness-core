@@ -17,6 +17,8 @@ import io.harness.validation.Update;
 import software.wings.beans.Variable;
 import software.wings.beans.template.BaseTemplate;
 
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.List;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
@@ -25,8 +27,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @Builder

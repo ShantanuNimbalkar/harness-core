@@ -9,12 +9,12 @@ package io.harness.cvng.core.entities.changeSource;
 
 import io.harness.mongo.index.FdIndex;
 
+import dev.morphia.query.UpdateOperations;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.query.UpdateOperations;
 
 @Data
 @SuperBuilder

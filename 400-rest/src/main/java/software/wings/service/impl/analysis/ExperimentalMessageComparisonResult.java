@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Key;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +36,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @Data
 @Builder

@@ -21,10 +21,10 @@ import software.wings.dl.WingsPersistence;
 import software.wings.security.PermissionAttribute.PermissionType;
 
 import com.google.inject.Inject;
-import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class UserPermissionReadMigration implements Migration {

@@ -28,14 +28,14 @@ import software.wings.service.impl.DelegateTaskStatusObserver;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
 
 @Singleton
 @Slf4j

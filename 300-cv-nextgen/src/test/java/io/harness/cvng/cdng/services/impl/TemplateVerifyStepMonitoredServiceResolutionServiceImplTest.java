@@ -38,6 +38,7 @@ import io.harness.rule.Owner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -46,7 +47,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import dev.morphia.query.Query;
 
 public class TemplateVerifyStepMonitoredServiceResolutionServiceImplTest extends CvNextGenTestBase {
   @Inject private TemplateVerifyStepMonitoredServiceResolutionServiceImpl templateService;

@@ -16,6 +16,7 @@ import io.harness.file.GcsHarnessFileMetadata;
 import io.harness.mongo.index.FdIndex;
 import io.harness.persistence.PersistentEntity;
 
+import dev.morphia.annotations.Entity;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +25,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

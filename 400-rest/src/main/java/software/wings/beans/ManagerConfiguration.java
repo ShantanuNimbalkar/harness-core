@@ -10,9 +10,9 @@ package software.wings.beans;
 import io.harness.annotation.HarnessEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import dev.morphia.annotations.Entity;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data

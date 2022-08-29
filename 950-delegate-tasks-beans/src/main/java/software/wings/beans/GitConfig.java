@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
+import dev.morphia.annotations.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,7 +52,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Transient;
 
 @JsonTypeName("GIT")
 @Data

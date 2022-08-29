@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import dev.morphia.converters.TypeConverter;
 import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -38,7 +39,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import dev.morphia.converters.TypeConverter;
 
 @Slf4j
 public class EventServiceRule implements MethodRule, InjectorRuleMixin, MongoRuleMixin {

@@ -66,6 +66,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.mongodb.DuplicateKeyException;
+import dev.morphia.annotations.Transient;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +76,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.annotations.Transient;
 @Slf4j
 public class GitCommandCallback implements NotifyCallbackWithErrorHandling {
   private String accountId;

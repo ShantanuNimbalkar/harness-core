@@ -12,10 +12,10 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.persistence.PersistentEntity;
 
-import lombok.Value;
-import lombok.experimental.FieldNameConstants;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import lombok.Value;
+import lombok.experimental.FieldNameConstants;
 
 @Value
 @Entity(value = "cdcStateEntity", noClassnameStored = true)

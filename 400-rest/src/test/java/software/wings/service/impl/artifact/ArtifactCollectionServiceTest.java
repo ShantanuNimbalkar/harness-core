@@ -107,6 +107,8 @@ import software.wings.utils.WingsTestConstants;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import dev.morphia.query.MorphiaIterator;
+import dev.morphia.query.Query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -120,8 +122,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import dev.morphia.query.MorphiaIterator;
-import dev.morphia.query.Query;
 
 @OwnedBy(CDC)
 public class ArtifactCollectionServiceTest extends WingsBaseTest {

@@ -22,11 +22,6 @@ import io.harness.observer.Subject;
 
 import com.google.common.collect.Sets;
 import com.mongodb.DBCollection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.Datastore;
 import dev.morphia.Key;
 import dev.morphia.query.CountOptions;
@@ -36,6 +31,11 @@ import dev.morphia.query.MorphiaIterator;
 import dev.morphia.query.MorphiaKeyIterator;
 import dev.morphia.query.Query;
 import dev.morphia.query.QueryImpl;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The type H query.
@@ -82,11 +82,11 @@ public class HQuery<T> extends QueryImpl<T> {
     this.traceMode = traceMode;
     this.tracerSubject = tracerSubject;
   }
-    // TODO[MORPHIA_UPGRADE] (prashant) : Figure out the iterator
-//  public MorphiaIterator<T, T> iterator() {
-//    log.error("Do not use the query as iterator directly.", new Exception(""));
-//    return this.fetch();
-//  }
+  // TODO[MORPHIA_UPGRADE] (prashant) : Figure out the iterator
+  //  public MorphiaIterator<T, T> iterator() {
+  //    log.error("Do not use the query as iterator directly.", new Exception(""));
+  //    return this.fetch();
+  //  }
 
   private void checkKeyListSize(List<Key<T>> list) {
     if (!queryChecks.contains(COUNT)) {
@@ -197,10 +197,11 @@ public class HQuery<T> extends QueryImpl<T> {
     }
 
     // TODO[MORPHIA_UPGRADE] (prashant) : GetChildren what wass it returning? This usage just logs so can ignore as well
-//    if (!this.getChildren().stream().map(Criteria::getFieldName).anyMatch(requiredFilterArgs::contains)) {
-//      log.error("QUERY-ENFORCEMENT: appId or accountId must be present in List(Object/Key)/Get/Count/Search query",
-//          new Exception(""));
-//    }
+    //    if (!this.getChildren().stream().map(Criteria::getFieldName).anyMatch(requiredFilterArgs::contains)) {
+    //      log.error("QUERY-ENFORCEMENT: appId or accountId must be present in List(Object/Key)/Get/Count/Search
+    //      query",
+    //          new Exception(""));
+    //    }
   }
 
   private void traceQuery() {

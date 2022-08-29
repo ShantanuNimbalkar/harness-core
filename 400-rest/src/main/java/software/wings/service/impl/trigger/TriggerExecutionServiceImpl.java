@@ -22,10 +22,10 @@ import software.wings.service.intfc.trigger.TriggerExecutionService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.util.EnumSet;
-import javax.validation.executable.ValidateOnExecution;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
+import java.util.EnumSet;
+import javax.validation.executable.ValidateOnExecution;
 
 @OwnedBy(CDC)
 @Singleton

@@ -17,12 +17,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.mongo.index.FdTtlIndex;
 import io.harness.persistence.AccountAccess;
 
+import dev.morphia.annotations.Entity;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 import org.simpleframework.xml.Transient;
 
 @OwnedBy(PL)

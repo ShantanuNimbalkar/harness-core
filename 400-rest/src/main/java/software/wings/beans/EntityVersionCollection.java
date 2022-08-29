@@ -14,12 +14,12 @@ import io.harness.mongo.index.MongoIndex;
 import io.harness.yaml.BaseYaml;
 
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 @Entity(value = "entityVersions", noClassnameStored = true)
 @FieldNameConstants(innerTypeName = "EntityVersionCollectionKeys")

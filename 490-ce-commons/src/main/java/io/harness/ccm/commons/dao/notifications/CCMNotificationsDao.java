@@ -14,9 +14,9 @@ import io.harness.ccm.commons.entities.notifications.CCMNotificationSetting.CCMN
 import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
-import java.util.List;
 import dev.morphia.query.Query;
 import dev.morphia.query.UpdateOperations;
+import java.util.List;
 
 public class CCMNotificationsDao {
   @Inject private HPersistence persistence;

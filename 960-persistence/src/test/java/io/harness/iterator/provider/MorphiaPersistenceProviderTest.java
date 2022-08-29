@@ -20,9 +20,9 @@ import io.harness.mongo.iterator.provider.MorphiaPersistenceProvider;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import dev.morphia.query.Query;
 
 public class MorphiaPersistenceProviderTest extends PersistenceTestBase {
   @Inject private MorphiaPersistenceProvider<TestIterableEntity> persistenceProvider;

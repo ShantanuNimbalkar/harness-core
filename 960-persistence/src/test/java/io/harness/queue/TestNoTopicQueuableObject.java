@@ -7,9 +7,9 @@
 
 package io.harness.queue;
 
+import dev.morphia.annotations.Entity;
 import lombok.Getter;
 import lombok.Setter;
-import dev.morphia.annotations.Entity;
 
 @Entity(value = "!!!testNoTopicQueue", noClassnameStored = true)
 public class TestNoTopicQueuableObject extends Queuable {

@@ -9,11 +9,11 @@ package io.harness.ng.core.activityhistory.entity;
 
 import io.harness.connector.ConnectorValidationResult;
 
+import dev.morphia.annotations.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.annotation.TypeAlias;
 

@@ -18,6 +18,7 @@ import software.wings.alerts.AlertCategory;
 import software.wings.beans.Base;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.morphia.annotations.Entity;
 import java.util.Collections;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -29,7 +30,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
 
 @OwnedBy(PL)
 @Getter

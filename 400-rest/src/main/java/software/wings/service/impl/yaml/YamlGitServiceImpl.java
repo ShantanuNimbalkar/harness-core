@@ -159,6 +159,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -171,8 +173,6 @@ import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
 import javax.ws.rs.core.HttpHeaders;
 import lombok.extern.slf4j.Slf4j;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
 /**
  * The type Yaml git sync service.
  */

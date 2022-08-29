@@ -19,6 +19,7 @@ import io.harness.ng.DbAliases;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.time.Instant;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -26,7 +27,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotBlank;
-import dev.morphia.annotations.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;

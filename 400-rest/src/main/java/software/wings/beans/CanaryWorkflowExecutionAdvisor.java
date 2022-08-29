@@ -87,6 +87,7 @@ import software.wings.sm.states.PhaseSubWorkflow;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import dev.morphia.annotations.Transient;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -95,7 +96,6 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlException;
-import dev.morphia.annotations.Transient;
 
 /**
  * Created by rishi on 1/24/17.

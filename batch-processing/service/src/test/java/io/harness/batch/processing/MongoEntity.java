@@ -9,9 +9,9 @@ package io.harness.batch.processing;
 
 import software.wings.beans.Base;
 
+import dev.morphia.annotations.Entity;
 import lombok.Getter;
 import lombok.Setter;
-import dev.morphia.annotations.Entity;
 
 @Entity(value = "!!!testMongo", noClassnameStored = true)
 public class MongoEntity extends Base {

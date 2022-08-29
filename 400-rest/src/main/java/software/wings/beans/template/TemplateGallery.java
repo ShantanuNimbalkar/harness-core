@@ -19,6 +19,7 @@ import software.wings.beans.entityinterface.KeywordsAware;
 
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
 import java.util.List;
 import java.util.Set;
 import lombok.Builder;
@@ -27,7 +28,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 
 @Data
 @NoArgsConstructor

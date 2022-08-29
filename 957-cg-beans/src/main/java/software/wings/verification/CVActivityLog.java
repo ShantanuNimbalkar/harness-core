@@ -29,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -38,8 +40,6 @@ import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 
 @FieldNameConstants(innerTypeName = "CVActivityLogKeys")
 @Data

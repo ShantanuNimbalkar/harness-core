@@ -11,9 +11,9 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.persistence.AccountAccess;
 import io.harness.persistence.PersistentEntity;
 
-import lombok.Value;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import lombok.Value;
 
 @Value
 @Entity(value = "notificationRulesStatuses", noClassnameStored = true)

@@ -15,8 +15,8 @@ import software.wings.dl.WingsPersistence;
 import software.wings.service.intfc.ServiceVariableService;
 
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import dev.morphia.query.Query;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by rsingh on 6/1/18.

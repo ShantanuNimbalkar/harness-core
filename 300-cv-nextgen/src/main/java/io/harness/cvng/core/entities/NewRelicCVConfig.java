@@ -29,6 +29,7 @@ import io.harness.cvng.core.utils.analysisinfo.SLIMetricTransformer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
+import dev.morphia.query.UpdateOperations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,6 @@ import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import dev.morphia.query.UpdateOperations;
 
 @JsonTypeName("NEW_RELIC")
 @Data

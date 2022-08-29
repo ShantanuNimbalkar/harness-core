@@ -86,6 +86,7 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import dev.morphia.converters.TypeConverter;
 import graphql.GraphQL;
 import java.io.Closeable;
 import java.lang.annotation.Annotation;
@@ -103,7 +104,6 @@ import org.hibernate.validator.parameternameprovider.ReflectionParameterNameProv
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import dev.morphia.converters.TypeConverter;
 import org.springframework.core.convert.converter.Converter;
 import ru.vyarus.guice.validator.ValidationModule;
 

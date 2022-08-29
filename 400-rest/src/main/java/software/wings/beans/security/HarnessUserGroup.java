@@ -21,13 +21,13 @@ import io.harness.mongo.index.FdIndex;
 import software.wings.beans.Base;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import dev.morphia.annotations.Entity;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
 
 /**
  * User bean class.

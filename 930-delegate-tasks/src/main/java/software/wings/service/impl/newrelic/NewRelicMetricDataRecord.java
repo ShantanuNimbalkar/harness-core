@@ -46,6 +46,9 @@ import com.google.cloud.datastore.Key;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Transient;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.OffsetDateTime;
@@ -61,9 +64,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.validator.constraints.NotEmpty;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
-import dev.morphia.annotations.Transient;
 
 /**
  * Created by rsingh on 08/30/17.
