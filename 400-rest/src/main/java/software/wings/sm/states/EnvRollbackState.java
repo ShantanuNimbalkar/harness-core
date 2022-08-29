@@ -1,6 +1,8 @@
 package software.wings.sm.states;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static java.util.Arrays.asList;
+import static software.wings.api.EnvStateExecutionData.Builder.anEnvStateExecutionData;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -8,6 +10,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.RepairActionCode;
 
 import software.wings.api.EnvStateExecutionData;
+import software.wings.beans.WorkflowExecution;
 import software.wings.service.impl.WorkflowExecutionUpdate;
 import software.wings.service.intfc.PipelineService;
 import software.wings.service.intfc.WorkflowExecutionService;
@@ -68,9 +71,20 @@ public class EnvRollbackState extends State implements WorkflowState {
   @Override
   public ExecutionResponse execute(ExecutionContext context) {
     ExecutionContextImpl executionContext = (ExecutionContextImpl) context;
+    String workflowId = context.getWorkflowId();
+
+    EnvStateExecutionData envStateExecutionData = anEnvStateExecutionData().withWorkflowId(workflowId).build();
+
     EnvStateExecutionData stateExecutionData = (EnvStateExecutionData) executionContext.getStateExecutionInstance().getStateExecutionMap().get(this.getName().replace(ROLLBACK_PREFIX, ""));
-    StateMachine rollbackStateMachine = rollbackStateMachineGenerator.generateForRollbackExecution(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    return null;
+    WorkflowExecution workflowExecution = executionService.getWorkflowExecution(executionContext.getAppId(), stateExecutionData.getWorkflowExecutionId());
+    WorkflowExecution rollbackExecution = executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution);
+
+    envStateExecutionData.setWorkflowExecutionId(rollbackExecution.getUuid());
+    return ExecutionResponse.builder()
+        .async(true)
+        .correlationIds(asList(rollbackExecution.getUuid()))
+        .stateExecutionData(envStateExecutionData)
+        .build();
   }
 
   @Override

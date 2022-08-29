@@ -3488,9 +3488,6 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
   WorkflowExecution triggerRollbackExecution(
       String appId, String envId, ExecutionArgs executionArgs, WorkflowExecution previousWorkflowExecution) {
     String accountId = appService.getAccountIdByAppId(appId);
-    if (PIPELINE == executionArgs.getWorkflowType()) {
-      throw new InvalidRequestException("Emergency rollback not supported for pipelines");
-    }
 
     log.debug("Received an emergency rollback  execution request");
     if (executionArgs.getOrchestrationId() == null) {
