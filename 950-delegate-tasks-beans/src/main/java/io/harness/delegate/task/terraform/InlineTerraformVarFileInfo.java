@@ -8,9 +8,9 @@
 package io.harness.delegate.task.terraform;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class InlineTerraformVarFileInfo extends InlineTerraformFileInfo implements TerraformVarFileInfo {
-}
+public class InlineTerraformVarFileInfo extends InlineTerraformFileInfo implements TerraformVarFileInfo {}

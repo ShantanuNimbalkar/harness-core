@@ -10,9 +10,10 @@ package io.harness.delegate.task.terraform;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.expression.ExpressionReflectionUtils.NestedAnnotationResolver;
+
 import lombok.experimental.SuperBuilder;
 
 @OwnedBy(HarnessTeam.CDP)
 @SuperBuilder
-public class RemoteTerraformBackendConfigFileInfo extends RemoteTerraformFileInfo implements TerraformBackendConfigFileInfo,NestedAnnotationResolver {
-}
+public class RemoteTerraformBackendConfigFileInfo
+    extends RemoteTerraformFileInfo implements TerraformBackendConfigFileInfo, NestedAnnotationResolver {}

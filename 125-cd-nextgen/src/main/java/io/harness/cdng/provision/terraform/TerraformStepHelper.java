@@ -133,19 +133,21 @@ public class TerraformStepHelper {
   @Inject private CDStepHelper cdStepHelper;
   @Inject public TerraformConfigDAL terraformConfigDAL;
 
-  public static Optional<EntityDetail> prepareEntityDetailForBackendConfigFiles(String accountId, String orgIdentifier, String projectIdentifier, TerraformBackendConfig config) {
-    if (config == null || config.getType().equals(TerraformVarFileTypes.Inline)) {return Optional.empty(); }
-    String connectorRef = ((RemoteTerraformBackendConfigSpec) config.getTerraformBackendConfigSpec())
-            .getStore()
-            .getSpec()
-            .getConnectorReference()
-            .getValue();
-    IdentifierRef identifierRef =
-            IdentifierRefHelper.getIdentifierRef(connectorRef, accountId, orgIdentifier, projectIdentifier);
-    EntityDetail entityDetail =
-            EntityDetail.builder().type(EntityType.CONNECTORS).entityRef(identifierRef).build();
-    return Optional.of(entityDetail);
+  public static Optional<EntityDetail> prepareEntityDetailForBackendConfigFiles(
+      String accountId, String orgIdentifier, String projectIdentifier, TerraformBackendConfig config) {
+    if (config == null || config.getType().equals(TerraformVarFileTypes.Inline)) {
+      return Optional.empty();
     }
+    String connectorRef = ((RemoteTerraformBackendConfigSpec) config.getTerraformBackendConfigSpec())
+                              .getStore()
+                              .getSpec()
+                              .getConnectorReference()
+                              .getValue();
+    IdentifierRef identifierRef =
+        IdentifierRefHelper.getIdentifierRef(connectorRef, accountId, orgIdentifier, projectIdentifier);
+    EntityDetail entityDetail = EntityDetail.builder().type(EntityType.CONNECTORS).entityRef(identifierRef).build();
+    return Optional.of(entityDetail);
+  }
 
   public static List<EntityDetail> prepareEntityDetailsForVarFiles(
       String accountId, String orgIdentifier, String projectIdentifier, Map<String, TerraformVarFile> varFiles) {
@@ -670,13 +672,14 @@ public class TerraformStepHelper {
 
   // Conversion Methods
 
-  public TerraformBackendConfigFileInfo toTerraformBackendFileInfo(TerraformBackendConfig backendConfig, Ambiance ambiance) {
+  public TerraformBackendConfigFileInfo toTerraformBackendFileInfo(
+      TerraformBackendConfig backendConfig, Ambiance ambiance) {
     TerraformBackendConfigFileInfo fileInfo = null;
     if (backendConfig != null) {
       TerraformBackendConfigSpec spec = backendConfig.getTerraformBackendConfigSpec();
       if (spec instanceof InlineTerraformBackendConfigSpec) {
         String content =
-                ParameterFieldHelper.getParameterFieldValue(((InlineTerraformBackendConfigSpec) spec).getContent());
+            ParameterFieldHelper.getParameterFieldValue(((InlineTerraformBackendConfigSpec) spec).getContent());
         if (EmptyPredicate.isNotEmpty(content)) {
           fileInfo = InlineTerraformBackendConfigFileInfo.builder().varFileContent(content).build();
         }
@@ -686,14 +689,14 @@ public class TerraformStepHelper {
           StoreConfig storeConfig = storeConfigWrapper.getSpec();
           // Retrieve the files from the GIT stores
           GitFetchFilesConfig gitFetchFilesConfig =
-                  getGitFetchFilesConfig(storeConfig, ambiance, TF_BACKEND_CONFIG_FILE);
+              getGitFetchFilesConfig(storeConfig, ambiance, TF_BACKEND_CONFIG_FILE);
           // And retrive the files from the Files stores
           FileStoreFetchFilesConfig fileFetchFilesConfig =
-                  getFileStoreFetchFilesConfig(storeConfig, ambiance, TF_BACKEND_CONFIG_FILE);
+              getFileStoreFetchFilesConfig(storeConfig, ambiance, TF_BACKEND_CONFIG_FILE);
           fileInfo = RemoteTerraformBackendConfigFileInfo.builder()
-                  .gitFetchFilesConfig(gitFetchFilesConfig)
-                  .filestoreFetchFilesConfig(fileFetchFilesConfig)
-                  .build();
+                         .gitFetchFilesConfig(gitFetchFilesConfig)
+                         .filestoreFetchFilesConfig(fileFetchFilesConfig)
+                         .build();
         }
       }
     }

@@ -15,5 +15,5 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class RemoteTerraformVarFileInfo extends RemoteTerraformFileInfo implements TerraformVarFileInfo, NestedAnnotationResolver {
-}
+public class RemoteTerraformVarFileInfo
+    extends RemoteTerraformFileInfo implements TerraformVarFileInfo, NestedAnnotationResolver {}

@@ -105,10 +105,10 @@ public class TerraformPlanStep extends TaskExecutableWithRollbackAndRbac<Terrafo
         TerraformStepHelper.prepareEntityDetailsForVarFiles(accountId, orgIdentifier, projectIdentifier, varFiles);
     entityDetailList.addAll(varFilesEntityDetails);
 
-    //Backend Config connector
+    // Backend Config connector
     TerraformBackendConfig backendConfig = stepParametersSpec.getConfiguration().getBackendConfig();
-    Optional<EntityDetail> bcFileEntityDetails =
-            TerraformStepHelper.prepareEntityDetailForBackendConfigFiles(accountId, orgIdentifier, projectIdentifier, backendConfig);
+    Optional<EntityDetail> bcFileEntityDetails = TerraformStepHelper.prepareEntityDetailForBackendConfigFiles(
+        accountId, orgIdentifier, projectIdentifier, backendConfig);
     bcFileEntityDetails.ifPresent(entityDetailList::add);
 
     // Secret Manager Connector

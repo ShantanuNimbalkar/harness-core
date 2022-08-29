@@ -614,19 +614,21 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
   public void addVarFilesCommitIdsToMap(
       String accountId, List<TerraformVarFileInfo> varFileInfo, Map<String, String> commitIdForConfigFilesMap) {
     for (TerraformVarFileInfo varFile : varFileInfo) {
-      if (varFile instanceof RemoteTerraformFileInfo)
-        addFileCommitIdsToMap(accountId, (RemoteTerraformFileInfo)varFile, commitIdForConfigFilesMap);
+      if (varFile instanceof RemoteTerraformFileInfo) {
+        addFileCommitIdsToMap(accountId, (RemoteTerraformFileInfo) varFile, commitIdForConfigFilesMap);
+      }
     }
   }
 
   public void addBackendFileCommitIdsToMap(
-          String accountId, TerraformBackendConfigFileInfo configFileInfo, Map<String, String> commitIdForConfigFilesMap) {
-      if (configFileInfo instanceof RemoteTerraformFileInfo)
-        addFileCommitIdsToMap(accountId, (RemoteTerraformFileInfo) configFileInfo, commitIdForConfigFilesMap);
+      String accountId, TerraformBackendConfigFileInfo configFileInfo, Map<String, String> commitIdForConfigFilesMap) {
+    if (configFileInfo instanceof RemoteTerraformFileInfo) {
+      addFileCommitIdsToMap(accountId, (RemoteTerraformFileInfo) configFileInfo, commitIdForConfigFilesMap);
+    }
   }
 
   private void addFileCommitIdsToMap(
-          String accountId, RemoteTerraformFileInfo fileInfo, Map<String, String> commitIdForConfigFilesMap) {
+      String accountId, RemoteTerraformFileInfo fileInfo, Map<String, String> commitIdForConfigFilesMap) {
     if (fileInfo.gitFetchFilesConfig != null) {
       GitFetchFilesConfig gitFetchFilesConfig = ((RemoteTerraformFileInfo) fileInfo).getGitFetchFilesConfig();
       GitStoreDelegateConfig gitStoreDelegateConfig = gitFetchFilesConfig.getGitStoreDelegateConfig();
@@ -638,21 +640,20 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       }
 
       GitBaseRequest gitBaseRequest =
-              GitBaseRequest.builder()
-                      .branch(gitStoreDelegateConfig.getBranch())
-                      .commitId(gitStoreDelegateConfig.getCommitId())
-                      .repoUrl(gitConfigDTO.getUrl())
-                      .connectorId(gitStoreDelegateConfig.getConnectorName())
-                      .authRequest(ngGitService.getAuthRequest(
-                              (GitConfigDTO) gitStoreDelegateConfig.getGitConfigDTO(), sshSessionConfig))
-                      .accountId(accountId)
-                      .repoType(GitRepositoryType.TERRAFORM)
-                      .build();
+          GitBaseRequest.builder()
+              .branch(gitStoreDelegateConfig.getBranch())
+              .commitId(gitStoreDelegateConfig.getCommitId())
+              .repoUrl(gitConfigDTO.getUrl())
+              .connectorId(gitStoreDelegateConfig.getConnectorName())
+              .authRequest(ngGitService.getAuthRequest(
+                  (GitConfigDTO) gitStoreDelegateConfig.getGitConfigDTO(), sshSessionConfig))
+              .accountId(accountId)
+              .repoType(GitRepositoryType.TERRAFORM)
+              .build();
       commitIdForConfigFilesMap.putIfAbsent(
-              gitFetchFilesConfig.getIdentifier(), getLatestCommitSHAFromLocalRepo(gitBaseRequest));
+          gitFetchFilesConfig.getIdentifier(), getLatestCommitSHAFromLocalRepo(gitBaseRequest));
+    }
   }
-  }
-
 
   public String getLatestCommitSHAFromLocalRepo(GitBaseRequest gitBaseRequest) {
     return getLatestCommitSHA(new File(gitClientHelper.getRepoDirectory(gitBaseRequest)));
@@ -852,33 +853,39 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
   }
 
   public List<String> checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo configFileInfo,
-                                                                    String scriptDir, LogCallback logCallback, String accountId, String tfConfigDirectory) throws IOException {
+      String scriptDir, LogCallback logCallback, String accountId, String tfConfigDirectory) throws IOException {
     Path tfConfigDirAbsPath = Paths.get(tfConfigDirectory).toAbsolutePath();
     if (configFileInfo == null) {
       return Collections.emptyList();
     }
 
     ArrayList<String> tfBackendConfigFilePaths = new ArrayList<>();
-      if (configFileInfo instanceof InlineTerraformFileInfo && ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent() != null) {
-        tfBackendConfigFilePaths.add(TerraformHelperUtils.createFileFromStringContent(
-                ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent(), scriptDir, TERRAFORM_BACKEND_CONFIGS_FILE_NAME));
-      } else if (configFileInfo instanceof RemoteTerraformFileInfo) {
-        checkoutRemoteTerraformFileAndConvertToFilePath((RemoteTerraformFileInfo) configFileInfo, logCallback, accountId, tfConfigDirectory, tfBackendConfigFilePaths, tfConfigDirAbsPath);
-      }
-  return tfBackendConfigFilePaths;
-}
+    if (configFileInfo instanceof InlineTerraformFileInfo
+        && ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent() != null) {
+      tfBackendConfigFilePaths.add(TerraformHelperUtils.createFileFromStringContent(
+          ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent(), scriptDir,
+          TERRAFORM_BACKEND_CONFIGS_FILE_NAME));
+    } else if (configFileInfo instanceof RemoteTerraformFileInfo) {
+      checkoutRemoteTerraformFileAndConvertToFilePath((RemoteTerraformFileInfo) configFileInfo, logCallback, accountId,
+          tfConfigDirectory, tfBackendConfigFilePaths, tfConfigDirAbsPath);
+    }
+    return tfBackendConfigFilePaths;
+  }
 
-private void checkoutRemoteTerraformFileAndConvertToFilePath(RemoteTerraformFileInfo remoteFileInfo, LogCallback logCallback, String accountId, String tfVarDirectory,  List<String> filePaths, Path filesDirAbsPath) throws IOException {
-
+  private void checkoutRemoteTerraformFileAndConvertToFilePath(RemoteTerraformFileInfo remoteFileInfo,
+      LogCallback logCallback, String accountId, String tfVarDirectory, List<String> filePaths, Path filesDirAbsPath)
+      throws IOException {
     if (remoteFileInfo.getGitFetchFilesConfig() != null) {
-      GitStoreDelegateConfig gitStoreDelegateConfig = remoteFileInfo.getGitFetchFilesConfig().getGitStoreDelegateConfig();
+      GitStoreDelegateConfig gitStoreDelegateConfig =
+          remoteFileInfo.getGitFetchFilesConfig().getGitStoreDelegateConfig();
       GitConfigDTO gitConfigDTO = (GitConfigDTO) gitStoreDelegateConfig.getGitConfigDTO();
       if (EmptyPredicate.isNotEmpty(gitStoreDelegateConfig.getPaths())) {
-        handleGitVarFiles(logCallback, accountId, tfVarDirectory, filesDirAbsPath, filePaths,
-                gitStoreDelegateConfig, gitConfigDTO);
+        handleGitVarFiles(
+            logCallback, accountId, tfVarDirectory, filesDirAbsPath, filePaths, gitStoreDelegateConfig, gitConfigDTO);
       }
     } else if (remoteFileInfo.getFilestoreFetchFilesConfig() != null) {
-      ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig = (ArtifactoryStoreDelegateConfig)((RemoteTerraformFileInfo)remoteFileInfo).getFilestoreFetchFilesConfig();
+      ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
+          (ArtifactoryStoreDelegateConfig) ((RemoteTerraformFileInfo) remoteFileInfo).getFilestoreFetchFilesConfig();
       handleFileStorageFiles(logCallback, filesDirAbsPath, filePaths, artifactoryStoreDelegateConfig);
     }
   }
@@ -893,8 +900,8 @@ private void checkoutRemoteTerraformFileAndConvertToFilePath(RemoteTerraformFile
           varFilePaths.add(TerraformHelperUtils.createFileFromStringContent(
               ((InlineTerraformVarFileInfo) varFile).getVarFileContent(), scriptDir, TERRAFORM_VARIABLES_FILE_NAME));
         } else if (varFile instanceof RemoteTerraformVarFileInfo) {
-          checkoutRemoteTerraformFileAndConvertToFilePath((RemoteTerraformFileInfo) varFile,
-                  logCallback, accountId, tfVarDirectory, varFilePaths, tfVarDirAbsPath);
+          checkoutRemoteTerraformFileAndConvertToFilePath(
+              (RemoteTerraformFileInfo) varFile, logCallback, accountId, tfVarDirectory, varFilePaths, tfVarDirAbsPath);
         }
       }
       logCallback.saveExecutionLog(
@@ -905,31 +912,31 @@ private void checkoutRemoteTerraformFileAndConvertToFilePath(RemoteTerraformFile
   }
 
   private void handleFileStorageFiles(LogCallback logCallback, Path dirAbsPath, List<String> filePaths,
-                                      ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig) throws IOException {
+      ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig) throws IOException {
     logCallback.saveExecutionLog(format("Fetching Var files from Artifactory repository: [%s]",
-                    artifactoryStoreDelegateConfig.getRepositoryName()),
-            INFO, CommandExecutionStatus.RUNNING);
+                                     artifactoryStoreDelegateConfig.getRepositoryName()),
+        INFO, CommandExecutionStatus.RUNNING);
     ArtifactoryConnectorDTO artifactoryConnectorDTO =
-            (ArtifactoryConnectorDTO) artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig();
+        (ArtifactoryConnectorDTO) artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig();
     secretDecryptionService.decrypt(
-            artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
+        artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
     ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-            artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
+        artifactoryConnectorDTO.getAuth().getCredentials(), artifactoryStoreDelegateConfig.getEncryptedDataDetails());
     ArtifactoryConfigRequest artifactoryConfigRequest =
-            artifactoryRequestMapper.toArtifactoryRequest(artifactoryConnectorDTO);
+        artifactoryRequestMapper.toArtifactoryRequest(artifactoryConnectorDTO);
 
     for (String artifactPath : artifactoryStoreDelegateConfig.getArtifacts()) {
       Map<String, String> artifactMetadata = new HashMap<>();
       artifactMetadata.put(ARTIFACT_PATH_METADATA_KEY, artifactPath);
       artifactMetadata.put(ARTIFACT_NAME_METADATA_KEY, artifactPath);
       InputStream artifactInputStream = artifactoryNgService.downloadArtifacts(artifactoryConfigRequest,
-              artifactoryStoreDelegateConfig.getRepositoryName(), artifactMetadata, ARTIFACT_PATH_METADATA_KEY,
-              ARTIFACT_NAME_METADATA_KEY);
+          artifactoryStoreDelegateConfig.getRepositoryName(), artifactMetadata, ARTIFACT_PATH_METADATA_KEY,
+          ARTIFACT_NAME_METADATA_KEY);
       if (artifactInputStream == null) {
         throw NestedExceptionUtils.hintWithExplanationException(HINT_FAILED_TO_DOWNLOAD_FROM_ARTIFACTORY,
-                String.format(EXPLANATION_FAILED_TO_DOWNLOAD_FROM_ARTIFACTORY, artifactPath,
-                        artifactoryConfigRequest.getArtifactoryUrl()),
-                new TerraformCommandExecutionException("Failed to download config file", WingsException.USER));
+            String.format(EXPLANATION_FAILED_TO_DOWNLOAD_FROM_ARTIFACTORY, artifactPath,
+                artifactoryConfigRequest.getArtifactoryUrl()),
+            new TerraformCommandExecutionException("Failed to download config file", WingsException.USER));
       }
       File tfVarDir = new File(dirAbsPath.toString(), artifactPath);
 

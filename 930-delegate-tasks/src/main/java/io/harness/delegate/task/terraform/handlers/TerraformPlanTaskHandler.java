@@ -129,8 +129,8 @@ public class TerraformPlanTaskHandler extends TerraformAbstractTaskHandler {
       configFileInfo = taskParameters.getBackendConfigFileInfo();
     }
 
-    List<String> bcRemoteFilePaths= terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
-            configFileInfo, scriptDirectory, logCallback, taskParameters.getAccountId(), tfBackendConfigDirectory);
+    List<String> bcRemoteFilePaths = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
+        configFileInfo, scriptDirectory, logCallback, taskParameters.getAccountId(), tfBackendConfigDirectory);
 
     File tfOutputsFile = Paths.get(scriptDirectory, format(TERRAFORM_VARIABLES_FILE_NAME, "output")).toFile();
 
@@ -180,7 +180,7 @@ public class TerraformPlanTaskHandler extends TerraformAbstractTaskHandler {
 
       if (configFileInfo != null) {
         terraformBaseHelper.addBackendFileCommitIdsToMap(
-                taskParameters.getAccountId(), taskParameters.getBackendConfigFileInfo(), commitIdToFetchedFilesMap);
+            taskParameters.getAccountId(), taskParameters.getBackendConfigFileInfo(), commitIdToFetchedFilesMap);
       }
 
       File tfStateFile = TerraformHelperUtils.getTerraformStateFile(scriptDirectory, taskParameters.getWorkspace());

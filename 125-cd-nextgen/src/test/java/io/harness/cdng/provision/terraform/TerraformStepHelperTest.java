@@ -107,7 +107,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -813,7 +812,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   public void testPrepareEntityDetailForBackendConfigFileInline() {
     TerraformBackendConfig inlineConfig = TerraformStepDataGenerator.generateInlineBackendConfigFile();
     Optional<EntityDetail> entityDetail =
-            helper.prepareEntityDetailForBackendConfigFiles("test-account", "test-org", "test-project", inlineConfig);
+        helper.prepareEntityDetailForBackendConfigFiles("test-account", "test-org", "test-project", inlineConfig);
     assertThat(entityDetail.isPresent()).isTrue();
     assertThat(entityDetail.get().getEntityRef().getIdentifier()).isEqualTo("ConnectorRef");
     assertThat(entityDetail.get().getEntityRef().getOrgIdentifier()).isEqualTo("test-org");
@@ -826,18 +825,18 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testPrepareEntityDetailForBackendConfigFileRemote() {
     TerraformStepDataGenerator.GitStoreConfig gitStoreVarFiles =
-            TerraformStepDataGenerator.GitStoreConfig.builder()
-                    .branch("master")
-                    .fetchType(FetchType.BRANCH)
-                    .folderPath(ParameterField.createValueField("VarFiles/"))
-                    .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
-                    .connectoref(ParameterField.createValueField("ConnectorRef"))
-                    .build();
+        TerraformStepDataGenerator.GitStoreConfig.builder()
+            .branch("master")
+            .fetchType(FetchType.BRANCH)
+            .folderPath(ParameterField.createValueField("VarFiles/"))
+            .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
+            .connectoref(ParameterField.createValueField("ConnectorRef"))
+            .build();
     RemoteTerraformBackendConfigSpec remoteFile =
-            TerraformStepDataGenerator.generateRemoteBackendConfigFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
+        TerraformStepDataGenerator.generateRemoteBackendConfigFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
     TerraformBackendConfig remoteConfig = TerraformStepDataGenerator.generateRemoteBackendConfigFile(remoteFile);
     Optional<EntityDetail> entityDetail =
-            helper.prepareEntityDetailForBackendConfigFiles("test-account", "test-org", "test-project", remoteConfig);
+        helper.prepareEntityDetailForBackendConfigFiles("test-account", "test-org", "test-project", remoteConfig);
     assertThat(entityDetail.isPresent()).isTrue();
     assertThat(entityDetail.get().getEntityRef().getIdentifier()).isEqualTo("ConnectorRef");
     assertThat(entityDetail.get().getEntityRef().getOrgIdentifier()).isEqualTo("test-org");

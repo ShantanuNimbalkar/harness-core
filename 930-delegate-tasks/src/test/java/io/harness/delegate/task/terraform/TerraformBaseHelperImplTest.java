@@ -305,9 +305,10 @@ public class TerraformBaseHelperImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testAddVarFiesCommitIdsToMapBackendConfig() {
     GitStoreDelegateConfig gitStoreDelegateConfig = getGitStoreDelegateConfig();
-    TerraformBackendConfigFileInfo configFile = RemoteTerraformBackendConfigFileInfo.builder()
-    .gitFetchFilesConfig(GitFetchFilesConfig.builder().gitStoreDelegateConfig(gitStoreDelegateConfig).build())
-                    .build();
+    TerraformBackendConfigFileInfo configFile =
+        RemoteTerraformBackendConfigFileInfo.builder()
+            .gitFetchFilesConfig(GitFetchFilesConfig.builder().gitStoreDelegateConfig(gitStoreDelegateConfig).build())
+            .build();
 
     Map<String, String> commitIdMap = new HashMap<>();
     doReturn("commitsha").when(spyTerraformBaseHelper).getLatestCommitSHA(new File("repoDir"));
@@ -557,17 +558,18 @@ public class TerraformBaseHelperImplTest extends CategoryTest {
     String configDir = "repository/backendConfigDir";
     FileIo.createDirectoryIfDoesNotExist(configDir);
     GitStoreDelegateConfig gitStoreDelegateConfig = getGitStoreDelegateConfig();
-    TerraformBackendConfigFileInfo configFile = RemoteTerraformBackendConfigFileInfo.builder()
+    TerraformBackendConfigFileInfo configFile =
+        RemoteTerraformBackendConfigFileInfo.builder()
             .gitFetchFilesConfig(GitFetchFilesConfig.builder().gitStoreDelegateConfig(gitStoreDelegateConfig).build())
             .build();
 
     List<String> filePaths = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
-            configFile, scriptDirectory, logCallback, "accountId", configDir);
+        configFile, scriptDirectory, logCallback, "accountId", configDir);
     assertThat(filePaths).isNotNull();
     assertThat(filePaths.size()).isEqualTo(2);
     assertThat(filePaths.get(0))
-            .isEqualTo(Paths.get(configDir).toAbsolutePath() + "/"
-                    + "filepath1");
+        .isEqualTo(Paths.get(configDir).toAbsolutePath() + "/"
+            + "filepath1");
   }
 
   @Test

@@ -7,13 +7,14 @@
 
 package io.harness.delegate.task.terraform;
 
+import static io.harness.expression.Expression.ALLOW_SECRETS;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.expression.Expression;
+
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
-
-import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 @Data
 @OwnedBy(HarnessTeam.CDP)

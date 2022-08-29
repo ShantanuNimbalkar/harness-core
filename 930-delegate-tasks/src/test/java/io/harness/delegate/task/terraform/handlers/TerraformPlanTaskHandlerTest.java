@@ -72,7 +72,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 @OwnedBy(CDP)
-public class  TerraformPlanTaskHandlerTest extends CategoryTest {
+public class TerraformPlanTaskHandlerTest extends CategoryTest {
   @Inject @Spy @InjectMocks TerraformPlanTaskHandler terraformPlanTaskHandler;
   @Mock LogCallback logCallback;
   @Mock SecretDecryptionService secretDecryptionService;
@@ -156,10 +156,11 @@ public class  TerraformPlanTaskHandlerTest extends CategoryTest {
   @Test
   @Owner(developers = JELENA)
   @Category(UnitTests.class)
-  public void testPlanWithArtifactoryConfigAndBackendFiles() throws IOException, TimeoutException, InterruptedException {
+  public void testPlanWithArtifactoryConfigAndBackendFiles()
+      throws IOException, TimeoutException, InterruptedException {
     when(secretDecryptionService.decrypt(any(), any())).thenReturn(null);
     when(terraformBaseHelper.fetchConfigFileAndPrepareScriptDir(any(), any(), any(), any(), eq(logCallback), any()))
-            .thenReturn("sourceDir");
+        .thenReturn("sourceDir");
     doNothing().when(terraformBaseHelper).downloadTfStateFile(null, "accountId", null, "scriptDir");
     when(gitClientHelper.getRepoDirectory(any())).thenReturn("sourceDir");
     File outputFile = new File("sourceDir/terraform-output.tfvars");
@@ -168,13 +169,13 @@ public class  TerraformPlanTaskHandlerTest extends CategoryTest {
     FileUtils.touch(planFile);
     when(terraformBaseHelper.getPlanName(TerraformCommand.APPLY)).thenReturn("tfplan");
     when(terraformBaseHelper.executeTerraformPlanStep(any()))
-            .thenReturn(
-                    TerraformStepResponse.builder()
-                            .cliResponse(
-                                    CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(0).build())
-                            .build());
+        .thenReturn(
+            TerraformStepResponse.builder()
+                .cliResponse(
+                    CliResponse.builder().commandExecutionStatus(CommandExecutionStatus.SUCCESS).exitCode(0).build())
+                .build());
     TerraformTaskNGResponse response = terraformPlanTaskHandler.executeTaskInternal(
-            getTerraformTaskParametersWithBackendConfig(), "delegateId", "taskId", logCallback);
+        getTerraformTaskParametersWithBackendConfig(), "delegateId", "taskId", logCallback);
     assertThat(response).isNotNull();
     assertThat(response.getCommandExecutionStatus()).isEqualTo(CommandExecutionStatus.SUCCESS);
     assertThat(response.getDetailedExitCode()).isEqualTo(0);
@@ -242,27 +243,27 @@ public class  TerraformPlanTaskHandlerTest extends CategoryTest {
     List<EncryptedDataDetail> encryptedDataDetails = Collections.singletonList(mock(EncryptedDataDetail.class));
     ArtifactoryUsernamePasswordAuthDTO credentials = ArtifactoryUsernamePasswordAuthDTO.builder().build();
     ArtifactoryConnectorDTO artifactoryConnectorDTO =
-            ArtifactoryConnectorDTO.builder()
-                    .auth(ArtifactoryAuthenticationDTO.builder().credentials(credentials).build())
-                    .build();
-    ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
-            ArtifactoryStoreDelegateConfig.builder()
-                    .artifacts(Arrays.asList("artifactPath"))
-                    .repositoryName("repoName")
-                    .encryptedDataDetails(encryptedDataDetails)
-                    .connectorDTO(ConnectorInfoDTO.builder().connectorConfig(artifactoryConnectorDTO).build())
-                    .build();
-    return TerraformTaskNGParameters.builder()
-            .accountId("accountId")
-            .taskType(TFTaskType.APPLY)
-            .entityId("provisionerIdentifier")
-            .encryptedTfPlan(encryptedPlanContent)
-            .configFile(null)
-            .backendConfigFileInfo(RemoteTerraformBackendConfigFileInfo.builder().build())
-            .fileStoreConfigFiles(artifactoryStoreDelegateConfig)
-            .varFileInfos(Collections.singletonList(RemoteTerraformVarFileInfo.builder().build()))
-            .planName("planName")
-            .terraformCommand(TerraformCommand.APPLY)
+        ArtifactoryConnectorDTO.builder()
+            .auth(ArtifactoryAuthenticationDTO.builder().credentials(credentials).build())
             .build();
+    ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
+        ArtifactoryStoreDelegateConfig.builder()
+            .artifacts(Arrays.asList("artifactPath"))
+            .repositoryName("repoName")
+            .encryptedDataDetails(encryptedDataDetails)
+            .connectorDTO(ConnectorInfoDTO.builder().connectorConfig(artifactoryConnectorDTO).build())
+            .build();
+    return TerraformTaskNGParameters.builder()
+        .accountId("accountId")
+        .taskType(TFTaskType.APPLY)
+        .entityId("provisionerIdentifier")
+        .encryptedTfPlan(encryptedPlanContent)
+        .configFile(null)
+        .backendConfigFileInfo(RemoteTerraformBackendConfigFileInfo.builder().build())
+        .fileStoreConfigFiles(artifactoryStoreDelegateConfig)
+        .varFileInfos(Collections.singletonList(RemoteTerraformVarFileInfo.builder().build()))
+        .planName("planName")
+        .terraformCommand(TerraformCommand.APPLY)
+        .build();
   }
 }
