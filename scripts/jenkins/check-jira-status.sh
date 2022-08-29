@@ -10,11 +10,16 @@ if [ $(git rev-list --count $ghprbActualCommit ^origin/master)  -eq 1 ]; then
 fi
 KEY=`echo "${ghprbPullTitle}" | grep -o -iE "\[(${PROJECTS})-[0-9]+]:" | grep -o -iE "(${PROJECTS})-[0-9]+"`
 
+export BRANCH_PREFIX=`echo ${ghprbTargetBranch} | sed 's/\(........\).*/\1/g'`
+echo "INFO: BRANCH_PREFIX=$BRANCH_PREFIX"
+
 echo "JIRA Key is : $KEY "
 
-jira_response=`curl -X GET -H "Content-Type: application/json" https://harness.atlassian.net/rest/api/2/issue/${KEY}?fields=issuetype,customfield_10687,customfield_10709,customfield_10748,customfield_10763,customfield_10785 --user $JIRA_USERNAME:$JIRA_PASSWORD`
+jira_response=`curl -X GET -H "Content-Type: application/json" https://harness.atlassian.net/rest/api/2/issue/${KEY}?fields=issuetype,customfield_10687,customfield_10709,customfield_10748,customfield_10763,customfield_10785,priority --user $JIRA_USERNAME:$JIRA_PASSWORD`
 
 issuetype=`echo "${jira_response}" | jq ".fields.issuetype.name" | tr -d '"'`
+prioritytype=`echo "${jira_response}" | jq ".fields.priority.name" | tr -d '"'`
+
 if [[ $KEY == BT-* ]]
 then
   bug_resolution="n/a"
@@ -28,6 +33,13 @@ else
   ff_added=`echo "${jira_response}" | jq ".fields.customfield_10785.value" | tr -d '"'`
   jira_resolved_as=`echo "${jira_response}" | jq ".fields.customfield_10709" | tr -d '"'`
   phase_injected=`echo "${jira_response}" | jq ".fields.customfield_10748" | tr -d '"'`
+fi
+
+myArray=("P2","P3","P4")
+if [[ "${BRANCH_PREFIX}" = "release/"  && ( ${myArray[*]} =~ "${prioritytype}" ) ]]
+then
+  echo "ERROR: Hotfix merge to target branch: release/* is blocked unless it is P0 or P1."
+  exit 1
 fi
 
 echo "issueType is ${issuetype}"
