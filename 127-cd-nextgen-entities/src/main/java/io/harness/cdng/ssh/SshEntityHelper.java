@@ -11,8 +11,6 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.connector.ConnectorModule.DEFAULT_CONNECTOR_SERVICE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.delegate.task.ssh.AwsSshInfraDelegateConfig.AwsSshInfraDelegateConfigBuilder;
-import static io.harness.delegate.task.ssh.AwsWinrmInfraDelegateConfig.AwsWinrmInfraDelegateConfigBuilder;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.ng.core.infrastructure.InfrastructureKind.PDC;
 import static io.harness.ng.core.infrastructure.InfrastructureKind.SSH_WINRM_AWS;
@@ -21,13 +19,12 @@ import static io.harness.pms.yaml.YamlNode.UUID_FIELD_NAME;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.DecryptableEntity;
 import io.harness.beans.IdentifierRef;
-import io.harness.cdng.artifact.outcome.ArtifactOutcome;
-import io.harness.cdng.artifact.outcome.ArtifactoryGenericArtifactOutcome;
 import io.harness.cdng.azure.AzureHelperService;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
 import io.harness.cdng.infra.beans.PdcInfrastructureOutcome;
@@ -39,10 +36,10 @@ import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.services.NGHostService;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureConnectorDTO;
+import io.harness.delegate.beans.connector.jenkins.JenkinsConnectorDTO;
 import io.harness.delegate.beans.connector.pdcconnector.HostDTO;
 import io.harness.delegate.beans.connector.pdcconnector.HostFilterDTO;
 import io.harness.delegate.beans.connector.pdcconnector.HostFilterType;
@@ -55,11 +52,10 @@ import io.harness.delegate.task.ssh.PdcSshInfraDelegateConfig;
 import io.harness.delegate.task.ssh.PdcWinRmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.SshInfraDelegateConfig;
 import io.harness.delegate.task.ssh.WinRmInfraDelegateConfig;
-import io.harness.delegate.task.ssh.artifact.ArtifactoryArtifactDelegateConfig;
-import io.harness.delegate.task.ssh.artifact.SshWinRmArtifactDelegateConfig;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.core.NGAccess;
+import io.harness.ng.core.NGAccessWithEncryptionConsumer;
 import io.harness.ng.core.dto.secrets.SSHKeySpecDTO;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
@@ -70,7 +66,6 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.secretmanagerclient.services.SshKeySpecDTOHelper;
 import io.harness.secretmanagerclient.services.WinRmCredentialsSpecDTOHelper;
-import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.secrets.remote.SecretNGManagerClient;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.utils.IdentifierRefHelper;
@@ -80,10 +75,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -94,7 +91,6 @@ import org.springframework.data.domain.Page;
 public class SshEntityHelper {
   @Named(DEFAULT_CONNECTOR_SERVICE) @Inject private ConnectorService connectorService;
   @Inject @Named("PRIVILEGED") private SecretNGManagerClient secretManagerClient;
-  @Named("PRIVILEGED") @Inject private SecretManagerClientService secretManagerClientService;
   @Inject private SshKeySpecDTOHelper sshKeySpecDTOHelper;
   @Inject private WinRmCredentialsSpecDTOHelper winRmCredentialsSpecDTOHelper;
   @Inject private NGHostService ngHostService;
@@ -114,7 +110,7 @@ public class SshEntityHelper {
         PhysicalDataCenterConnectorDTO pdcConnectorDTO =
             (connectorDTO != null) ? (PhysicalDataCenterConnectorDTO) connectorDTO.getConnectorConfig() : null;
         sshKeySpecDto = getSshKeySpecDto(pdcDirectInfrastructure.getCredentialsRef(), ambiance);
-        List<String> hosts = extractHostNames(pdcDirectInfrastructure, pdcConnectorDTO, ngAccess);
+        Set<String> hosts = extractHostNames(pdcDirectInfrastructure, pdcConnectorDTO, ngAccess);
         return PdcSshInfraDelegateConfig.builder()
             .hosts(hosts)
             .physicalDataCenterConnectorDTO(pdcConnectorDTO)
@@ -146,22 +142,14 @@ public class SshEntityHelper {
         encryptionDetails = serverlessEntityHelper.getEncryptionDataDetails(connectorDTO, ngAccess);
         sshKeySpecDto = getSshKeySpecDto(awsInfrastructureOutcome.getCredentialsRef(), ambiance);
 
-        AwsSshInfraDelegateConfigBuilder awsSshInfraDelegateConfigBuilder =
-            AwsSshInfraDelegateConfig.sshAwsBuilder()
-                .awsConnectorDTO(awsConnectorDTO)
-                .connectorEncryptionDataDetails(encryptionDetails)
-                .sshKeySpecDto(sshKeySpecDto)
-                .encryptionDataDetails(sshKeySpecDTOHelper.getSSHKeyEncryptionDetails(sshKeySpecDto, ngAccess))
-                .region(awsInfrastructureOutcome.getRegion());
-
-        if (EmptyPredicate.isEmpty(awsInfrastructureOutcome.getAutoScalingGroupName())) {
-          awsSshInfraDelegateConfigBuilder.vpcIds(awsInfrastructureOutcome.getAwsInstanceFilter().getVpcs())
-              .tags(filterInfraTags(awsInfrastructureOutcome.getAwsInstanceFilter().getTags()));
-        } else {
-          awsSshInfraDelegateConfigBuilder.autoScalingGroupName(awsInfrastructureOutcome.getAutoScalingGroupName());
-        }
-
-        return awsSshInfraDelegateConfigBuilder.build();
+        return AwsSshInfraDelegateConfig.sshAwsBuilder()
+            .awsConnectorDTO(awsConnectorDTO)
+            .connectorEncryptionDataDetails(encryptionDetails)
+            .sshKeySpecDto(sshKeySpecDto)
+            .encryptionDataDetails(sshKeySpecDTOHelper.getSSHKeyEncryptionDetails(sshKeySpecDto, ngAccess))
+            .region(awsInfrastructureOutcome.getRegion())
+            .tags(filterInfraTags(awsInfrastructureOutcome.getTags()))
+            .build();
 
       default:
         throw new UnsupportedOperationException(
@@ -180,7 +168,7 @@ public class SshEntityHelper {
         PhysicalDataCenterConnectorDTO pdcConnectorDTO =
             (connectorDTO != null) ? (PhysicalDataCenterConnectorDTO) connectorDTO.getConnectorConfig() : null;
         winRmCredentials = getWinRmCredentials(pdcDirectInfrastructure.getCredentialsRef(), ambiance);
-        List<String> hosts = extractHostNames(pdcDirectInfrastructure, pdcConnectorDTO, ngAccess);
+        Set<String> hosts = new HashSet<>(extractHostNames(pdcDirectInfrastructure, pdcConnectorDTO, ngAccess));
         return PdcWinRmInfraDelegateConfig.builder()
             .hosts(hosts)
             .physicalDataCenterConnectorDTO(pdcConnectorDTO)
@@ -211,30 +199,21 @@ public class SshEntityHelper {
         encryptionDetails = serverlessEntityHelper.getEncryptionDataDetails(connectorDTO, ngAccess);
         winRmCredentials = getWinRmCredentials(awsInfrastructureOutcome.getCredentialsRef(), ambiance);
 
-        AwsWinrmInfraDelegateConfigBuilder awsWinrmInfraDelegateConfigBuilder =
-            AwsWinrmInfraDelegateConfig.winrmAwsBuilder()
-                .awsConnectorDTO(awsConnectorDTO)
-                .connectorEncryptionDataDetails(encryptionDetails)
-                .winRmCredentials(winRmCredentials)
-                .encryptionDataDetails(
-                    winRmCredentialsSpecDTOHelper.getWinRmEncryptionDetails(winRmCredentials, ngAccess))
-                .region(awsInfrastructureOutcome.getRegion());
-
-        if (EmptyPredicate.isEmpty(awsInfrastructureOutcome.getAutoScalingGroupName())) {
-          awsWinrmInfraDelegateConfigBuilder.vpcIds(awsInfrastructureOutcome.getAwsInstanceFilter().getVpcs())
-              .tags(filterInfraTags(awsInfrastructureOutcome.getAwsInstanceFilter().getTags()));
-        } else {
-          awsWinrmInfraDelegateConfigBuilder.autoScalingGroupName(awsInfrastructureOutcome.getAutoScalingGroupName());
-        }
-
-        return awsWinrmInfraDelegateConfigBuilder.build();
+        return AwsWinrmInfraDelegateConfig.winrmAwsBuilder()
+            .awsConnectorDTO(awsConnectorDTO)
+            .connectorEncryptionDataDetails(encryptionDetails)
+            .winRmCredentials(winRmCredentials)
+            .encryptionDataDetails(winRmCredentialsSpecDTOHelper.getWinRmEncryptionDetails(winRmCredentials, ngAccess))
+            .region(awsInfrastructureOutcome.getRegion())
+            .tags(filterInfraTags(awsInfrastructureOutcome.getTags()))
+            .build();
       default:
         throw new UnsupportedOperationException(
             format("Unsupported Infrastructure type: [%s]", infrastructure.getKind()));
     }
   }
 
-  private Map<String, String> filterInfraTags(Map<String, String> infraTags) {
+  public Map<String, String> filterInfraTags(Map<String, String> infraTags) {
     if (isEmpty(infraTags)) {
       return infraTags;
     }
@@ -245,17 +224,17 @@ public class SshEntityHelper {
         .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
   }
 
-  private List<String> extractHostNames(PdcInfrastructureOutcome pdcDirectInfrastructure,
+  private Set<String> extractHostNames(PdcInfrastructureOutcome pdcDirectInfrastructure,
       PhysicalDataCenterConnectorDTO pdcConnectorDTO, NGAccess ngAccess) {
     return pdcDirectInfrastructure.useInfrastructureHosts()
-        ? pdcDirectInfrastructure.getHosts()
+        ? new HashSet<>(pdcDirectInfrastructure.getHosts())
         : toStringHostNames(extractConnectorHostNames(pdcDirectInfrastructure, pdcConnectorDTO.getHosts(), ngAccess));
   }
 
-  private List<HostDTO> extractConnectorHostNames(
+  private Set<HostDTO> extractConnectorHostNames(
       PdcInfrastructureOutcome pdcDirectInfrastructure, List<HostDTO> hosts, NGAccess ngAccess) {
     if (isEmpty(hosts)) {
-      return emptyList();
+      return emptySet();
     }
 
     if (isNotEmpty(pdcDirectInfrastructure.getHostFilters())) {
@@ -265,7 +244,7 @@ public class SshEntityHelper {
           .mapToObj(
               index -> filterConnectorHostsByHostName(ngAccess, pdcDirectInfrastructure, batches.get(index), index))
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .collect(Collectors.toSet());
     }
 
     if (isNotEmpty(pdcDirectInfrastructure.getAttributeFilters())) {
@@ -275,10 +254,10 @@ public class SshEntityHelper {
           .mapToObj(
               index -> filterConnectorHostsByAttributes(ngAccess, pdcDirectInfrastructure, batches.get(index), index))
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .collect(Collectors.toSet());
     }
 
-    return hosts;
+    return new HashSet<>(hosts);
   }
 
   private List<HostDTO> filterConnectorHostsByAttributes(
@@ -312,8 +291,8 @@ public class SshEntityHelper {
     return result.getContent();
   }
 
-  private List<String> toStringHostNames(List<HostDTO> hosts) {
-    return hosts.stream().map(host -> host.getHostName()).collect(Collectors.toList());
+  private Set<String> toStringHostNames(Collection<HostDTO> hosts) {
+    return hosts.stream().map(host -> host.getHostName()).collect(Collectors.toSet());
   }
 
   private SSHKeySpecDTO getSshKeySpecDto(String credentialsRef, Ambiance ambiance) {
@@ -377,29 +356,6 @@ public class SshEntityHelper {
     return connectorDTO.get().getConnector();
   }
 
-  public SshWinRmArtifactDelegateConfig getArtifactDelegateConfigConfig(
-      ArtifactOutcome artifactOutcome, Ambiance ambiance) {
-    NGAccess ngAccess = AmbianceUtils.getNgAccess(ambiance);
-    ConnectorInfoDTO connectorDTO;
-    if (artifactOutcome instanceof ArtifactoryGenericArtifactOutcome) {
-      ArtifactoryGenericArtifactOutcome artifactoryGenericArtifactOutcome =
-          (ArtifactoryGenericArtifactOutcome) artifactOutcome;
-      connectorDTO = getConnectorInfoDTO(artifactoryGenericArtifactOutcome.getConnectorRef(), ngAccess);
-      return ArtifactoryArtifactDelegateConfig.builder()
-          .repositoryName(artifactoryGenericArtifactOutcome.getRepositoryName())
-          .identifier(artifactoryGenericArtifactOutcome.getIdentifier())
-          .connectorDTO(connectorDTO)
-          .encryptedDataDetails(getArtifactEncryptionDataDetails(connectorDTO, ngAccess))
-          .artifactDirectory(artifactoryGenericArtifactOutcome.getArtifactDirectory())
-          .artifactPath(artifactoryGenericArtifactOutcome.getArtifactPath())
-          .repositoryFormat(artifactoryGenericArtifactOutcome.getRepositoryFormat())
-          .build();
-    } else {
-      throw new UnsupportedOperationException(
-          format("Unsupported Artifact type: [%s]", artifactOutcome.getArtifactType()));
-    }
-  }
-
   public List<EncryptedDataDetail> getArtifactEncryptionDataDetails(
       @Nonnull ConnectorInfoDTO connectorDTO, @Nonnull NGAccess ngAccess) {
     switch (connectorDTO.getConnectorType()) {
@@ -407,8 +363,21 @@ public class SshEntityHelper {
         ArtifactoryConnectorDTO artifactoryConnectorDTO = (ArtifactoryConnectorDTO) connectorDTO.getConnectorConfig();
         List<DecryptableEntity> artifactoryDecryptableEntities = artifactoryConnectorDTO.getDecryptableEntities();
         if (isNotEmpty(artifactoryDecryptableEntities)) {
-          return secretManagerClientService.getEncryptionDetails(
-              ngAccess, artifactoryConnectorDTO.getAuth().getCredentials());
+          return artifactoryDecryptableEntities.stream()
+              .map(i -> getEncryptedDataDetails(ngAccess, i))
+              .flatMap(Collection::stream)
+              .collect(Collectors.toList());
+        } else {
+          return emptyList();
+        }
+      case JENKINS:
+        JenkinsConnectorDTO jenkinsConnectorDTO = (JenkinsConnectorDTO) connectorDTO.getConnectorConfig();
+        List<DecryptableEntity> jenkinsDecryptableEntities = jenkinsConnectorDTO.getDecryptableEntities();
+        if (isNotEmpty(jenkinsDecryptableEntities)) {
+          return jenkinsDecryptableEntities.stream()
+              .map(i -> getEncryptedDataDetails(ngAccess, i))
+              .flatMap(Collection::stream)
+              .collect(Collectors.toList());
         } else {
           return emptyList();
         }
@@ -416,5 +385,10 @@ public class SshEntityHelper {
         throw new UnsupportedOperationException(
             format("Unsupported connector type : [%s]", connectorDTO.getConnectorType()));
     }
+  }
+
+  private List<EncryptedDataDetail> getEncryptedDataDetails(NGAccess ngAccess, DecryptableEntity decryptableEntity) {
+    return NGRestUtils.getResponse(secretManagerClient.getEncryptionDetails(ngAccess.getAccountIdentifier(),
+        NGAccessWithEncryptionConsumer.builder().ngAccess(ngAccess).decryptableEntity(decryptableEntity).build()));
   }
 }

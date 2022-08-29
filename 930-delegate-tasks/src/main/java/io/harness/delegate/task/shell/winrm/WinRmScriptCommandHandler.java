@@ -22,12 +22,13 @@ import io.harness.delegate.task.winrm.WinRmExecutorFactoryNG;
 import io.harness.delegate.task.winrm.WinRmSessionConfig;
 import io.harness.delegate.task.winrm.WinRmSessionConfig.WinRmSessionConfigBuilder;
 import io.harness.exception.InvalidRequestException;
-import io.harness.logging.CommandExecutionStatus;
+import io.harness.shell.ExecuteCommandResponse;
 
 import software.wings.core.winrm.executors.WinRmExecutor;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.Map;
 
 @OwnedBy(HarnessTeam.CDP)
 @Singleton
@@ -43,8 +44,9 @@ public class WinRmScriptCommandHandler implements CommandHandler {
   }
 
   @Override
-  public CommandExecutionStatus handle(CommandTaskParameters parameters, NgCommandUnit commandUnit,
-      ILogStreamingTaskClient logStreamingTaskClient, CommandUnitsProgress commandUnitsProgress) {
+  public ExecuteCommandResponse handle(CommandTaskParameters parameters, NgCommandUnit commandUnit,
+      ILogStreamingTaskClient logStreamingTaskClient, CommandUnitsProgress commandUnitsProgress,
+      Map<String, Object> taskContext) {
     if (!(parameters instanceof WinrmTaskParameters)) {
       throw new InvalidRequestException("Invalid task parameters submitted for command task.");
     }
@@ -67,8 +69,8 @@ public class WinRmScriptCommandHandler implements CommandHandler {
         winRmConfigAuthEnhancer.configureAuthentication(winRmCommandTaskParameters, configBuilder);
     WinRmExecutor executor = winRmExecutorFactoryNG.getExecutor(config,
         winRmCommandTaskParameters.isDisableWinRMCommandEncodingFFSet(), logStreamingTaskClient, commandUnitsProgress);
-    return executor
-        .executeCommandString(scriptCommandUnit.getCommand(), winRmCommandTaskParameters.getOutputVariables())
-        .getStatus();
+
+    return executor.executeCommandString(
+        scriptCommandUnit.getCommand(), winRmCommandTaskParameters.getOutputVariables());
   }
 }

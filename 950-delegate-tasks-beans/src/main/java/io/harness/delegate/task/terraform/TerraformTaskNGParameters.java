@@ -61,6 +61,7 @@ public class TerraformTaskNGParameters
   boolean saveTerraformStateJson;
   boolean tfModuleSourceInheritSSH;
   long timeoutInMillis;
+  boolean useOptimizedTfPlan;
 
   // For plan
   TerraformCommand terraformCommand;
@@ -92,6 +93,8 @@ public class TerraformTaskNGParameters
       }
     }
     if (fileStoreConfigFiles != null) {
+      capabilities.addAll(ProcessExecutionCapabilityHelper.generateExecutionCapabilitiesForTerraform(
+          fileStoreConfigFiles.getEncryptedDataDetails(), maskingEvaluator));
       switch (fileStoreConfigFiles.getManifestStoreType()) {
         case "Artifactory":
           capabilities.addAll(ArtifactoryCapabilityHelper.fetchRequiredExecutionCapabilities(

@@ -12,6 +12,7 @@ import static io.harness.connector.ConnectorModule.DEFAULT_CONNECTOR_SERVICE;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static software.wings.beans.LogColor.Green;
+import static software.wings.beans.LogColor.Red;
 import static software.wings.beans.LogColor.Yellow;
 import static software.wings.beans.LogHelper.color;
 
@@ -74,6 +75,7 @@ import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponse.StepOutcome;
+import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.EntityReferenceExtractorUtils;
 import io.harness.steps.OutputExpressionConstants;
@@ -90,7 +92,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @OwnedBy(CDC)
@@ -108,7 +109,7 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
   @Inject private OutcomeService outcomeService;
   @Inject private CDStepHelper cdStepHelper;
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
-  @Inject StageExecutionHelper stageExecutionHelper;
+  @Inject private StageExecutionHelper stageExecutionHelper;
 
   @Override
   public Class<Infrastructure> getStepParametersClass() {
@@ -158,18 +159,26 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
     saveExecutionLog(logCallback, color("Environment information fetched", Green));
 
     publishInfraDelegateConfigOutput(serviceOutcome, infrastructureOutcome, ambiance);
-    Optional<ExecutionInfoKey> executionInfoKey = ExecutionInfoKeyMapper.getExecutionInfoKey(
-        ambiance, infrastructure.getKind(), environmentOutcome, serviceOutcome, infrastructureOutcome);
-    executionInfoKey.ifPresent(
-        infoKey -> stageExecutionHelper.saveStageExecutionInfo(ambiance, infoKey, infrastructure.getKind()));
+
+    StepResponseBuilder stepResponseBuilder = StepResponse.builder();
+    String infrastructureKind = infrastructure.getKind();
+    if (stageExecutionHelper.shouldSaveStageExecutionInfo(infrastructureKind)) {
+      ExecutionInfoKey executionInfoKey = ExecutionInfoKeyMapper.getExecutionInfoKey(
+          ambiance, infrastructureKind, environmentOutcome, serviceOutcome, infrastructureOutcome);
+      stageExecutionHelper.saveStageExecutionInfoAndPublishExecutionInfoKey(
+          ambiance, executionInfoKey, infrastructureKind);
+      if (stageExecutionHelper.isRollbackArtifactRequiredPerInfrastructure(infrastructureKind)) {
+        stageExecutionHelper.addRollbackArtifactToStageOutcomeIfPresent(
+            ambiance, stepResponseBuilder, executionInfoKey, infrastructureKind);
+      }
+    }
 
     if (logCallback != null) {
       logCallback.saveExecutionLog(
           color("Completed infrastructure step", Green), LogLevel.INFO, CommandExecutionStatus.SUCCESS);
     }
 
-    return StepResponse.builder()
-        .status(Status.SUCCEEDED)
+    return stepResponseBuilder.status(Status.SUCCEEDED)
         .stepOutcome(StepOutcome.builder()
                          .outcome(infrastructureOutcome)
                          .name(OutcomeExpressionConstants.OUTPUT)
@@ -210,6 +219,7 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
   }
 
   private void publishSshInfraDelegateConfigOutput(InfrastructureOutcome infrastructureOutcome, Ambiance ambiance) {
+    NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, false);
     SshInfraDelegateConfig sshInfraDelegateConfig =
         cdStepHelper.getSshInfraDelegateConfig(infrastructureOutcome, ambiance);
 
@@ -217,14 +227,22 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         SshInfraDelegateConfigOutput.builder().sshInfraDelegateConfig(sshInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.SSH_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         sshInfraDelegateConfigOutput, StepCategory.STAGE.name());
-    if (EmptyPredicate.isEmpty(sshInfraDelegateConfig.getHosts())) {
-      throw new InvalidRequestException("No hosts were provided for specified infrastructure");
+    Set<String> hosts = sshInfraDelegateConfig.getHosts();
+    if (EmptyPredicate.isEmpty(hosts)) {
+      infrastructureStepHelper.saveExecutionLog(logCallback,
+          color("No host(s) were provided for specified infrastructure or filter did not match any instance(s)", Red));
+    } else {
+      infrastructureStepHelper.saveExecutionLog(
+          logCallback, color(format("Successfully fetched %s instance(s)", hosts.size()), Green));
+      infrastructureStepHelper.saveExecutionLog(
+          logCallback, color(format("Fetched following instance(s) %s)", hosts), Green));
     }
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.OUTPUT,
-        HostsOutput.builder().hosts(sshInfraDelegateConfig.getHosts()).build(), StepCategory.STAGE.name());
+        HostsOutput.builder().hosts(hosts).build(), StepCategory.STAGE.name());
   }
 
   private void publishWinRmInfraDelegateConfigOutput(InfrastructureOutcome infrastructureOutcome, Ambiance ambiance) {
+    NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, false);
     WinRmInfraDelegateConfig winRmInfraDelegateConfig =
         cdStepHelper.getWinRmInfraDelegateConfig(infrastructureOutcome, ambiance);
 
@@ -232,11 +250,19 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
         WinRmInfraDelegateConfigOutput.builder().winRmInfraDelegateConfig(winRmInfraDelegateConfig).build();
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.WINRM_INFRA_DELEGATE_CONFIG_OUTPUT_NAME,
         winRmInfraDelegateConfigOutput, StepCategory.STAGE.name());
-    if (EmptyPredicate.isEmpty(winRmInfraDelegateConfig.getHosts())) {
-      throw new InvalidRequestException("No hosts were provided for specified infrastructure");
+    Set<String> hosts = winRmInfraDelegateConfig.getHosts();
+    if (EmptyPredicate.isEmpty(hosts)) {
+      infrastructureStepHelper.saveExecutionLog(logCallback,
+          color("No host(s) were provided for specified infrastructure or filter did not match any instance(s)", Red));
+    } else {
+      infrastructureStepHelper.saveExecutionLog(
+          logCallback, color(format("Successfully fetched %s instance(s)", hosts.size()), Green));
+      infrastructureStepHelper.saveExecutionLog(
+          logCallback, color(format("Fetched following instance(s) %s)", hosts), Green));
     }
+
     executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.OUTPUT,
-        HostsOutput.builder().hosts(winRmInfraDelegateConfig.getHosts()).build(), StepCategory.STAGE.name());
+        HostsOutput.builder().hosts(hosts).build(), StepCategory.STAGE.name());
   }
 
   @VisibleForTesting

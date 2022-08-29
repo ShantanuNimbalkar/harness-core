@@ -8,6 +8,7 @@
 package io.harness.template.utils;
 
 import io.harness.beans.Scope;
+import io.harness.exception.ScmException;
 import io.harness.gitsync.beans.StoreType;
 import io.harness.gitsync.interceptor.GitEntityInfo;
 import io.harness.template.entity.TemplateEntity;
@@ -22,10 +23,20 @@ public class TemplateUtils {
   }
 
   public boolean isInlineEntity(GitEntityInfo gitEntityInfo) {
-    return StoreType.INLINE.equals(gitEntityInfo.getStoreType());
+    return StoreType.INLINE.equals(gitEntityInfo.getStoreType()) || gitEntityInfo.getStoreType() == null;
   }
 
   public boolean isRemoteEntity(GitEntityInfo gitEntityInfo) {
     return StoreType.REMOTE.equals(gitEntityInfo.getStoreType());
+  }
+
+  public ScmException getScmException(Throwable ex) {
+    while (ex != null) {
+      if (ex instanceof ScmException) {
+        return (ScmException) ex;
+      }
+      ex = ex.getCause();
+    }
+    return null;
   }
 }
