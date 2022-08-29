@@ -25,6 +25,7 @@ import io.harness.security.SecurityContextBuilder;
 import io.harness.spec.server.ng.OrgSecretApi;
 import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
+import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 
 import com.google.inject.Inject;
 import java.io.InputStream;
@@ -33,8 +34,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-
-import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -73,12 +72,12 @@ public class OrgSecretApiImpl implements OrgSecretApi {
 
   @Override
   public Response deleteOrgScopedSecret(String org, String secret, String account) {
-    return deleteSecret(org, null, secret, account);
+    return deleteSecret(org, secret, account);
   }
 
   @Override
   public Response getOrgScopedSecret(String org, String secret, String account) {
-    return getSecret(org, null, secret, account);
+    return getSecret(org, secret, account);
   }
 
   @Override
@@ -89,7 +88,7 @@ public class OrgSecretApiImpl implements OrgSecretApi {
 
   @Override
   public Response updateOrgScopedSecret(SecretRequest body, String org, String secret, String account) {
-    return updateSecret(body, org, null, secret, account);
+    return updateSecret(body, org, secret, account);
   }
 
   @Override
@@ -112,37 +111,37 @@ public class OrgSecretApiImpl implements OrgSecretApi {
   }
 
   private Response validateSecretSlug(String secret, String account, String org) {
-    Boolean isUnique = ngSecretService.validateTheIdentifierIsUnique(account, org, null, secret);
+    boolean isUnique = ngSecretService.validateTheIdentifierIsUnique(account, org, null, secret);
     return Response.ok().entity(new ValidateSecretSlugResponse().valid(isUnique)).build();
   }
 
-  private Response updateSecret(SecretRequest body, String org, String project, String secret, String account) {
-    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, project, secret).orElse(null);
-    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, project),
+  private Response updateSecret(SecretRequest body, String org, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, null, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, null),
         Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_EDIT_PERMISSION,
         secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
 
     SecretResponseWrapper updatedSecret =
-        ngSecretService.update(account, org, project, secret, toSecretDto(body.getSecret()));
+        ngSecretService.update(account, org, null, secret, toSecretDto(body.getSecret()));
     return Response.ok().entity(toSecretResponse(updatedSecret)).build();
   }
 
-  private Response deleteSecret(String org, String project, String secret, String account) {
-    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, project, secret).orElse(null);
-    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, project),
+  private Response deleteSecret(String org, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, null, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, null),
         Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_DELETE_PERMISSION,
         secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
-    boolean deleted = ngSecretService.delete(account, org, project, secret);
+    boolean deleted = ngSecretService.delete(account, org, null, secret);
     if (deleted) {
       return Response.ok().entity(toSecretResponse(secretResponseWrapper)).build();
     }
     throw new NotFoundException(
-        format("Secret with identifier [%s] in org [%s] and project [%s] not found", secret, org, project));
+        format("Secret with identifier [%s] in org [%s] and project [%s] not found", secret, org, null));
   }
 
-  private Response getSecret(String org, String project, String secret, String account) {
-    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, project, secret).orElse(null);
-    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, project),
+  private Response getSecret(String org, String secret, String account) {
+    SecretResponseWrapper secretResponseWrapper = ngSecretService.get(account, org, null, secret).orElse(null);
+    secretPermissionValidator.checkForAccessOrThrow(ResourceScope.of(account, org, null),
         Resource.of(SECRET_RESOURCE_TYPE, secret), SECRET_VIEW_PERMISSION,
         secretResponseWrapper != null ? secretResponseWrapper.getSecret().getOwner() : null);
 
@@ -150,7 +149,7 @@ public class OrgSecretApiImpl implements OrgSecretApi {
       return Response.ok().entity(toSecretResponse(secretResponseWrapper)).build();
     }
     throw new NotFoundException(
-        format("Secret with identifier [%s] in org [%s] and project [%s] not found", secret, org, project));
+        format("Secret with identifier [%s] in org [%s] and project [%s] not found", secret, org, null));
   }
 
   private Response getSecrets(String account, String org, String project, List<String> secret, List<String> type,

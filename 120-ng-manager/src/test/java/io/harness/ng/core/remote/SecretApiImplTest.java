@@ -34,14 +34,12 @@ import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
 import io.harness.spec.server.ng.model.SecretSpec;
 import io.harness.spec.server.ng.model.SecretTextSpec;
+import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-
-import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

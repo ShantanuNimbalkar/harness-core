@@ -25,6 +25,7 @@ import io.harness.security.SecurityContextBuilder;
 import io.harness.spec.server.ng.ProjectSecretApi;
 import io.harness.spec.server.ng.model.SecretRequest;
 import io.harness.spec.server.ng.model.SecretResponse;
+import io.harness.spec.server.ng.model.ValidateSecretSlugResponse;
 
 import com.google.inject.Inject;
 import java.io.InputStream;
@@ -113,7 +114,8 @@ public class ProjectSecretApiImpl implements ProjectSecretApi {
   }
 
   private Response validateSecretSlug(String secret, String account, String org, String project) {
-    return Response.ok().entity(ngSecretService.validateTheIdentifierIsUnique(account, org, project, secret)).build();
+    boolean isUnique = ngSecretService.validateTheIdentifierIsUnique(account, org, project, secret);
+    return Response.ok().entity(new ValidateSecretSlugResponse().valid(isUnique)).build();
   }
 
   private Response updateSecret(SecretRequest body, String org, String project, String secret, String account) {
