@@ -16,6 +16,7 @@ import static io.harness.debezium.DebeziumConstants.DEBEZIUM_LOCK_PREFIX;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Singleton;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
@@ -92,7 +93,8 @@ public class DebeziumController<T extends MongoCollectionChangeConsumer> impleme
     return DebeziumEngine.create(Json.class).using(props).notifying(changeConsumer).build();
   }
 
-  private AcquiredLock<?> acquireLock(boolean retryIndefinitely) throws InterruptedException {
+  @VisibleForTesting
+  AcquiredLock<?> acquireLock(boolean retryIndefinitely) throws InterruptedException {
     AcquiredLock<?> aggregatorLock = null;
     String lockIdentifier = getLockName();
     do {
