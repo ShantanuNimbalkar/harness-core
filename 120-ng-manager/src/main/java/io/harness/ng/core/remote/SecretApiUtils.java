@@ -53,6 +53,7 @@ import io.harness.spec.server.ng.model.SecretTextSpec;
 import io.harness.spec.server.ng.model.WinRmNTLMSpec;
 import io.harness.spec.server.ng.model.WinRmTGTKeyTabFileSpec;
 import io.harness.spec.server.ng.model.WinRmTGTPasswordSpec;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -260,13 +261,12 @@ public class SecretApiUtils {
   }
 
   public static Secret toSecret(SecretDTOV2 secretDTOV2) {
-    Secret secret = new Secret();
-    secret.setSlug(secretDTOV2.getIdentifier());
-    secret.setName(secretDTOV2.getName());
-    secret.setOrg(secretDTOV2.getOrgIdentifier());
-    secret.setProject(secretDTOV2.getProjectIdentifier());
-    secret.setDescription(secretDTOV2.getDescription());
-    secret.setTags(secretDTOV2.getTags());
+    Secret secret = new Secret().slug(secretDTOV2.getIdentifier())
+            .name(secretDTOV2.getName())
+            .org(secretDTOV2.getOrgIdentifier())
+            .project(secretDTOV2.getProjectIdentifier())
+            .description(secretDTOV2.getDescription())
+            .tags(secretDTOV2.getTags());
 
     switch (secretDTOV2.getType()) {
       case SSHKey:
@@ -275,35 +275,15 @@ public class SecretApiUtils {
         if (SSHAuthScheme.SSH.equals(sshKeySpecDTO.getAuth().getAuthScheme())) {
           SSHConfigDTO sshConfigDTO = (SSHConfigDTO) sshKeySpecDTO.getAuth().getSpec();
           if (SSHCredentialType.KeyPath.equals(sshConfigDTO.getCredentialType())) {
-            SSHKeyPathSpec sshKeyPathSpec = new SSHKeyPathSpec();
-            sshKeyPathSpec.setPort(sshKeySpecDTO.getPort());
-            SSHKeyPathCredentialDTO sshKeyPathCredentialDTO = (SSHKeyPathCredentialDTO) sshConfigDTO.getSpec();
-            sshKeyPathSpec.setType(SSHKEYPATH);
-            sshKeyPathSpec.setUsername(sshKeyPathCredentialDTO.getUserName());
-            sshKeyPathSpec.setKeyPath(sshKeyPathCredentialDTO.getKeyPath());
-            sshKeyPathSpec.setEncryptedPassphrase(
-                sshKeyPathCredentialDTO.getEncryptedPassphrase().toSecretRefStringValue());
+            SSHKeyPathSpec sshKeyPathSpec = getSshKeyPathSpec(sshKeySpecDTO, sshConfigDTO);
 
             secret.setSpec(sshKeyPathSpec);
           } else if (SSHCredentialType.KeyReference.equals(sshConfigDTO.getCredentialType())) {
-            SSHKeyReferenceSpec sshKeyReferenceSpec = new SSHKeyReferenceSpec();
-            sshKeyReferenceSpec.setPort(sshKeySpecDTO.getPort());
-            SSHKeyReferenceCredentialDTO sshKeyReferenceCredentialDTO =
-                (SSHKeyReferenceCredentialDTO) sshConfigDTO.getSpec();
-            sshKeyReferenceSpec.setType(SSHKEYREFERENCE);
-            sshKeyReferenceSpec.setUsername(sshKeyReferenceCredentialDTO.getUserName());
-            sshKeyReferenceSpec.setKey(sshKeyReferenceCredentialDTO.getKey().toSecretRefStringValue());
-            sshKeyReferenceSpec.setEncryptedPassphrase(
-                sshKeyReferenceCredentialDTO.getEncryptedPassphrase().toSecretRefStringValue());
+            SSHKeyReferenceSpec sshKeyReferenceSpec = getSshKeyReferenceSpec(sshKeySpecDTO, sshConfigDTO);
 
             secret.setSpec(sshKeyReferenceSpec);
           } else if (SSHCredentialType.Password.equals(sshConfigDTO.getCredentialType())) {
-            SSHPasswordSpec sshPasswordSpec = new SSHPasswordSpec();
-            sshPasswordSpec.setPort(sshKeySpecDTO.getPort());
-            SSHPasswordCredentialDTO sshPasswordCredentialDTO = (SSHPasswordCredentialDTO) sshConfigDTO.getSpec();
-            sshPasswordSpec.setType(SSHPASSWORD);
-            sshPasswordSpec.setUsername(sshPasswordCredentialDTO.getUserName());
-            sshPasswordSpec.setPassword(sshPasswordCredentialDTO.getPassword().toSecretRefStringValue());
+            SSHPasswordSpec sshPasswordSpec = getSshPasswordSpec(sshKeySpecDTO, sshConfigDTO);
 
             secret.setSpec(sshPasswordSpec);
           }
@@ -311,23 +291,11 @@ public class SecretApiUtils {
           KerberosConfigDTO kerberosConfigDTO = (KerberosConfigDTO) sshKeySpecDTO.getAuth().getSpec();
 
           if (TGTGenerationMethod.KeyTabFilePath.equals(kerberosConfigDTO.getTgtGenerationMethod())) {
-            SSHKerberosTGTKeyTabFileSpec sshKerberosTGTKeyTabFileSpec = new SSHKerberosTGTKeyTabFileSpec();
-            sshKerberosTGTKeyTabFileSpec.setPort(sshKeySpecDTO.getPort());
-            sshKerberosTGTKeyTabFileSpec.setType(SSHKERBEROSTGTKEYTABFILE);
-            sshKerberosTGTKeyTabFileSpec.setPrincipal(kerberosConfigDTO.getPrincipal());
-            sshKerberosTGTKeyTabFileSpec.setRealm(kerberosConfigDTO.getRealm());
-            TGTKeyTabFilePathSpecDTO tgtGenerationSpecDTO = (TGTKeyTabFilePathSpecDTO) kerberosConfigDTO.getSpec();
-            sshKerberosTGTKeyTabFileSpec.setKeyPath(tgtGenerationSpecDTO.getKeyPath());
+            SSHKerberosTGTKeyTabFileSpec sshKerberosTGTKeyTabFileSpec = getSshKerberosTGTKeyTabFileSpec(sshKeySpecDTO, kerberosConfigDTO);
 
             secret.setSpec(sshKerberosTGTKeyTabFileSpec);
           } else if (TGTGenerationMethod.Password.equals(kerberosConfigDTO.getTgtGenerationMethod())) {
-            SSHKerberosTGTPasswordSpec sshKerberosTGTPasswordSpec = new SSHKerberosTGTPasswordSpec();
-            sshKerberosTGTPasswordSpec.setPort(sshKeySpecDTO.getPort());
-            sshKerberosTGTPasswordSpec.setType(SSHKERBEROSTGTPASSWORD);
-            sshKerberosTGTPasswordSpec.setPrincipal(kerberosConfigDTO.getPrincipal());
-            sshKerberosTGTPasswordSpec.setRealm(kerberosConfigDTO.getRealm());
-            TGTPasswordSpecDTO tgtPasswordSpecDTO = (TGTPasswordSpecDTO) kerberosConfigDTO.getSpec();
-            sshKerberosTGTPasswordSpec.setPassword(tgtPasswordSpecDTO.getPassword().toSecretRefStringValue());
+            SSHKerberosTGTPasswordSpec sshKerberosTGTPasswordSpec = getSshKerberosTGTPasswordSpec(sshKeySpecDTO, kerberosConfigDTO);
 
             secret.setSpec(sshKerberosTGTPasswordSpec);
           }
@@ -337,11 +305,7 @@ public class SecretApiUtils {
       case SecretText:
         SecretTextSpecDTO secretTextSpecDTO = (SecretTextSpecDTO) secretDTOV2.getSpec();
 
-        SecretTextSpec secretTextSpec = new SecretTextSpec();
-        secretTextSpec.setType(SECRETTEXT);
-        secretTextSpec.secretManagerSlug(secretTextSpecDTO.getSecretManagerIdentifier());
-        secretTextSpec.setValueType(fromValue(secretTextSpecDTO.getValueType().name()));
-        secretTextSpec.setValue(secretTextSpecDTO.getValue());
+        SecretTextSpec secretTextSpec = getSecretTextSpec(secretTextSpecDTO);
 
         secret.setSpec(secretTextSpec);
         break;
@@ -349,9 +313,7 @@ public class SecretApiUtils {
       case SecretFile:
         SecretFileSpecDTO secretFileSpecDTO = (SecretFileSpecDTO) secretDTOV2.getSpec();
 
-        SecretFileSpec secretFileSpec = new SecretFileSpec();
-        secretFileSpec.setType(SECRETFILE);
-        secretFileSpec.setSecretManagerSlug(secretFileSpecDTO.getSecretManagerIdentifier());
+        SecretFileSpec secretFileSpec = getSecretFileSpec(secretFileSpecDTO);
 
         secret.setSpec(secretFileSpec);
         break;
@@ -362,48 +324,16 @@ public class SecretApiUtils {
               (KerberosWinRmConfigDTO) winRmCredentialsSpecDTO.getAuth().getSpec();
 
           if (TGTGenerationMethod.KeyTabFilePath.equals(kerberosWinRmConfigDTO.getTgtGenerationMethod())) {
-            WinRmTGTKeyTabFileSpec winRmTGTKeyTabFileSpec = new WinRmTGTKeyTabFileSpec();
-            winRmTGTKeyTabFileSpec.setType(WINRMTGTKEYTABFILE);
-            winRmTGTKeyTabFileSpec.setPort(winRmCredentialsSpecDTO.getPort());
-
-            winRmTGTKeyTabFileSpec.setPrincipal(kerberosWinRmConfigDTO.getPrincipal());
-            winRmTGTKeyTabFileSpec.setRealm(kerberosWinRmConfigDTO.getRealm());
-
-            TGTKeyTabFilePathSpecDTO tgtKeyTabFilePathSpecDTO =
-                (TGTKeyTabFilePathSpecDTO) kerberosWinRmConfigDTO.getSpec();
-            winRmTGTKeyTabFileSpec.setKeyPath(tgtKeyTabFilePathSpecDTO.getKeyPath());
-            winRmTGTKeyTabFileSpec.setUseSsl(kerberosWinRmConfigDTO.isUseSSL());
-            winRmTGTKeyTabFileSpec.setSkipCertChecks(kerberosWinRmConfigDTO.isSkipCertChecks());
-            winRmTGTKeyTabFileSpec.setUseNoProfile(kerberosWinRmConfigDTO.isUseNoProfile());
+            WinRmTGTKeyTabFileSpec winRmTGTKeyTabFileSpec = getWinRmTGTKeyTabFileSpec(winRmCredentialsSpecDTO, kerberosWinRmConfigDTO);
 
             secret.setSpec(winRmTGTKeyTabFileSpec);
           } else if (TGTGenerationMethod.Password.equals(kerberosWinRmConfigDTO.getTgtGenerationMethod())) {
-            WinRmTGTPasswordSpec winRmTGTPasswordSpec = new WinRmTGTPasswordSpec();
-            winRmTGTPasswordSpec.setType(WINRMTGTPASSWORD);
-            winRmTGTPasswordSpec.setPort(winRmCredentialsSpecDTO.getPort());
-
-            winRmTGTPasswordSpec.setPrincipal(kerberosWinRmConfigDTO.getPrincipal());
-            winRmTGTPasswordSpec.setRealm(kerberosWinRmConfigDTO.getRealm());
-
-            TGTPasswordSpecDTO tgtPasswordSpecDTO = (TGTPasswordSpecDTO) kerberosWinRmConfigDTO.getSpec();
-            winRmTGTPasswordSpec.setPassword(tgtPasswordSpecDTO.getPassword().toSecretRefStringValue());
-            winRmTGTPasswordSpec.setUseSsl(kerberosWinRmConfigDTO.isUseSSL());
-            winRmTGTPasswordSpec.setSkipCertChecks(kerberosWinRmConfigDTO.isSkipCertChecks());
-            winRmTGTPasswordSpec.setUseNoProfile(kerberosWinRmConfigDTO.isUseNoProfile());
+            WinRmTGTPasswordSpec winRmTGTPasswordSpec = getWinRmTGTPasswordSpec(winRmCredentialsSpecDTO, kerberosWinRmConfigDTO);
 
             secret.setSpec(winRmTGTPasswordSpec);
           }
         } else if (WinRmAuthScheme.NTLM.equals(winRmCredentialsSpecDTO.getAuth().getAuthScheme())) {
-          NTLMConfigDTO ntlmConfigDTO = (NTLMConfigDTO) winRmCredentialsSpecDTO.getAuth().getSpec();
-          WinRmNTLMSpec winRmNTLMSpec = new WinRmNTLMSpec();
-          winRmNTLMSpec.setType(WINRMNTLM);
-          winRmNTLMSpec.setPort(winRmCredentialsSpecDTO.getPort());
-          winRmNTLMSpec.setDomain(ntlmConfigDTO.getDomain());
-          winRmNTLMSpec.setUsername(ntlmConfigDTO.getUsername());
-          winRmNTLMSpec.setUseSsl(ntlmConfigDTO.isUseSSL());
-          winRmNTLMSpec.setSkipCertChecks(ntlmConfigDTO.isSkipCertChecks());
-          winRmNTLMSpec.setUseNoProfile(ntlmConfigDTO.isUseNoProfile());
-          winRmNTLMSpec.setPassword(ntlmConfigDTO.getPassword().toSecretRefStringValue());
+          WinRmNTLMSpec winRmNTLMSpec = getWinRmNTLMSpec(winRmCredentialsSpecDTO);
 
           secret.setSpec(winRmNTLMSpec);
         }
@@ -412,6 +342,126 @@ public class SecretApiUtils {
         throw new InvalidRequestException(String.format("Unable to map secret type [%s]", secretDTOV2.getType()));
     }
     return secret;
+  }
+
+  private static WinRmNTLMSpec getWinRmNTLMSpec(WinRmCredentialsSpecDTO winRmCredentialsSpecDTO) {
+    NTLMConfigDTO ntlmConfigDTO = (NTLMConfigDTO) winRmCredentialsSpecDTO.getAuth().getSpec();
+    WinRmNTLMSpec winRmNTLMSpec = new WinRmNTLMSpec();
+    winRmNTLMSpec.setType(WINRMNTLM);
+    winRmNTLMSpec.setPort(winRmCredentialsSpecDTO.getPort());
+    winRmNTLMSpec.setDomain(ntlmConfigDTO.getDomain());
+    winRmNTLMSpec.setUsername(ntlmConfigDTO.getUsername());
+    winRmNTLMSpec.setUseSsl(ntlmConfigDTO.isUseSSL());
+    winRmNTLMSpec.setSkipCertChecks(ntlmConfigDTO.isSkipCertChecks());
+    winRmNTLMSpec.setUseNoProfile(ntlmConfigDTO.isUseNoProfile());
+    winRmNTLMSpec.setPassword(ntlmConfigDTO.getPassword().toSecretRefStringValue());
+    return winRmNTLMSpec;
+  }
+
+  private static WinRmTGTPasswordSpec getWinRmTGTPasswordSpec(WinRmCredentialsSpecDTO winRmCredentialsSpecDTO, KerberosWinRmConfigDTO kerberosWinRmConfigDTO) {
+    WinRmTGTPasswordSpec winRmTGTPasswordSpec = new WinRmTGTPasswordSpec();
+    winRmTGTPasswordSpec.setType(WINRMTGTPASSWORD);
+    winRmTGTPasswordSpec.setPort(winRmCredentialsSpecDTO.getPort());
+
+    winRmTGTPasswordSpec.setPrincipal(kerberosWinRmConfigDTO.getPrincipal());
+    winRmTGTPasswordSpec.setRealm(kerberosWinRmConfigDTO.getRealm());
+
+    TGTPasswordSpecDTO tgtPasswordSpecDTO = (TGTPasswordSpecDTO) kerberosWinRmConfigDTO.getSpec();
+    winRmTGTPasswordSpec.setPassword(tgtPasswordSpecDTO.getPassword().toSecretRefStringValue());
+    winRmTGTPasswordSpec.setUseSsl(kerberosWinRmConfigDTO.isUseSSL());
+    winRmTGTPasswordSpec.setSkipCertChecks(kerberosWinRmConfigDTO.isSkipCertChecks());
+    winRmTGTPasswordSpec.setUseNoProfile(kerberosWinRmConfigDTO.isUseNoProfile());
+    return winRmTGTPasswordSpec;
+  }
+
+  private static WinRmTGTKeyTabFileSpec getWinRmTGTKeyTabFileSpec(WinRmCredentialsSpecDTO winRmCredentialsSpecDTO, KerberosWinRmConfigDTO kerberosWinRmConfigDTO) {
+    WinRmTGTKeyTabFileSpec winRmTGTKeyTabFileSpec = new WinRmTGTKeyTabFileSpec();
+    winRmTGTKeyTabFileSpec.setType(WINRMTGTKEYTABFILE);
+    winRmTGTKeyTabFileSpec.setPort(winRmCredentialsSpecDTO.getPort());
+
+    winRmTGTKeyTabFileSpec.setPrincipal(kerberosWinRmConfigDTO.getPrincipal());
+    winRmTGTKeyTabFileSpec.setRealm(kerberosWinRmConfigDTO.getRealm());
+
+    TGTKeyTabFilePathSpecDTO tgtKeyTabFilePathSpecDTO =
+        (TGTKeyTabFilePathSpecDTO) kerberosWinRmConfigDTO.getSpec();
+    winRmTGTKeyTabFileSpec.setKeyPath(tgtKeyTabFilePathSpecDTO.getKeyPath());
+    winRmTGTKeyTabFileSpec.setUseSsl(kerberosWinRmConfigDTO.isUseSSL());
+    winRmTGTKeyTabFileSpec.setSkipCertChecks(kerberosWinRmConfigDTO.isSkipCertChecks());
+    winRmTGTKeyTabFileSpec.setUseNoProfile(kerberosWinRmConfigDTO.isUseNoProfile());
+    return winRmTGTKeyTabFileSpec;
+  }
+
+  private static SecretFileSpec getSecretFileSpec(SecretFileSpecDTO secretFileSpecDTO) {
+    SecretFileSpec secretFileSpec = new SecretFileSpec();
+    secretFileSpec.setType(SECRETFILE);
+    secretFileSpec.setSecretManagerSlug(secretFileSpecDTO.getSecretManagerIdentifier());
+    return secretFileSpec;
+  }
+
+  private static SecretTextSpec getSecretTextSpec(SecretTextSpecDTO secretTextSpecDTO) {
+    SecretTextSpec secretTextSpec = new SecretTextSpec();
+    secretTextSpec.setType(SECRETTEXT);
+    secretTextSpec.secretManagerSlug(secretTextSpecDTO.getSecretManagerIdentifier());
+    secretTextSpec.setValueType(fromValue(secretTextSpecDTO.getValueType().name()));
+    secretTextSpec.setValue(secretTextSpecDTO.getValue());
+    return secretTextSpec;
+  }
+
+  private static SSHKerberosTGTPasswordSpec getSshKerberosTGTPasswordSpec(SSHKeySpecDTO sshKeySpecDTO, KerberosConfigDTO kerberosConfigDTO) {
+    SSHKerberosTGTPasswordSpec sshKerberosTGTPasswordSpec = new SSHKerberosTGTPasswordSpec();
+    sshKerberosTGTPasswordSpec.setPort(sshKeySpecDTO.getPort());
+    sshKerberosTGTPasswordSpec.setType(SSHKERBEROSTGTPASSWORD);
+    sshKerberosTGTPasswordSpec.setPrincipal(kerberosConfigDTO.getPrincipal());
+    sshKerberosTGTPasswordSpec.setRealm(kerberosConfigDTO.getRealm());
+    TGTPasswordSpecDTO tgtPasswordSpecDTO = (TGTPasswordSpecDTO) kerberosConfigDTO.getSpec();
+    sshKerberosTGTPasswordSpec.setPassword(tgtPasswordSpecDTO.getPassword().toSecretRefStringValue());
+    return sshKerberosTGTPasswordSpec;
+  }
+
+  private static SSHKerberosTGTKeyTabFileSpec getSshKerberosTGTKeyTabFileSpec(SSHKeySpecDTO sshKeySpecDTO, KerberosConfigDTO kerberosConfigDTO) {
+    SSHKerberosTGTKeyTabFileSpec sshKerberosTGTKeyTabFileSpec = new SSHKerberosTGTKeyTabFileSpec();
+    sshKerberosTGTKeyTabFileSpec.setPort(sshKeySpecDTO.getPort());
+    sshKerberosTGTKeyTabFileSpec.setType(SSHKERBEROSTGTKEYTABFILE);
+    sshKerberosTGTKeyTabFileSpec.setPrincipal(kerberosConfigDTO.getPrincipal());
+    sshKerberosTGTKeyTabFileSpec.setRealm(kerberosConfigDTO.getRealm());
+    TGTKeyTabFilePathSpecDTO tgtGenerationSpecDTO = (TGTKeyTabFilePathSpecDTO) kerberosConfigDTO.getSpec();
+    sshKerberosTGTKeyTabFileSpec.setKeyPath(tgtGenerationSpecDTO.getKeyPath());
+    return sshKerberosTGTKeyTabFileSpec;
+  }
+
+  private static SSHPasswordSpec getSshPasswordSpec(SSHKeySpecDTO sshKeySpecDTO, SSHConfigDTO sshConfigDTO) {
+    SSHPasswordSpec sshPasswordSpec = new SSHPasswordSpec();
+    sshPasswordSpec.setPort(sshKeySpecDTO.getPort());
+    SSHPasswordCredentialDTO sshPasswordCredentialDTO = (SSHPasswordCredentialDTO) sshConfigDTO.getSpec();
+    sshPasswordSpec.setType(SSHPASSWORD);
+    sshPasswordSpec.setUsername(sshPasswordCredentialDTO.getUserName());
+    sshPasswordSpec.setPassword(sshPasswordCredentialDTO.getPassword().toSecretRefStringValue());
+    return sshPasswordSpec;
+  }
+
+  private static SSHKeyReferenceSpec getSshKeyReferenceSpec(SSHKeySpecDTO sshKeySpecDTO, SSHConfigDTO sshConfigDTO) {
+    SSHKeyReferenceSpec sshKeyReferenceSpec = new SSHKeyReferenceSpec();
+    sshKeyReferenceSpec.setPort(sshKeySpecDTO.getPort());
+    SSHKeyReferenceCredentialDTO sshKeyReferenceCredentialDTO =
+        (SSHKeyReferenceCredentialDTO) sshConfigDTO.getSpec();
+    sshKeyReferenceSpec.setType(SSHKEYREFERENCE);
+    sshKeyReferenceSpec.setUsername(sshKeyReferenceCredentialDTO.getUserName());
+    sshKeyReferenceSpec.setKey(sshKeyReferenceCredentialDTO.getKey().toSecretRefStringValue());
+    sshKeyReferenceSpec.setEncryptedPassphrase(
+        sshKeyReferenceCredentialDTO.getEncryptedPassphrase().toSecretRefStringValue());
+    return sshKeyReferenceSpec;
+  }
+
+  private static SSHKeyPathSpec getSshKeyPathSpec(SSHKeySpecDTO sshKeySpecDTO, SSHConfigDTO sshConfigDTO) {
+    SSHKeyPathSpec sshKeyPathSpec = new SSHKeyPathSpec();
+    sshKeyPathSpec.setPort(sshKeySpecDTO.getPort());
+    SSHKeyPathCredentialDTO sshKeyPathCredentialDTO = (SSHKeyPathCredentialDTO) sshConfigDTO.getSpec();
+    sshKeyPathSpec.setType(SSHKEYPATH);
+    sshKeyPathSpec.setUsername(sshKeyPathCredentialDTO.getUserName());
+    sshKeyPathSpec.setKeyPath(sshKeyPathCredentialDTO.getKeyPath());
+    sshKeyPathSpec.setEncryptedPassphrase(
+        sshKeyPathCredentialDTO.getEncryptedPassphrase().toSecretRefStringValue());
+    return sshKeyPathSpec;
   }
 
   public static List<SecretType> toSecretTypes(List<String> type) {
