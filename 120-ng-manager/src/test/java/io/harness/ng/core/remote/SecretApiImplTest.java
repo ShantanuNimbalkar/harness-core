@@ -17,12 +17,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.api.client.util.Lists;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidRequestException;
-import io.harness.ng.core.api.NGEncryptedDataService;
 import io.harness.ng.core.api.SecretCrudService;
 import io.harness.ng.core.api.impl.SecretCrudServiceImpl;
 import io.harness.ng.core.api.impl.SecretPermissionValidator;
@@ -36,20 +34,16 @@ import io.harness.spec.server.ng.model.SecretResponse;
 import io.harness.spec.server.ng.model.SecretSpec;
 import io.harness.spec.server.ng.model.SecretTextSpec;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import software.wings.service.impl.security.NGEncryptorService;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import javax.validation.Validator;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 @OwnedBy(PL)
 public class SecretApiImplTest extends CategoryTest {
@@ -263,16 +257,19 @@ public class SecretApiImplTest extends CategoryTest {
   public void testGetAccountScopedSecretList() {
     Secret textSecret = getTextSecret(org, project);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
-    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
+    SecretResponseWrapper secretResponseWrapper =
+        SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
     List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
-    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null)).thenReturn(pages);
+    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))
+        .thenReturn(pages);
 
-    Response response = accountSecretApi.getAccountScopedSecrets(account, org, project, slugs, types, false, null, page, limit);
+    Response response =
+        accountSecretApi.getAccountScopedSecrets(account, org, project, slugs, types, false, null, page, limit);
 
     List<SecretResponse> secretResponse = (List<SecretResponse>) response.getEntity();
     assertThat(secretResponse.size()).isEqualTo(1);
@@ -290,14 +287,16 @@ public class SecretApiImplTest extends CategoryTest {
   public void testGetOrgScopedSecretList() {
     Secret textSecret = getTextSecret(org, project);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
-    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
+    SecretResponseWrapper secretResponseWrapper =
+        SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
     List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
-    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null)).thenReturn(pages);
+    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))
+        .thenReturn(pages);
 
     Response response = orgSecretApi.getOrgScopedSecrets(org, account, project, slugs, types, false, null, page, limit);
 
@@ -317,16 +316,19 @@ public class SecretApiImplTest extends CategoryTest {
   public void testGetProjectScopedSecretList() {
     Secret textSecret = getTextSecret(org, project);
     SecretDTOV2 secretDTOV2 = toSecretDto(textSecret);
-    SecretResponseWrapper secretResponseWrapper = SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
+    SecretResponseWrapper secretResponseWrapper =
+        SecretResponseWrapper.builder().secret(secretDTOV2).createdAt(123456789L).updatedAt(123456789L).build();
     Page<SecretResponseWrapper> pages = new PageImpl<>(Collections.singletonList(secretResponseWrapper));
 
     List<String> slugs = Collections.singletonList(slug);
     List<SecretType> secretTypes = SecretApiMapper.toSecretTypes(Collections.singletonList("SSHKeyPath"));
     List<String> types = Collections.singletonList("SSHKeyPath");
 
-    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null)).thenReturn(pages);
+    when(ngSecretService.list(account, org, project, slugs, secretTypes, false, null, page, limit, null))
+        .thenReturn(pages);
 
-    Response response = projectSecretApi.getProjectScopedSecrets(org, project, account, slugs, types, false, null, page, limit);
+    Response response =
+        projectSecretApi.getProjectScopedSecrets(org, project, account, slugs, types, false, null, page, limit);
 
     List<SecretResponse> secretResponse = (List<SecretResponse>) response.getEntity();
     assertThat(secretResponse.size()).isEqualTo(1);
