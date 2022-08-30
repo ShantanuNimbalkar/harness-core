@@ -259,8 +259,8 @@ public class AzureCreateARMResourceStep extends TaskChainExecutableWithRollbackA
           .status(Status.SUCCEEDED)
           .build();
     } catch (TaskNGDataException ex) {
-      String errorMsg =
-          String.format("Error while processing Azure Create ARM Resource Task response %s", ex.getMessage());
+      String errorMsg = String.format(
+          "Error while processing Azure Create ARM Resource Task response %s", ex.getCause().getMessage());
       log.error(errorMsg, ex);
 
       return azureCommonHelper.getFailureResponse(ex.getCommandUnitsProgress().getUnitProgresses(), errorMsg);
