@@ -44,8 +44,8 @@ import static java.util.stream.Collectors.toSet;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @OwnedBy(CE)
 public class EventServiceConfig extends Configuration {
-  public static final String SERVICE_ROOT_PATH = "/ccm/api";
-  public static final String SERVICE_ID = "ce-event-service";
+  public static final String SERVICE_ROOT_PATH = "/ccmevent";
+  public static final String SERVICE_ID = "event-service";
   public static final String BASE_PACKAGE = "io.harness.event";
   public static final String FILTER_PACKAGE = "io.harness.filter";
 
