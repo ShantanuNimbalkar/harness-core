@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.yaml.YamlSchemaTypes;
+import io.harness.yaml.core.VariableExpression;
 import io.harness.yaml.core.variables.NGVariable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +36,7 @@ import org.springframework.data.annotation.TypeAlias;
 @RecasterAlias("io.harness.cdng.artifact.bean.yaml.customartifact.FetchAllArtifacts")
 public class FetchAllArtifacts {
   @YamlSchemaTypes({string}) @Wither private ParameterField<String> artifactsArrayPath;
-  private List<NGVariable> attributes;
+  @VariableExpression(skipVariableExpression = true) private List<NGVariable> attributes;
   @YamlSchemaTypes({string}) @Wither private ParameterField<String> versionPath;
   @NotNull @JsonProperty("spec") CustomArtifactScriptInfo shellScriptBaseStepInfo;
 }
