@@ -67,9 +67,7 @@ import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.rbac.PipelineRbacHelper;
-import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
-import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
@@ -82,15 +80,12 @@ import io.harness.steps.StepUtils;
 import io.harness.supplier.ThrowingSupplier;
 import io.harness.tasks.ResponseData;
 import io.harness.utils.IdentifierRefHelper;
-import io.harness.validator.NGRegexValidatorConstants;
 
 import software.wings.beans.TaskType;
 
-import clojure.lang.Obj;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.microsoft.azure.management.Azure;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +93,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
@@ -246,9 +240,6 @@ public class AzureCreateARMResourceStep extends TaskChainExecutableWithRollbackA
           getParameterFieldValue(azureCreateARMResourceStepParameters.getProvisionerIdentifier()), ambiance,
           stepConfigurationParameters.getScope().getSpec().toString());
 
-      // TODO: Nasser I swear, if you commit this part i will kill you
-      AzureARMTemplateDataOutput foobar = getAzureARMTemplateDataOutput(
-          getParameterFieldValue(azureCreateARMResourceStepParameters.getProvisionerIdentifier()), ambiance);
       return StepResponse.builder()
           .unitProgressList(azureARMTaskNGResponse.getUnitProgressData().getUnitProgresses())
           .stepOutcome(
@@ -279,7 +270,7 @@ public class AzureCreateARMResourceStep extends TaskChainExecutableWithRollbackA
             .subscriptionId(data.getSubscriptionId())
             .scopeType(scope)
             .build();
-    String identifier = generateIdentifier(provisionerIdentifier, ambiance);
+    String identifier = azureCommonHelper.generateIdentifier(provisionerIdentifier, ambiance);
     String sweepingOutputKey = format(AZURE_TEMPLATE_DATA_FORMAT, identifier);
     executionSweepingOutputService.consume(
         ambiance, sweepingOutputKey, azureARMTemplateDataOutput, StepOutcomeGroup.STAGE.name());
@@ -454,27 +445,5 @@ public class AzureCreateARMResourceStep extends TaskChainExecutableWithRollbackA
         .gitStoreDelegateConfig(
             azureCommonHelper.getGitStoreDelegateConfig(azureTemplateFile.getStore().getSpec(), ambiance, paths))
         .build();
-  }
-
-  private String generateIdentifier(String provisionerIdentifier, Ambiance ambiance) {
-    if (Pattern.matches(NGRegexValidatorConstants.IDENTIFIER_PATTERN, provisionerIdentifier)) {
-      return format("%s/%s/%s/%s", AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
-          AmbianceUtils.getProjectIdentifier(ambiance), provisionerIdentifier);
-    } else {
-      throw new InvalidRequestException(
-          format("Provisioner Identifier cannot contain special characters or spaces: [%s]", provisionerIdentifier));
-    }
-  }
-
-  private AzureARMTemplateDataOutput getAzureARMTemplateDataOutput(String provisionerIdentifier, Ambiance ambiance) {
-    String identifier = generateIdentifier(provisionerIdentifier, ambiance);
-    String sweepingOutputKey = format(AZURE_TEMPLATE_DATA_FORMAT, identifier);
-
-    OptionalSweepingOutput output = executionSweepingOutputService.resolveOptional(
-        ambiance, RefObjectUtils.getSweepingOutputRefObject(sweepingOutputKey));
-    if (!output.isFound()) {
-      return null;
-    }
-    return (AzureARMTemplateDataOutput) output.getOutput();
   }
 }
