@@ -337,6 +337,7 @@ public class TerraformStepDataGenerator {
     InlineTerraformBackendConfigSpec inlineTerraformBackendConfigSpec = new InlineTerraformBackendConfigSpec();
     inlineTerraformBackendConfigSpec.setContent(ParameterField.createValueField("back-content"));
     TerraformBackendConfig terraformBackendConfig = new TerraformBackendConfig();
+    terraformBackendConfig.setType("Inline");
     terraformBackendConfig.setTerraformBackendConfigSpec(inlineTerraformBackendConfigSpec);
     LinkedHashMap<String, TerraformVarFile> varFilesMap = new LinkedHashMap<>();
     varFilesMap.put("var-file-01",
