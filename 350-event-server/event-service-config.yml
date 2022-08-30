@@ -1,4 +1,5 @@
 server:
+  rootPath: /api/ccmevent
   applicationConnectors:
     - type: http
       port: 7280
