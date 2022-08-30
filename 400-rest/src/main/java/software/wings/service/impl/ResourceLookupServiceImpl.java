@@ -7,13 +7,65 @@
 
 package software.wings.service.impl;
 
+import com.google.common.util.concurrent.TimeLimiter;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
+import dev.morphia.query.UpdateResults;
+import io.harness.beans.PageRequest;
+import io.harness.beans.PageResponse;
+import io.harness.beans.SearchFilter;
+import io.harness.exception.InvalidRequestException;
+import io.harness.ff.FeatureFlagService;
+import io.harness.persistence.HIterator;
+import io.harness.persistence.UuidAware;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotBlank;
+import software.wings.audit.EntityAuditRecord;
+import software.wings.beans.Application;
+import software.wings.beans.CGConstants;
+import software.wings.beans.EntityType;
+import software.wings.beans.Environment;
+import software.wings.beans.InfrastructureProvisioner;
+import software.wings.beans.NameValuePair;
+import software.wings.beans.Pipeline;
+import software.wings.beans.ResourceLookup;
+import software.wings.beans.ResourceLookup.ResourceLookupKeys;
+import software.wings.beans.Service;
+import software.wings.beans.Workflow;
+import software.wings.beans.entityinterface.TagAware;
+import software.wings.beans.trigger.Trigger;
+import software.wings.dl.WingsPersistence;
+import software.wings.security.PermissionAttribute.Action;
+import software.wings.service.intfc.AppService;
+import software.wings.service.intfc.EnvironmentService;
+import software.wings.service.intfc.FileService;
+import software.wings.service.intfc.HarnessTagService;
+import software.wings.service.intfc.ResourceLookupService;
+import software.wings.service.intfc.ServiceResourceService;
+import software.wings.service.intfc.yaml.YamlResourceService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
 import static io.harness.beans.SearchFilter.Operator.EQ;
 import static io.harness.beans.SearchFilter.Operator.IN;
 import static io.harness.beans.SortOrder.OrderType.ASC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static software.wings.audit.ResourceType.API_KEY;
 import static software.wings.audit.ResourceType.APPLICATION;
 import static software.wings.audit.ResourceType.ARTIFACT_SERVER;
@@ -43,61 +95,6 @@ import static software.wings.audit.ResourceType.VERIFICATION_PROVIDER;
 import static software.wings.audit.ResourceType.WHITELISTED_IP;
 import static software.wings.audit.ResourceType.WORKFLOW;
 import static software.wings.service.impl.HarnessTagServiceImpl.supportedTagEntityTypes;
-
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-import io.harness.beans.PageRequest;
-import io.harness.beans.PageResponse;
-import io.harness.beans.SearchFilter;
-import io.harness.exception.InvalidRequestException;
-import io.harness.ff.FeatureFlagService;
-import io.harness.persistence.HIterator;
-import io.harness.persistence.UuidAware;
-
-import software.wings.audit.EntityAuditRecord;
-import software.wings.beans.Application;
-import software.wings.beans.CGConstants;
-import software.wings.beans.EntityType;
-import software.wings.beans.Environment;
-import software.wings.beans.InfrastructureProvisioner;
-import software.wings.beans.NameValuePair;
-import software.wings.beans.Pipeline;
-import software.wings.beans.ResourceLookup;
-import software.wings.beans.ResourceLookup.ResourceLookupKeys;
-import software.wings.beans.Service;
-import software.wings.beans.Workflow;
-import software.wings.beans.entityinterface.TagAware;
-import software.wings.beans.trigger.Trigger;
-import software.wings.dl.WingsPersistence;
-import software.wings.security.PermissionAttribute.Action;
-import software.wings.service.intfc.AppService;
-import software.wings.service.intfc.EnvironmentService;
-import software.wings.service.intfc.FileService;
-import software.wings.service.intfc.HarnessTagService;
-import software.wings.service.intfc.ResourceLookupService;
-import software.wings.service.intfc.ServiceResourceService;
-import software.wings.service.intfc.yaml.YamlResourceService;
-
-import com.google.common.util.concurrent.TimeLimiter;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
-import dev.morphia.query.UpdateOperations;
-import dev.morphia.query.UpdateResults;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Audit Service Implementation class.
@@ -174,7 +171,7 @@ public class ResourceLookupServiceImpl implements ResourceLookupService {
     Map<String, ResourceLookup> resourceLookupMap = new HashMap<>();
 
     FindOptions findOptions = new FindOptions();
-    findOptions.modifier("$hint", "resourceIdResourceLookupIndex");
+    findOptions.hintString("resourceIdResourceLookupIndex");
 
     try (HIterator<ResourceLookup> iterator = new HIterator<>(query.fetch(findOptions))) {
       while (iterator.hasNext()) {

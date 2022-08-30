@@ -7,60 +7,13 @@
 
 package software.wings.service.impl.yaml;
 
-import static io.harness.beans.FeatureName.REMOVE_HINT_YAML_GIT_COMMITS;
-import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
-import static io.harness.beans.PageRequest.UNLIMITED;
-import static io.harness.beans.SearchFilter.Operator.EQ;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.data.structure.UUIDGenerator.generateUuid;
-import static io.harness.delegate.beans.TaskData.DEFAULT_ASYNC_CALL_TIMEOUT;
-import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
-import static io.harness.exception.WingsException.USER;
-import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
-import static io.harness.microservice.NotifyEngineTarget.GENERAL;
-import static io.harness.validation.Validator.notNullCheck;
-
-import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
-import static software.wings.beans.EntityType.ACCOUNT;
-import static software.wings.beans.EntityType.APPLICATION;
-import static software.wings.beans.GitCommit.GIT_COMMIT_ALL_STATUS_LIST;
-import static software.wings.beans.GitCommit.GIT_COMMIT_PROCESSED_STATUS;
-import static software.wings.beans.yaml.GitCommandRequest.gitRequestTimeout;
-import static software.wings.beans.yaml.YamlConstants.APPLICATIONS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.APPLICATION_FOLDER_PATH;
-import static software.wings.beans.yaml.YamlConstants.ARTIFACT_SOURCES_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.CLOUD_PROVIDERS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.COLLABORATION_PROVIDERS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.DEFAULTS_YAML;
-import static software.wings.beans.yaml.YamlConstants.GIT_YAML_LOG_PREFIX;
-import static software.wings.beans.yaml.YamlConstants.GLOBAL_TEMPLATE_LIBRARY_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.LOAD_BALANCERS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.NOTIFICATION_GROUPS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.PATH_DELIMITER;
-import static software.wings.beans.yaml.YamlConstants.SETUP_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.SOURCE_REPO_PROVIDERS_FOLDER;
-import static software.wings.beans.yaml.YamlConstants.VERIFICATION_PROVIDERS_FOLDER;
-import static software.wings.service.impl.GitConfigHelperService.cleanupRepositoryName;
-import static software.wings.service.impl.yaml.YamlProcessingLogContext.BRANCH_NAME;
-import static software.wings.service.impl.yaml.YamlProcessingLogContext.CHANGESET_ID;
-import static software.wings.service.impl.yaml.YamlProcessingLogContext.GIT_CONNECTOR_ID;
-import static software.wings.service.impl.yaml.YamlProcessingLogContext.WEBHOOK_TOKEN;
-import static software.wings.yaml.gitSync.YamlGitConfig.BRANCH_NAME_KEY;
-import static software.wings.yaml.gitSync.YamlGitConfig.GIT_CONNECTOR_ID_KEY;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
-import static org.apache.commons.lang3.StringUtils.endsWith;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.startsWith;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
 import io.harness.alert.AlertData;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -89,7 +42,7 @@ import io.harness.rest.RestResponse;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.serializer.JsonUtils;
 import io.harness.waiter.WaitNotifyEngine;
-
+import lombok.extern.slf4j.Slf4j;
 import software.wings.beans.Account;
 import software.wings.beans.Application;
 import software.wings.beans.Application.ApplicationKeys;
@@ -154,13 +107,8 @@ import software.wings.yaml.gitSync.YamlGitConfig;
 import software.wings.yaml.gitSync.YamlGitConfig.SyncMode;
 import software.wings.yaml.gitSync.YamlGitConfig.YamlGitConfigKeys;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
+import javax.validation.executable.ValidateOnExecution;
+import javax.ws.rs.core.HttpHeaders;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -170,9 +118,58 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.validation.executable.ValidateOnExecution;
-import javax.ws.rs.core.HttpHeaders;
-import lombok.extern.slf4j.Slf4j;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static io.harness.beans.FeatureName.REMOVE_HINT_YAML_GIT_COMMITS;
+import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
+import static io.harness.beans.PageRequest.UNLIMITED;
+import static io.harness.beans.SearchFilter.Operator.EQ;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.delegate.beans.TaskData.DEFAULT_ASYNC_CALL_TIMEOUT;
+import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
+import static io.harness.exception.WingsException.USER;
+import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
+import static io.harness.microservice.NotifyEngineTarget.GENERAL;
+import static io.harness.validation.Validator.notNullCheck;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.apache.commons.lang3.StringUtils.endsWith;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static software.wings.beans.CGConstants.GLOBAL_APP_ID;
+import static software.wings.beans.EntityType.ACCOUNT;
+import static software.wings.beans.EntityType.APPLICATION;
+import static software.wings.beans.GitCommit.GIT_COMMIT_ALL_STATUS_LIST;
+import static software.wings.beans.GitCommit.GIT_COMMIT_PROCESSED_STATUS;
+import static software.wings.beans.yaml.GitCommandRequest.gitRequestTimeout;
+import static software.wings.beans.yaml.YamlConstants.APPLICATIONS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.APPLICATION_FOLDER_PATH;
+import static software.wings.beans.yaml.YamlConstants.ARTIFACT_SOURCES_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.CLOUD_PROVIDERS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.COLLABORATION_PROVIDERS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.DEFAULTS_YAML;
+import static software.wings.beans.yaml.YamlConstants.GIT_YAML_LOG_PREFIX;
+import static software.wings.beans.yaml.YamlConstants.GLOBAL_TEMPLATE_LIBRARY_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.LOAD_BALANCERS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.NOTIFICATION_GROUPS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.PATH_DELIMITER;
+import static software.wings.beans.yaml.YamlConstants.SETUP_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.SOURCE_REPO_PROVIDERS_FOLDER;
+import static software.wings.beans.yaml.YamlConstants.VERIFICATION_PROVIDERS_FOLDER;
+import static software.wings.service.impl.GitConfigHelperService.cleanupRepositoryName;
+import static software.wings.service.impl.yaml.YamlProcessingLogContext.BRANCH_NAME;
+import static software.wings.service.impl.yaml.YamlProcessingLogContext.CHANGESET_ID;
+import static software.wings.service.impl.yaml.YamlProcessingLogContext.GIT_CONNECTOR_ID;
+import static software.wings.service.impl.yaml.YamlProcessingLogContext.WEBHOOK_TOKEN;
+import static software.wings.yaml.gitSync.YamlGitConfig.BRANCH_NAME_KEY;
+import static software.wings.yaml.gitSync.YamlGitConfig.GIT_CONNECTOR_ID_KEY;
 /**
  * The type Yaml git sync service.
  */
@@ -1350,7 +1347,7 @@ public class YamlGitServiceImpl implements YamlGitService {
 
     FindOptions findOptions = new FindOptions();
     if (featureFlagService.isNotEnabled(REMOVE_HINT_YAML_GIT_COMMITS, accountId)) {
-      findOptions.modifier("$hint", "gitCommitAccountIdStatusYgcLastUpdatedIdx");
+      findOptions.hintString("gitCommitAccountIdStatusYgcLastUpdatedIdx");
     }
 
     GitCommit gitCommit = wingsPersistence.createQuery(GitCommit.class)
@@ -1365,7 +1362,7 @@ public class YamlGitServiceImpl implements YamlGitService {
     // This is to handle the old git commit records which doesn't have yamlGitConfigId
     if (gitCommit == null) {
       FindOptions findOptions_1 = new FindOptions();
-      findOptions_1.modifier("$hint", "gitCommitAccountIdStatusYgLastUpdatedIdx");
+      findOptions_1.hintString("gitCommitAccountIdStatusYgLastUpdatedIdx");
 
       gitCommit = wingsPersistence.createQuery(GitCommit.class)
                       .filter(GitCommitKeys.accountId, accountId)

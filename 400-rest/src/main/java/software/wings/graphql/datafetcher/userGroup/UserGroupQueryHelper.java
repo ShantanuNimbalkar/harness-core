@@ -7,15 +7,18 @@
 
 package software.wings.graphql.datafetcher.userGroup;
 
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import dev.morphia.query.CriteriaContainer;
+import dev.morphia.query.FieldEnd;
+import dev.morphia.query.Query;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
-
+import lombok.extern.slf4j.Slf4j;
 import software.wings.beans.User;
 import software.wings.beans.UserInvite;
 import software.wings.beans.security.UserGroup;
@@ -24,17 +27,13 @@ import software.wings.graphql.datafetcher.DataFetcherUtils;
 import software.wings.graphql.schema.type.aggregation.QLIdFilter;
 import software.wings.graphql.schema.type.usergroup.QLUserGroupFilter;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import dev.morphia.query.CriteriaContainerImpl;
-import dev.morphia.query.FieldEnd;
-import dev.morphia.query.Query;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 @OwnedBy(HarnessTeam.PL)
 @Singleton
@@ -51,7 +50,7 @@ public class UserGroupQueryHelper {
 
     Query<UserGroup> memberIdsQuery = populateAccountFilter(UserGroup.class);
 
-    CriteriaContainerImpl memberIdsCriteria = null;
+    CriteriaContainer memberIdsCriteria = null;
 
     for (QLUserGroupFilter filter : filters) {
       if (filter.getUser() != null) {
@@ -89,7 +88,7 @@ public class UserGroupQueryHelper {
     }
 
     Query<UserGroup> userGroupsQuery = populateAccountFilter(UserGroup.class);
-    CriteriaContainerImpl userGroupsCriteria = userGroupsQuery.criteria("_id").in(userGroups);
+    CriteriaContainer userGroupsCriteria = userGroupsQuery.criteria("_id").in(userGroups);
     if (memberIdsCriteria == null) {
       return;
     }

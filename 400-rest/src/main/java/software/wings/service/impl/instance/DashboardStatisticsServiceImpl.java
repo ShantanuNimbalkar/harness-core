@@ -7,40 +7,22 @@
 
 package software.wings.service.impl.instance;
 
-import static io.harness.annotations.dev.HarnessTeam.DX;
-import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
-import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
-import static io.harness.beans.SearchFilter.Operator.EQ;
-import static io.harness.beans.SearchFilter.Operator.GE;
-import static io.harness.beans.SearchFilter.Operator.HAS;
-import static io.harness.beans.SearchFilter.Operator.IN;
-import static io.harness.beans.WorkflowType.ORCHESTRATION;
-import static io.harness.data.structure.CollectionUtils.emptyIfNull;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.eraro.ErrorCode.NO_APPS_ASSIGNED;
-import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
-import static io.harness.exception.WingsException.USER;
-import static io.harness.validation.Validator.notNullCheck;
-
-import static software.wings.beans.Base.CREATED_AT_KEY;
-import static software.wings.beans.EntityType.APPLICATION;
-import static software.wings.beans.EntityType.ARTIFACT;
-import static software.wings.beans.infrastructure.instance.Instance.InstanceKeys;
-import static software.wings.features.DeploymentHistoryFeature.FEATURE_NAME;
-
-import static dev.morphia.aggregation.Accumulator.accumulator;
-import static dev.morphia.aggregation.Group.first;
-import static dev.morphia.aggregation.Group.grouping;
-import static dev.morphia.aggregation.Group.sum;
-import static dev.morphia.aggregation.Projection.projection;
-import static dev.morphia.query.Sort.ascending;
-import static dev.morphia.query.Sort.descending;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.mongodb.AggregationOptions;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.ReadPreference;
+import com.mongodb.TagSet;
+import dev.morphia.aggregation.AggregationPipeline;
+import dev.morphia.aggregation.Group;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.Query;
+import dev.morphia.query.Sort;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.beans.EnvironmentType;
@@ -61,7 +43,8 @@ import io.harness.ff.FeatureFlagService;
 import io.harness.logging.ExceptionLogger;
 import io.harness.persistence.HPersistence;
 import io.harness.time.EpochUtils;
-
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import software.wings.beans.Application;
 import software.wings.beans.ElementExecutionSummary;
 import software.wings.beans.EntityType;
@@ -122,22 +105,7 @@ import software.wings.service.intfc.instance.DashboardStatisticsService;
 import software.wings.service.intfc.instance.InstanceService;
 import software.wings.sm.PipelineSummary;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.mongodb.AggregationOptions;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.ReadPreference;
-import com.mongodb.TagSet;
-import dev.morphia.aggregation.AggregationPipeline;
-import dev.morphia.aggregation.Group;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -150,9 +118,38 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
+
+import static dev.morphia.aggregation.Accumulator.accumulator;
+import static dev.morphia.aggregation.Group.first;
+import static dev.morphia.aggregation.Group.grouping;
+import static dev.morphia.aggregation.Group.sum;
+import static dev.morphia.aggregation.Projection.projection;
+import static dev.morphia.query.Sort.ascending;
+import static dev.morphia.query.Sort.descending;
+import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.beans.PageRequest.PageRequestBuilder.aPageRequest;
+import static io.harness.beans.PageResponse.PageResponseBuilder.aPageResponse;
+import static io.harness.beans.SearchFilter.Operator.EQ;
+import static io.harness.beans.SearchFilter.Operator.GE;
+import static io.harness.beans.SearchFilter.Operator.HAS;
+import static io.harness.beans.SearchFilter.Operator.IN;
+import static io.harness.beans.WorkflowType.ORCHESTRATION;
+import static io.harness.data.structure.CollectionUtils.emptyIfNull;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.eraro.ErrorCode.NO_APPS_ASSIGNED;
+import static io.harness.exception.WingsException.ExecutionContext.MANAGER;
+import static io.harness.exception.WingsException.USER;
+import static io.harness.validation.Validator.notNullCheck;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static software.wings.beans.Base.CREATED_AT_KEY;
+import static software.wings.beans.EntityType.APPLICATION;
+import static software.wings.beans.EntityType.ARTIFACT;
+import static software.wings.beans.infrastructure.instance.Instance.InstanceKeys;
+import static software.wings.features.DeploymentHistoryFeature.FEATURE_NAME;
 
 /**
  * @author rktummala on 8/13/17
@@ -429,7 +426,7 @@ public class DashboardStatisticsServiceImpl implements DashboardStatisticsServic
     }
 
     FindOptions findOptions = new FindOptions();
-    findOptions.modifier("$hint", "instance_index7");
+    findOptions.hintString("instance_index7");
     Instance instance = query.get(findOptions);
     if (instance == null) {
       return timestamp;

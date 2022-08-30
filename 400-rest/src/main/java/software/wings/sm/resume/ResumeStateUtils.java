@@ -7,18 +7,17 @@
 
 package software.wings.sm.resume;
 
-import static io.harness.annotations.dev.HarnessTeam.CDC;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-import static io.harness.validation.Validator.notNullCheck;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import dev.morphia.annotations.Transient;
+import dev.morphia.query.FindOptions;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.beans.SweepingOutputInstance;
 import io.harness.context.ContextElementType;
 import io.harness.persistence.HIterator;
-
+import lombok.extern.slf4j.Slf4j;
 import software.wings.service.impl.SweepingOutputServiceImpl;
 import software.wings.service.intfc.StateExecutionService;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputService;
@@ -30,16 +29,16 @@ import software.wings.sm.StateExecutionData;
 import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.WorkflowStandardParams;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import dev.morphia.annotations.Transient;
-import dev.morphia.query.FindOptions;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+
+import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.validation.Validator.notNullCheck;
 
 @OwnedBy(CDC)
 @Singleton
@@ -99,7 +98,7 @@ public class ResumeStateUtils {
     try (
         HIterator<SweepingOutputInstance> instancesHIterator = new HIterator<>(
             sweepingOutputService.prepareApprovalStateOutputsQuery(appId, fromPipelineExecutionId, fromStateExecutionId)
-                .fetch(new FindOptions().modifier("$hint", "pipelineStateExecution")))) {
+                .fetch(new FindOptions().hintString("pipelineStateExecution")))) {
       for (SweepingOutputInstance instance : instancesHIterator) {
         instances.add(instance);
       }
