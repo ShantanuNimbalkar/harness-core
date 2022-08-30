@@ -7,13 +7,11 @@
 
 package io.harness.morphia;
 
-import static io.harness.govern.IgnoreThrowable.ignoredOnPurpose;
 import static io.harness.morphia.MorphiaRegistrar.putClass;
 
 import io.harness.agent.sdk.HarnessTrace;
 import io.harness.exception.GeneralException;
 import io.harness.exception.UnexpectedException;
-import io.harness.govern.Switch;
 import io.harness.reflection.CodeUtils;
 import io.harness.testing.TestExecution;
 
@@ -29,21 +27,12 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import dev.morphia.Morphia;
 import dev.morphia.ObjectFactory;
-import dev.morphia.annotations.Entity;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedClass;
-import dev.morphia.mapping.MappingException;
-import dev.morphia.utils.ReflectionUtils;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

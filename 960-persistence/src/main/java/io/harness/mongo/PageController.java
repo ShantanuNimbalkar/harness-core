@@ -18,7 +18,6 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.govern.Switch.unhandled;
 
-import static java.util.Arrays.asList;
 import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.joining;
 
@@ -32,7 +31,6 @@ import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.mongo.SampleEntity.SampleEntityKeys;
-import io.harness.persistence.HQuery;
 
 import com.google.common.base.Preconditions;
 import dev.morphia.Datastore;

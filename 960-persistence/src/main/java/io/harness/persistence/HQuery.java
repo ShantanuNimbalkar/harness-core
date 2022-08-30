@@ -7,6 +7,19 @@
 
 package io.harness.persistence;
 
+import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
+import static io.harness.persistence.HQuery.QueryChecks.AUTHORITY;
+import static io.harness.persistence.HQuery.QueryChecks.COUNT;
+import static io.harness.persistence.HQuery.QueryChecks.VALIDATE;
+
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.logging.AutoLogContext;
+import io.harness.mongo.CollectionLogContext;
+import io.harness.mongo.tracing.TraceMode;
+import io.harness.mongo.tracing.Tracer;
+import io.harness.observer.Subject;
+
 import com.google.common.collect.Sets;
 import com.mongodb.DBCollection;
 import dev.morphia.Datastore;
@@ -17,24 +30,11 @@ import dev.morphia.query.MorphiaIterator;
 import dev.morphia.query.MorphiaKeyIterator;
 import dev.morphia.query.Query;
 import dev.morphia.query.QueryImpl;
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.logging.AutoLogContext;
-import io.harness.mongo.CollectionLogContext;
-import io.harness.mongo.tracing.TraceMode;
-import io.harness.mongo.tracing.Tracer;
-import io.harness.observer.Subject;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
-import static io.harness.persistence.HQuery.QueryChecks.AUTHORITY;
-import static io.harness.persistence.HQuery.QueryChecks.COUNT;
-import static io.harness.persistence.HQuery.QueryChecks.VALIDATE;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The type H query.

@@ -7,16 +7,16 @@
 
 package io.harness.cvng.migration.list;
 
-import com.google.inject.Inject;
-import dev.morphia.query.Query;
 import io.harness.cvng.core.entities.MonitoredService;
 import io.harness.cvng.core.entities.MonitoredService.MonitoredServiceKeys;
 import io.harness.cvng.migration.CVNGMigration;
 import io.harness.cvng.migration.beans.ChecklistItem;
 import io.harness.persistence.HPersistence;
-import lombok.extern.slf4j.Slf4j;
 
+import com.google.inject.Inject;
+import dev.morphia.query.Query;
 import java.time.Clock;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AddLastDisabledAtToMonitoredServiceMigration implements CVNGMigration {
