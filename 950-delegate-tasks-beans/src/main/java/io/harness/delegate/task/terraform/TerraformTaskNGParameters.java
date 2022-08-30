@@ -117,7 +117,7 @@ public class TerraformTaskNGParameters
         }
       }
     }
-    if (backendConfigFileInfo != null && backendConfigFileInfo instanceof RemoteTerraformBackendConfigFileInfo) {
+    if (backendConfigFileInfo instanceof RemoteTerraformBackendConfigFileInfo) {
       GitFetchFilesConfig gitFetchFilesConfig =
           ((RemoteTerraformBackendConfigFileInfo) backendConfigFileInfo).getGitFetchFilesConfig();
       FileStoreFetchFilesConfig fileStoreFetchConfig =

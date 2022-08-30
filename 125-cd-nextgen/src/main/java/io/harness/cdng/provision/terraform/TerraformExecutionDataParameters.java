@@ -27,7 +27,7 @@ public class TerraformExecutionDataParameters {
   ParameterField<String> workspace;
   TerraformConfigFilesWrapper configFiles;
   LinkedHashMap<String, TerraformVarFile> varFiles;
-  HashMap<String, TerraformVarFile> backendConfigFiles;
+  Map<String, TerraformVarFile> backendConfigFiles;
   TerraformBackendConfig backendConfig;
   ParameterField<List<String>> targets;
   Map<String, Object> environmentVariables;
