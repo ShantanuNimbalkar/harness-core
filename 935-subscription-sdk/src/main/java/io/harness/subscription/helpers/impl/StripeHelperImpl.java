@@ -179,7 +179,7 @@ public class StripeHelperImpl implements StripeHelper {
   }
 
   @Override
-  public Price getPrice(ModuleType moduleType, String type, String edition, String paymentFrequency, int quantity) {
+  public Price getPrice(ModuleType moduleType, String type, String edition, String paymentFrequency, long quantity) {
     String searchString = String.format(
         SEARCH_MODULE_TYPE_EDITION_BILLED_MAX, moduleType.toString(), type, edition, paymentFrequency, quantity);
 
@@ -187,6 +187,10 @@ public class StripeHelperImpl implements StripeHelper {
         PriceSearchParams.builder().setQuery(searchString).addAllExpand(Lists.newArrayList("data.tiers")).build();
 
     List<Price> priceResults = stripeHandler.searchPrices(params).getData();
+
+    if(priceResults.isEmpty()) {
+      return null;
+    }
 
     return priceResults.stream().findFirst().get();
   }
@@ -200,6 +204,10 @@ public class StripeHelperImpl implements StripeHelper {
         PriceSearchParams.builder().setQuery(searchString).addAllExpand(Lists.newArrayList("data.tiers")).build();
 
     List<Price> priceResults = stripeHandler.searchPrices(params).getData();
+
+    if(priceResults.isEmpty()) {
+      return null;
+    }
 
     return priceResults.stream().findFirst().get();
   }
