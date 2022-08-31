@@ -81,7 +81,7 @@ public interface TerraformBaseHelper {
   List<String> checkoutRemoteVarFileAndConvertToVarFilePaths(List<TerraformVarFileInfo> varFileInfo, String scriptDir,
       LogCallback logCallback, String accountId, String tfVarDirectory) throws IOException;
 
-  List<String> checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo bcFileInfo,
+  String checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo bcFileInfo,
       String scriptDir, LogCallback logCallback, String accountId, String tfVarDirectory) throws IOException;
 
   EncryptedRecordData encryptPlan(byte[] content, String planName, EncryptionConfig encryptionConfig);

@@ -852,24 +852,21 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
     return destFile;
   }
 
-  public List<String> checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo configFileInfo,
+  public String checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo configFileInfo,
       String scriptDir, LogCallback logCallback, String accountId, String tfConfigDirectory) throws IOException {
-    if (configFileInfo == null) {
-      return Collections.emptyList();
-    }
-
-    ArrayList<String> tfBackendConfigFilePaths = new ArrayList<>();
     if (configFileInfo instanceof InlineTerraformFileInfo
         && ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent() != null) {
-      tfBackendConfigFilePaths.add(TerraformHelperUtils.createFileFromStringContent(
+      return TerraformHelperUtils.createFileFromStringContent(
           ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent(), scriptDir,
-          TERRAFORM_BACKEND_CONFIGS_FILE_NAME));
+          TERRAFORM_BACKEND_CONFIGS_FILE_NAME);
     } else if (configFileInfo instanceof RemoteTerraformFileInfo) {
+      List<String> tfBackendConfigFilePath = new ArrayList<>();
       Path tfConfigDirAbsPath = Paths.get(tfConfigDirectory).toAbsolutePath();
       checkoutRemoteTerraformFileAndConvertToFilePath((RemoteTerraformFileInfo) configFileInfo, logCallback, accountId,
-          tfConfigDirectory, tfBackendConfigFilePaths, tfConfigDirAbsPath);
+          tfConfigDirectory, tfBackendConfigFilePath, tfConfigDirAbsPath);
+      return tfBackendConfigFilePath.get(0);
     }
-    return tfBackendConfigFilePaths;
+    return null;
   }
 
   private void checkoutRemoteTerraformFileAndConvertToFilePath(RemoteTerraformFileInfo remoteFileInfo,

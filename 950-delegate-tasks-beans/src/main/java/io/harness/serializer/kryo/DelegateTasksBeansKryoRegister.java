@@ -641,7 +641,9 @@ import io.harness.delegate.task.stepstatus.artifact.DockerArtifactDescriptor;
 import io.harness.delegate.task.stepstatus.artifact.DockerArtifactMetadata;
 import io.harness.delegate.task.stepstatus.artifact.FileArtifactDescriptor;
 import io.harness.delegate.task.stepstatus.artifact.FileArtifactMetadata;
+import io.harness.delegate.task.terraform.InlineTerraformBackendConfigFileInfo;
 import io.harness.delegate.task.terraform.InlineTerraformVarFileInfo;
+import io.harness.delegate.task.terraform.RemoteTerraformBackendConfigFileInfo;
 import io.harness.delegate.task.terraform.RemoteTerraformVarFileInfo;
 import io.harness.delegate.task.terraform.TFTaskType;
 import io.harness.delegate.task.terraform.TerraformCommand;
@@ -1681,5 +1683,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(SkipCopyArtifactDelegateConfig.class, 9800004);
     kryo.register(ArtifactoryDockerArtifactDelegateConfig.class, 9800005);
     kryo.register(CustomSecretManagerValidationParams.class, 19876);
+    kryo.register(InlineTerraformBackendConfigFileInfo.class, 9800006);
+    kryo.register(RemoteTerraformBackendConfigFileInfo.class, 9800007);
   }
 }

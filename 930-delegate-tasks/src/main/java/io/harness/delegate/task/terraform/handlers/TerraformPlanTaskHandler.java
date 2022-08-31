@@ -124,28 +124,27 @@ public class TerraformPlanTaskHandler extends TerraformAbstractTaskHandler {
         taskParameters.getVarFileInfos(), scriptDirectory, logCallback, taskParameters.getAccountId(), tfVarDirectory);
 
     String tfBackendConfigDirectory = Paths.get(baseDir, TF_BACKEND_CONFIG_DIR).toString();
+
+    File tfOutputsFile = Paths.get(scriptDirectory, format(TERRAFORM_VARIABLES_FILE_NAME, "output")).toFile();
+    String backendConfigFile = taskParameters.getBackendConfig() != null
+        ? TerraformHelperUtils.createFileFromStringContent(
+            taskParameters.getBackendConfig(), scriptDirectory, TERRAFORM_BACKEND_CONFIGS_FILE_NAME)
+        : taskParameters.getBackendConfig();
     TerraformBackendConfigFileInfo configFileInfo = null;
     if (taskParameters.getBackendConfigFileInfo() != null) {
       configFileInfo = taskParameters.getBackendConfigFileInfo();
+      backendConfigFile = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
+          configFileInfo, scriptDirectory, logCallback, taskParameters.getAccountId(), tfBackendConfigDirectory);
     }
-
-    List<String> bcRemoteFilePaths = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
-        configFileInfo, scriptDirectory, logCallback, taskParameters.getAccountId(), tfBackendConfigDirectory);
-
-    File tfOutputsFile = Paths.get(scriptDirectory, format(TERRAFORM_VARIABLES_FILE_NAME, "output")).toFile();
 
     try (PlanJsonLogOutputStream planJsonLogOutputStream =
              new PlanJsonLogOutputStream(taskParameters.isSaveTerraformStateJson());
          PlanLogOutputStream planLogOutputStream = new PlanLogOutputStream()) {
       TerraformExecuteStepRequest terraformExecuteStepRequest =
           TerraformExecuteStepRequest.builder()
-              .tfBackendConfigsFile(taskParameters.getBackendConfig() != null
-                      ? TerraformHelperUtils.createFileFromStringContent(
-                          taskParameters.getBackendConfig(), scriptDirectory, TERRAFORM_BACKEND_CONFIGS_FILE_NAME)
-                      : taskParameters.getBackendConfig())
+              .tfBackendConfigsFile(backendConfigFile)
               .tfOutputsFile(tfOutputsFile.getAbsolutePath())
               .tfVarFilePaths(varFilePaths)
-              .tfBackendConfigFilePaths(bcRemoteFilePaths)
               .workspace(taskParameters.getWorkspace())
               .targets(taskParameters.getTargets())
               .scriptDirectory(scriptDirectory)

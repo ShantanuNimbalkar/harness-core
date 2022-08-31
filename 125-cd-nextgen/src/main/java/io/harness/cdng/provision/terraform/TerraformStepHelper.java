@@ -218,7 +218,7 @@ public class TerraformStepHelper {
       gitConfigDTO.setGitConnectionType(GitConnectionType.REPO);
     }
     List<String> paths = new ArrayList<>();
-    if (TF_CONFIG_FILES.equals(identifier)) {
+    if (TF_CONFIG_FILES.equals(identifier) || TF_BACKEND_CONFIG_FILE.equals(identifier)) {
       paths.add(ParameterFieldHelper.getParameterFieldValue(gitStoreConfig.getFolderPath()));
     } else {
       paths.addAll(ParameterFieldHelper.getParameterFieldValue(gitStoreConfig.getPaths()));

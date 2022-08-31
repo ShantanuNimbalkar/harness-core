@@ -563,13 +563,11 @@ public class TerraformBaseHelperImplTest extends CategoryTest {
             .gitFetchFilesConfig(GitFetchFilesConfig.builder().gitStoreDelegateConfig(gitStoreDelegateConfig).build())
             .build();
 
-    List<String> filePaths = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
+    String filePath = terraformBaseHelper.checkoutRemoteBackendConfigFileAndConvertToFilePath(
         configFile, scriptDirectory, logCallback, "accountId", configDir);
-    assertThat(filePaths).isNotNull();
-    assertThat(filePaths.size()).isEqualTo(2);
-    assertThat(filePaths.get(0))
-        .isEqualTo(Paths.get(configDir).toAbsolutePath() + "/"
-            + "filepath1");
+    assertThat(filePath).isNotNull();
+    assertThat(filePath).isEqualTo(Paths.get(configDir).toAbsolutePath() + "/"
+        + "filepath1");
   }
 
   @Test
