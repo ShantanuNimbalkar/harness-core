@@ -4515,7 +4515,7 @@ plain_artifacts = [
     "com.microsoft.rest:client-runtime:1.7.4",
     "com.networknt:json-schema-validator:1.0.54",
     "com.nimbusds:lang-tag:1.5",
-    "com.nimbusds:nimbus-jose-jwt:8.19",
+    "com.nimbusds:nimbus-jose-jwt:8.20",
     "com.nimbusds:oauth2-oidc-sdk:7.4",
     "org.asynchttpclient:async-http-client:2.12.3",
     "com.novemberain:quartz-mongodb-harness-mongo-ssl:2.1.1-harness-mongo-ssl",
