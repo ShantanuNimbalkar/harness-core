@@ -18,6 +18,7 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.govern.Switch.unhandled;
 
+import static java.util.Arrays.asList;
 import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.joining;
 
