@@ -5593,6 +5593,21 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
   }
 
   @Override
+  public List<Artifact> obtainLastGoodDeployedArtifacts(String appId, String workflowId, String serviceId) {
+    if (serviceId == null) {
+      return obtainLastGoodDeployedArtifacts(appId, workflowId);
+    }
+    WorkflowExecution workflowExecution = fetchLastSuccessDeployment(appId, workflowId, serviceId);
+    if (workflowExecution != null) {
+      ExecutionArgs executionArgs = workflowExecution.getExecutionArgs();
+      if (executionArgs != null) {
+        return executionArgs.getArtifacts();
+      }
+    }
+    return new ArrayList<>();
+  }
+
+  @Override
   public List<Artifact> obtainLastGoodDeployedArtifacts(String appId, String workflowId) {
     WorkflowExecution workflowExecution = fetchLastSuccessDeployment(appId, workflowId);
     if (workflowExecution != null) {
@@ -5637,6 +5652,16 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
         .filter(WorkflowExecutionKeys.appId, appId)
         .filter(WorkflowExecutionKeys.workflowId, workflowId)
         .filter(WorkflowExecutionKeys.status, SUCCESS)
+        .order("-createdAt")
+        .get();
+  }
+
+  private WorkflowExecution fetchLastSuccessDeployment(String appId, String workflowId, String serviceId) {
+    return wingsPersistence.createQuery(WorkflowExecution.class)
+        .filter(WorkflowExecutionKeys.appId, appId)
+        .filter(WorkflowExecutionKeys.workflowId, workflowId)
+        .filter(WorkflowExecutionKeys.status, SUCCESS)
+        .filter(WorkflowExecutionKeys.deployedServices, serviceId)
         .order("-createdAt")
         .get();
   }
