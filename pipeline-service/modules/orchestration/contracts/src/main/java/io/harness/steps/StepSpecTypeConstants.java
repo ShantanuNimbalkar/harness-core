@@ -34,6 +34,7 @@ public interface StepSpecTypeConstants {
   String FEATURE_FLAG_STAGE = "FeatureFlag";
   String POLICY_STEP = "Policy";
   String EMAIL = "Email";
+  String COMMAND = "COMMAND";
 
   String APPROVAL_FACILITATOR = "APPROVAL_FACILITATOR";
   String RESOURCE_RESTRAINT_FACILITATOR_TYPE = "RESOURCE_RESTRAINT";
