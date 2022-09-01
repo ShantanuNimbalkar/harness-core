@@ -6,7 +6,9 @@
  */
 package io.harness.resourcegroup.framework.v2.remote.resource;
 
-import static io.harness.resourcegroup.ResourceGroupPermissions.*;
+import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
+import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
+import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
 
 import io.harness.accesscontrol.NGAccessControlCheck;
