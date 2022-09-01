@@ -7,9 +7,6 @@
 
 package io.harness.cdng.instance;
 
-import com.google.common.collect.ImmutableList;
-import dev.morphia.annotations.Entity;
-import dev.morphia.annotations.Id;
 import io.harness.annotation.HarnessEntity;
 import io.harness.annotation.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
@@ -21,6 +18,13 @@ import io.harness.mongo.index.MongoIndex;
 import io.harness.ng.DbAliases;
 import io.harness.persistence.PersistentEntity;
 import io.harness.persistence.UuidAware;
+
+import com.google.common.collect.ImmutableList;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -31,10 +35,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @Builder
