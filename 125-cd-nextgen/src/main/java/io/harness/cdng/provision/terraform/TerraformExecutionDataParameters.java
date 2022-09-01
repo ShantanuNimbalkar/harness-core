@@ -12,7 +12,6 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.pms.yaml.ParameterField;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ public class TerraformExecutionDataParameters {
   ParameterField<String> workspace;
   TerraformConfigFilesWrapper configFiles;
   LinkedHashMap<String, TerraformVarFile> varFiles;
-  Map<String, TerraformVarFile> backendConfigFiles;
   TerraformBackendConfig backendConfig;
   ParameterField<List<String>> targets;
   Map<String, Object> environmentVariables;

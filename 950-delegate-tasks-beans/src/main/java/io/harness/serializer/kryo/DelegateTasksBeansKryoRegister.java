@@ -1683,7 +1683,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(SkipCopyArtifactDelegateConfig.class, 9800004);
     kryo.register(ArtifactoryDockerArtifactDelegateConfig.class, 9800005);
     kryo.register(CustomSecretManagerValidationParams.class, 19876);
-    kryo.register(InlineTerraformBackendConfigFileInfo.class, 9800006);
-    kryo.register(RemoteTerraformBackendConfigFileInfo.class, 9800007);
+    kryo.register(InlineTerraformBackendConfigFileInfo.class, 980_000_6);
+    kryo.register(RemoteTerraformBackendConfigFileInfo.class, 980_000_7);
   }
 }

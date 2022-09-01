@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.CDP)
@@ -103,6 +104,12 @@ public class TerraformApplyStep extends TaskExecutableWithRollbackAndRbac<Terraf
       List<EntityDetail> varFileEntityDetails =
           TerraformStepHelper.prepareEntityDetailsForVarFiles(accountId, orgIdentifier, projectIdentifier, varFiles);
       entityDetailList.addAll(varFileEntityDetails);
+
+      // Backend config connectors
+      TerraformBackendConfig backendConfig = stepParametersSpec.getConfiguration().getSpec().getBackendConfig();
+      Optional<EntityDetail> bcFileEntityDetails = TerraformStepHelper.prepareEntityDetailForBackendConfigFiles(
+          accountId, orgIdentifier, projectIdentifier, backendConfig);
+      bcFileEntityDetails.ifPresent(entityDetailList::add);
     }
 
     pipelineRbacHelper.checkRuntimePermissions(ambiance, entityDetailList, true);
@@ -156,6 +163,7 @@ public class TerraformApplyStep extends TaskExecutableWithRollbackAndRbac<Terraf
             spec.getConfigFiles().getStore().getSpec(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
         .varFileInfos(helper.toTerraformVarFileInfo(spec.getVarFiles(), ambiance))
         .backendConfig(helper.getBackendConfig(spec.getBackendConfig()))
+        .backendConfigFileInfo(helper.toTerraformBackendFileInfo(spec.getBackendConfig(), ambiance))
         .targets(ParameterFieldHelper.getParameterFieldValue(spec.getTargets()))
         .saveTerraformStateJson(false)
         .environmentVariables(helper.getEnvironmentVariablesMap(spec.getEnvironmentVariables()) == null
@@ -200,6 +208,7 @@ public class TerraformApplyStep extends TaskExecutableWithRollbackAndRbac<Terraf
             inheritOutput.getFileStoreConfig(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
         .varFileInfos(helper.prepareTerraformVarFileInfo(inheritOutput.getVarFileConfigs(), ambiance))
         .backendConfig(inheritOutput.getBackendConfig())
+        .backendConfigFileInfo(helper.toTerraformBackendFileInfo(inheritOutput.getBackendConfig(), ambiance))
         .targets(inheritOutput.getTargets())
         .saveTerraformStateJson(false)
         .encryptionConfig(inheritOutput.getEncryptionConfig())

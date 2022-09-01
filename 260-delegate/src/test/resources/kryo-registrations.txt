@@ -2268,3 +2268,5 @@
 9800003:io.harness.delegate.task.ssh.artifact.JenkinsArtifactDelegateConfig
 9800004:io.harness.delegate.task.ssh.artifact.SkipCopyArtifactDelegateConfig
 9800005:io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig
+9800006:io.harness.delegate.task.terraform.InlineTerraformBackendConfigFileInfo
+9800007:io.harness.delegate.task.terraform.RemoteTerraformBackendConfigFileInfo
