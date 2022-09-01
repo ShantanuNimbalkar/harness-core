@@ -274,7 +274,7 @@ public class ExecutionHelperTest extends CategoryTest {
             pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
-            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
@@ -307,7 +307,7 @@ public class ExecutionHelperTest extends CategoryTest {
             inlinePipeline.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(inlinePipeline, moduleType, runtimeInputYaml, Collections.emptyList(), null,
-            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.INLINE);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
@@ -340,7 +340,7 @@ public class ExecutionHelperTest extends CategoryTest {
             remotePipeline.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(remotePipeline, moduleType, runtimeInputYaml, Collections.emptyList(), null,
-            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.REMOTE);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEqualTo("conn");
@@ -371,7 +371,7 @@ public class ExecutionHelperTest extends CategoryTest {
             pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs =
         executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml, Collections.emptyList(), null,
-            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build());
+            executionTriggerInfo, null, RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
@@ -411,7 +411,7 @@ public class ExecutionHelperTest extends CategoryTest {
             pipelineEntity.getProjectIdentifier(), mergedYaml, true, false);
     ExecArgs execArgs = executionHelper.buildExecutionArgs(pipelineEntity, moduleType, runtimeInputYaml,
         Collections.singletonList("s2"), null, executionTriggerInfo, null,
-        RetryExecutionParameters.builder().isRetry(false).build());
+        RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
@@ -450,7 +450,7 @@ public class ExecutionHelperTest extends CategoryTest {
             pipelineYamlWithExpressions, true, true);
     ExecArgs execArgs = executionHelper.buildExecutionArgs(pipelineEntityWithExpressions, moduleType, null,
         Collections.singletonList("s2"), expressionValues, executionTriggerInfo, null,
-        RetryExecutionParameters.builder().isRetry(false).build());
+        RetryExecutionParameters.builder().isRetry(false).build(), false);
     executionMetadataAssertions(execArgs.getMetadata());
     assertThat(execArgs.getMetadata().getPipelineStoreType()).isEqualTo(PipelineStoreType.UNDEFINED);
     assertThat(execArgs.getMetadata().getPipelineConnectorRef()).isEmpty();
