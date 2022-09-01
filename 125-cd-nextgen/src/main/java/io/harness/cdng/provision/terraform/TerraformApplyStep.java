@@ -208,6 +208,7 @@ public class TerraformApplyStep extends TaskExecutableWithRollbackAndRbac<Terraf
             inheritOutput.getFileStoreConfig(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
         .varFileInfos(helper.prepareTerraformVarFileInfo(inheritOutput.getVarFileConfigs(), ambiance))
         .backendConfig(inheritOutput.getBackendConfig())
+        .backendConfigFileInfo(inheritOutput.getBackendConfigurationFileConfig())
         .targets(inheritOutput.getTargets())
         .saveTerraformStateJson(false)
         .encryptionConfig(inheritOutput.getEncryptionConfig())

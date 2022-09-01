@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.manifest.yaml.FileStorageStoreConfig;
 import io.harness.cdng.manifest.yaml.GitStoreConfig;
+import io.harness.delegate.task.terraform.TerraformBackendConfigFileInfo;
 import io.harness.pms.sdk.core.data.ExecutionSweepingOutput;
 import io.harness.security.encryption.EncryptedRecordData;
 import io.harness.security.encryption.EncryptionConfig;
@@ -34,7 +35,7 @@ public class TerraformInheritOutput implements ExecutionSweepingOutput {
   GitStoreConfig configFiles;
   FileStorageStoreConfig fileStoreConfig;
   List<TerraformVarFileConfig> varFileConfigs;
-  TerraformVarFileConfig backendConfigurationFileConfig;
+  TerraformBackendConfigFileInfo backendConfigurationFileConfig;
   String backendConfig;
   List<String> targets;
   Map<String, String> environmentVariables;
