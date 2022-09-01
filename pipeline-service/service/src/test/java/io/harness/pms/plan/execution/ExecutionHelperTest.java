@@ -127,14 +127,14 @@ public class ExecutionHelperTest extends CategoryTest {
       + "      description: <+input>\n"
       + "  allowStageExecutions: true\n";
   String pipelineYamlAllowedValues = "pipeline:\n"
-          + "  stages:\n"
-          + "  - stage:\n"
-          + "      identifier: s1\n"
-          + "      description: <+input>.allowedValues(true,false,maybe)\n"
-          + "  - stage:\n"
-          + "      identifier: s2\n"
-          + "      description: <+input>\n"
-          + "  allowStageExecutions: true\n";
+      + "  stages:\n"
+      + "  - stage:\n"
+      + "      identifier: s1\n"
+      + "      description: <+input>.allowedValues(true,false,maybe)\n"
+      + "  - stage:\n"
+      + "      identifier: s2\n"
+      + "      description: <+input>\n"
+      + "  allowStageExecutions: true\n";
   String pipelineYamlWithExpressions = "pipeline:\n"
       + "  stages:\n"
       + "  - stage:\n"
@@ -540,8 +540,8 @@ public class ExecutionHelperTest extends CategoryTest {
     String wrongRuntimeInputYaml = "";
     pipelineEntity.setYaml(pipelineYamlAllowedValues);
     assertThatThrownBy(() -> executionHelper.getPipelineYamlAndValidate(wrongRuntimeInputYaml, pipelineEntity))
-            .isInstanceOf(InvalidRequestException.class)
-            .hasMessage("Pipeline need runtime input values for: [pipeline.stages.s1.description]");
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Pipeline need runtime input values for: [pipeline.stages.s1.description]");
   }
 
   @Test

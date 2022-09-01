@@ -303,12 +303,12 @@ public class InputSetErrorsHelperTest extends CategoryTest {
     YamlConfig yamlRuntime = new YamlConfig(runtimeInputSet);
 
     final Map<FQN, String> result =
-            InputSetErrorsHelper.getInvalidFQNsInInputSetFromTemplateConfig(yamlConfig, yamlRuntime);
+        InputSetErrorsHelper.getInvalidFQNsInInputSetFromTemplateConfig(yamlConfig, yamlRuntime);
     assertThat(result).hasSize(1);
     assertThat(result.keySet().stream().map(FQN::getExpressionFqn).collect(Collectors.toList()))
-            .containsOnly("pipeline.variables.var2");
+        .containsOnly("pipeline.variables.var2");
     assertThat(result.values())
-            .containsOnly("The value provided   does not match any of the allowed values [true,false,maybe]");
+        .containsOnly("The value provided   does not match any of the allowed values [true,false,maybe]");
   }
 
   @Test
