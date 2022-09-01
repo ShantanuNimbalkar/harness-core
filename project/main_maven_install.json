@@ -11191,17 +11191,17 @@
                 "url": "https://harness.jfrog.io/artifactory/harness-internal/io/harness/ng-manager-server-spec/1.0.10/ng-manager-server-spec-1.0.10.jar"
             },
             {
-                "coord": "io.harness:platform-server-spec:1.0.0",
+                "coord": "io.harness:platform-server-spec:1.0.1",
                 "dependencies": [],
                 "directDependencies": [],
-                "file": "v1/https/harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.0/platform-server-spec-1.0.0.jar",
+                "file": "v1/https/harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.1/platform-server-spec-1.0.1.jar",
                 "mirror_urls": [
-                    "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven/io/harness/platform-server-spec/1.0.0/platform-server-spec-1.0.0.jar",
-                    "https://harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.0/platform-server-spec-1.0.0.jar",
-                    "https://harness.jfrog.io/harness/thirdparty-annonymous/io/harness/platform-server-spec/1.0.0/platform-server-spec-1.0.0.jar"
+                    "http://jfrogdev.dev.harness.io:80/artifactory/portal-maven/io/harness/platform-server-spec/1.0.1/platform-server-spec-1.0.1.jar",
+                    "https://harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.1/platform-server-spec-1.0.1.jar",
+                    "https://harness.jfrog.io/harness/thirdparty-annonymous/io/harness/platform-server-spec/1.0.1/platform-server-spec-1.0.1.jar"
                 ],
-                "sha256": "b28c68045a258e9f007ea4927b9696e8cb7c7f3a3132feaf44d714dcd4cf5fda",
-                "url": "https://harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.0/platform-server-spec-1.0.0.jar"
+                "sha256": "7d3573b42208980e27871d1bd504fb78458b1a323c11acc82159c317aa4db76c",
+                "url": "https://harness.jfrog.io/artifactory/harness-internal/io/harness/platform-server-spec/1.0.1/platform-server-spec-1.0.1.jar"
             },
             {
                 "coord": "io.jsonwebtoken:jjwt-api:0.11.2",
