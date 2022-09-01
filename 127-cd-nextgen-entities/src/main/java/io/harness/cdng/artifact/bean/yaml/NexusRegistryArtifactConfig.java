@@ -61,6 +61,7 @@ import org.springframework.data.annotation.TypeAlias;
 @SimpleVisitorHelper(helperClass = ConnectorRefExtractorHelper.class)
 @TypeAlias("nexusRegistryArtifactConfig")
 @OneOfField(fields = {"tag", "tagRegex"})
+@OneOfField(fields = {"repositoryPort", "repositoryUrl"})
 @RecasterAlias("io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig")
 public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, WithConnectorRef {
   /**
@@ -82,6 +83,23 @@ public class NexusRegistryArtifactConfig implements ArtifactConfig, Visitable, W
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "repositoryFormat", include = EXTERNAL_PROPERTY, visible = true)
   NexusRegistryConfigSpec nexusRegistryConfigSpec;
+
+  /**
+   * Artifacts in repos need to be referenced via a path.
+   */
+  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> artifactPath;
+
+  /**
+   * Repo port.
+   */
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
+  @YamlSchemaTypes(value = {integer})
+  @Wither
+  ParameterField<String> repositoryPort;
+  /**
+   * repo server hostname.
+   */
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) @Wither ParameterField<String> repositoryUrl;
 
   /**
    * Tag refers to exact tag number.
