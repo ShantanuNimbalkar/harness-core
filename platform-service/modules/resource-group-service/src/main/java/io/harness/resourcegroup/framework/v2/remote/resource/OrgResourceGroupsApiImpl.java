@@ -10,10 +10,12 @@ import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEG
 import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
+import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
 
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
@@ -51,27 +53,49 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = DELETE_RESOURCEGROUP_PERMISSION)
-  public Response deleteResourceGroupOrg(String s, String s1, String s2) {
-    return null;
+  public Response deleteResourceGroupOrg(String org, String resourceGroup, String account) {
+    ResourceGroupsResponse resourceGroupsResponse =
+        (ResourceGroupsResponse) getResourceGroupOrg(org, resourceGroup, account).getEntity();
+    if (resourceGroupService.delete(Scope.of(account, org, null), resourceGroup)) {
+      return Response.ok().entity(resourceGroupsResponse).build();
+    }
+    return Response.status(404).build();
   }
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public Response getResourceGroupOrg(String s, String s1, String s2) {
-    return null;
+  public Response getResourceGroupOrg(String org, String resourceGroup, String account) {
+    ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
+        resourceGroupService.get(Scope.of(account, org, null), resourceGroup, NO_FILTER).orElse(null));
+    if (resourceGroupsResponse == null) {
+      return Response.status(404).build();
+    }
+    return Response.ok().entity(resourceGroupsResponse).build();
   }
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public Response listResourceGroupsOrg(String s, String s1, Integer integer, Integer integer1, String s2,
-      List<String> list, List<ResourceSelectorFilter> list1, String s3) {
+  public Response listResourceGroupsOrg(String org, String account, Integer page, Integer limit, String searchTerm,
+      List<String> identifierFilter, List<ResourceSelectorFilter> resourceFilter, String managedFilter) {
     return null;
   }
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   public Response updateResourceGroupOrg(
-      String s, String s1, CreateResourceGroupRequest createResourceGroupRequest, String s2) {
-    return null;
+      String org, String resourceGroup, CreateResourceGroupRequest body, String account) {
+    if (!resourceGroup.equals(body.getSlug())) {
+      return Response.status(400)
+          .entity("Resource Group identifier in the request body and the URL do not match.")
+          .build();
+    }
+    ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestOrg(org, body, account);
+    resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
+    ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
+        resourceGroupService.update(resourceGroupRequest.getResourceGroup(), false).orElse(null));
+    if (resourceGroupsResponse == null) {
+      return Response.status(404).build();
+    }
+    return Response.ok().entity(resourceGroupsResponse).build();
   }
 }

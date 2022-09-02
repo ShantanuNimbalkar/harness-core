@@ -108,6 +108,9 @@ public class ResourceGroupApiUtils {
 
   public static io.harness.spec.server.platform.model.ResourceGroupsResponse getResourceGroupResponse(
       ResourceGroupResponse response) {
+    if (response == null) {
+      return null;
+    }
     ResourceGroupsResponse resourceGroupsResponse = new ResourceGroupsResponse();
     resourceGroupsResponse.setSlug(response.getResourceGroup().getIdentifier());
     resourceGroupsResponse.setName(response.getResourceGroup().getName());
