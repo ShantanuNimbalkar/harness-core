@@ -48,6 +48,8 @@ import retrofit2.Response;
 public class GithubPackagesRegistryServiceImpl implements GithubPackagesRegistryService {
   @Inject private GithubPackagesRestClientFactory githubPackagesRestClientFactory;
 
+  private int DEFAULT_GITHUB_LIST_RESPONSE_SIZE = 100;
+
   @Override
   public List<BuildDetails> getBuilds(GithubPackagesInternalConfig githubPackagesInternalConfig, String packageName,
       String packageType, String org, String versionRegex) {
@@ -255,9 +257,10 @@ public class GithubPackagesRegistryServiceImpl implements GithubPackagesRegistry
 
     if (EmptyPredicate.isEmpty(org)) {
       for (int i = 1;; i++) {
-        Response<List<JsonNode>> pageResponse =
-            githubPackagesRestClient.listVersionsForPackages(basicAuthHeader, packageName, packageType, 100, i)
-                .execute();
+        Response<List<JsonNode>> pageResponse = githubPackagesRestClient
+                                                    .listVersionsForPackages(basicAuthHeader, packageName, packageType,
+                                                        DEFAULT_GITHUB_LIST_RESPONSE_SIZE, i)
+                                                    .execute();
 
         if (!isSuccessful(pageResponse)) {
           throw NestedExceptionUtils.hintWithExplanationException("Unable to fetch the versions for the package",
@@ -267,7 +270,7 @@ public class GithubPackagesRegistryServiceImpl implements GithubPackagesRegistry
 
         if (EmptyPredicate.isNotEmpty(pageResponse.body())) {
           response.addAll(pageResponse.body());
-          if (pageResponse.body().size() < 100) {
+          if (pageResponse.body().size() < DEFAULT_GITHUB_LIST_RESPONSE_SIZE) {
             break;
           }
         } else {
@@ -276,10 +279,10 @@ public class GithubPackagesRegistryServiceImpl implements GithubPackagesRegistry
       }
     } else {
       for (int i = 1;; i++) {
-        Response<List<JsonNode>> pageResponse =
-            githubPackagesRestClient
-                .listVersionsForPackagesInOrg(basicAuthHeader, org, packageName, packageType, 100, i)
-                .execute();
+        Response<List<JsonNode>> pageResponse = githubPackagesRestClient
+                                                    .listVersionsForPackagesInOrg(basicAuthHeader, org, packageName,
+                                                        packageType, DEFAULT_GITHUB_LIST_RESPONSE_SIZE, i)
+                                                    .execute();
 
         if (!isSuccessful(pageResponse)) {
           throw NestedExceptionUtils.hintWithExplanationException("Unable to fetch the versions for the package",
@@ -289,7 +292,7 @@ public class GithubPackagesRegistryServiceImpl implements GithubPackagesRegistry
 
         if (EmptyPredicate.isNotEmpty(pageResponse.body())) {
           response.addAll(pageResponse.body());
-          if (pageResponse.body().size() < 100) {
+          if (pageResponse.body().size() < DEFAULT_GITHUB_LIST_RESPONSE_SIZE) {
             break;
           }
         } else {

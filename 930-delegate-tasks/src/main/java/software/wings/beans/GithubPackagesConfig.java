@@ -38,7 +38,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @ToString(exclude = "password")
 @EqualsAndHashCode(callSuper = false)
-@TargetModule(HarnessModule._957_CG_BEANS)
 public class GithubPackagesConfig implements EncryptableSetting, ArtifactSourceable {
   @Attributes(title = "Github Packages URL", required = true) @NotEmpty private String githubPackagesUrl;
   @Attributes(title = "Username") private String username;
