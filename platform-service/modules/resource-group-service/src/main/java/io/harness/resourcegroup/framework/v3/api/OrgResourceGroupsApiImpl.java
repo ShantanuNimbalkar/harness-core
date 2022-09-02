@@ -4,7 +4,7 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.resourcegroup.framework.v2.remote.resource;
+package io.harness.resourcegroup.framework.v3.api;
 
 import static io.harness.resourcegroup.ResourceGroupPermissions.DELETE_RESOURCEGROUP_PERMISSION;
 import static io.harness.resourcegroup.ResourceGroupPermissions.EDIT_RESOURCEGROUP_PERMISSION;
@@ -20,9 +20,10 @@ import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
+import io.harness.resourcegroup.framework.v3.mapper.ResourceGroupApiUtils;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
 import io.harness.security.annotations.NextGenManagerAuth;
-import io.harness.spec.server.platform.AccountResourceGroupsApi;
+import io.harness.spec.server.platform.OrganizationResourceGroupsApi;
 import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
 import io.harness.spec.server.platform.model.ResourceGroupsResponse;
 import io.harness.spec.server.platform.model.ResourceSelectorFilter;
@@ -36,15 +37,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @NextGenManagerAuth
 @OwnedBy(HarnessTeam.PL)
-public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
+public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
   ResourceGroupService resourceGroupService;
   ResourceGroupValidatorImpl resourceGroupValidator;
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
-  public Response createResourceGroupAcc(CreateResourceGroupRequest body, String account) {
-    ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestAcc(body, account);
+  public Response createResourceGroupOrg(String org, CreateResourceGroupRequest body, String account) {
+    ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestOrg(org, body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.create(resourceGroupRequest.getResourceGroup(), false));
@@ -53,10 +54,10 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = DELETE_RESOURCEGROUP_PERMISSION)
-  public Response deleteResourceGroupAcc(String resourceGroup, String account) {
+  public Response deleteResourceGroupOrg(String org, String resourceGroup, String account) {
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.get(Scope.of(account, null, null), resourceGroup, NO_FILTER).orElse(null));
-    if (resourceGroupService.delete(Scope.of(account, null, null), resourceGroup)) {
+    if (resourceGroupService.delete(Scope.of(account, org, null), resourceGroup)) {
       return Response.ok().entity(resourceGroupsResponse).build();
     }
     return Response.status(404).build();
@@ -64,9 +65,9 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public Response getResourceGroupAcc(String resourceGroup, String account) {
+  public Response getResourceGroupOrg(String org, String resourceGroup, String account) {
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
-        resourceGroupService.get(Scope.of(account, null, null), resourceGroup, NO_FILTER).orElse(null));
+        resourceGroupService.get(Scope.of(account, org, null), resourceGroup, NO_FILTER).orElse(null));
     if (resourceGroupsResponse == null) {
       return Response.status(404).build();
     }
@@ -75,20 +76,21 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
-  public Response listResourceGroupsAcc(String account, Integer page, Integer limit, String searchTerm,
+  public Response listResourceGroupsOrg(String org, String account, Integer page, Integer limit, String searchTerm,
       List<String> identifierFilter, List<ResourceSelectorFilter> resourceFilter, String managedFilter) {
     return null;
   }
 
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
-  public Response updateResourceGroupAcc(String resourceGroup, CreateResourceGroupRequest body, String account) {
+  public Response updateResourceGroupOrg(
+      String org, String resourceGroup, CreateResourceGroupRequest body, String account) {
     if (!resourceGroup.equals(body.getSlug())) {
       return Response.status(400)
           .entity("Resource Group identifier in the request body and the URL do not match.")
           .build();
     }
-    ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestAcc(body, account);
+    ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestOrg(org, body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.update(resourceGroupRequest.getResourceGroup(), false).orElse(null));
