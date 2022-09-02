@@ -115,10 +115,6 @@ public class GitConfigHelperService {
     }
 
     if (gitConfig.getUrlType() == GitConfig.UrlType.ACCOUNT) {
-      if (!featureFlagService.isEnabled(FeatureName.GIT_ACCOUNT_SUPPORT, gitConfig.getAccountId())) {
-        throw new InvalidRequestException("Account level git connector is not enabled", USER);
-      }
-
       // Cannot throw exception here as validation is being called at many places and gitConfig.repoName is transient.
       if (isEmpty(gitConfig.getRepoName())) {
         return;

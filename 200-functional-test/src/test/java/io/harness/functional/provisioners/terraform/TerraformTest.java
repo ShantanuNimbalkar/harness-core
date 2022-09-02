@@ -110,10 +110,6 @@ public class TerraformTest extends AbstractFunctionalTest {
       Settings settings) throws Exception {
     ensurePredefinedStuff(applicationType, serviceType, environmentType, settings);
 
-    if (!featureFlagService.isEnabled(FeatureName.GIT_ACCOUNT_SUPPORT, application.getAccountId())) {
-      featureFlagService.enableAccount(FeatureName.GIT_ACCOUNT_SUPPORT, application.getAccountId());
-    }
-
     resetCache(application.getAccountId());
     terraformInfrastructureProvisioner = buildProvisionerObject();
 
