@@ -24,51 +24,54 @@ import java.util.stream.Collectors;
 
 public class ResourceGroupApiUtils {
   public static ResourceGroupRequest getResourceGroupRequestAcc(CreateResourceGroupRequest body, String account) {
-    return new ResourceGroupRequest(
-        ResourceGroupDTO.builder()
-            .accountIdentifier(account)
-            .identifier(body.getSlug())
-            .name(body.getName())
-            .color(body.getColor())
-            .tags(body.getTags())
-            .description(body.getDescription())
-            .allowedScopeLevels(Collections.singleton("account"))
-            .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-            .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-            .build());
+    return ResourceGroupRequest.builder()
+        .resourceGroup(ResourceGroupDTO.builder()
+                           .accountIdentifier(account)
+                           .identifier(body.getSlug())
+                           .name(body.getName())
+                           .color(body.getColor())
+                           .tags(body.getTags())
+                           .description(body.getDescription())
+                           .allowedScopeLevels(Collections.singleton("account"))
+                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
+                           .build())
+        .build();
   }
   public static ResourceGroupRequest getResourceGroupRequestOrg(
       String org, CreateResourceGroupRequest body, String account) {
-    return new ResourceGroupRequest(
-        ResourceGroupDTO.builder()
-            .accountIdentifier(account)
-            .orgIdentifier(org)
-            .identifier(body.getSlug())
-            .name(body.getName())
-            .color(body.getColor())
-            .tags(body.getTags())
-            .description(body.getDescription())
-            .allowedScopeLevels(Collections.singleton("organization"))
-            .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-            .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-            .build());
+    return ResourceGroupRequest.builder()
+        .resourceGroup(ResourceGroupDTO.builder()
+                           .accountIdentifier(account)
+                           .orgIdentifier(org)
+                           .identifier(body.getSlug())
+                           .name(body.getName())
+                           .color(body.getColor())
+                           .tags(body.getTags())
+                           .description(body.getDescription())
+                           .allowedScopeLevels(Collections.singleton("organization"))
+                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
+                           .build())
+        .build();
   }
   public static ResourceGroupRequest getResourceGroupRequestProject(
       String org, String project, CreateResourceGroupRequest body, String account) {
-    return new ResourceGroupRequest(
-        ResourceGroupDTO.builder()
-            .accountIdentifier(account)
-            .orgIdentifier(org)
-            .projectIdentifier(project)
-            .identifier(body.getSlug())
-            .name(body.getName())
-            .color(body.getColor())
-            .tags(body.getTags())
-            .description(body.getDescription())
-            .allowedScopeLevels(Collections.singleton("project"))
-            .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-            .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-            .build());
+    return ResourceGroupRequest.builder()
+        .resourceGroup(ResourceGroupDTO.builder()
+                           .accountIdentifier(account)
+                           .orgIdentifier(org)
+                           .projectIdentifier(project)
+                           .identifier(body.getSlug())
+                           .name(body.getName())
+                           .color(body.getColor())
+                           .tags(body.getTags())
+                           .description(body.getDescription())
+                           .allowedScopeLevels(Collections.singleton("project"))
+                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
+                           .build())
+        .build();
   }
   public static List<ScopeSelector> getIncludedScopeRequest(List<ResourceGroupScope> resourceGroupScopes) {
     return resourceGroupScopes.stream()
