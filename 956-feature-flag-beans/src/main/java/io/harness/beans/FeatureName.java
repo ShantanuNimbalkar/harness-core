@@ -366,6 +366,7 @@ public enum FeatureName {
   NG_SETTINGS("Enable Settings at various scopes in NG", HarnessTeam.PL),
   QUEUED_COUNT_FOR_QUEUEKEY("Used to display the count of the queue in CG git sync", HarnessTeam.SPG),
   NG_EMAIL_STEP,
+  NG_GOOGLE_ARTIFACT_REGISTRY,
   PRUNE_KUBERNETES_RESOURCES_NG,
   USE_OLD_GIT_SYNC("Used for enabling old Git Experience on projects", HarnessTeam.PL),
   DISABLE_PIPELINE_SCHEMA_VALIDATION(
@@ -428,7 +429,12 @@ public enum FeatureName {
       "Enables uploading Terraform plan to GCS/MongoGridFS instead of saving to sweeping output", HarnessTeam.CDP),
 
   SERVICE_V2_EXPRESSION(
-      "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC);
+      "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC),
+  CIE_HOSTED_VMS(
+      "Enabled hosted VMs in favor of hosted K8s for CIE. This flag will be deprecated once all the feature work has been checked in",
+      HarnessTeam.CI),
+  CHANGE_INSTANCE_QUERY_OPERATOR_TO_NE("Change instance service query operator from $exists to $ne", HarnessTeam.SPG);
+
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;

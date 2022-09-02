@@ -7,14 +7,6 @@
 
 package io.harness.morphia;
 
-import static io.harness.morphia.MorphiaRegistrar.putClass;
-
-import io.harness.agent.sdk.HarnessTrace;
-import io.harness.exception.GeneralException;
-import io.harness.exception.UnexpectedException;
-import io.harness.reflection.CodeUtils;
-import io.harness.testing.TestExecution;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -29,14 +21,23 @@ import dev.morphia.Morphia;
 import dev.morphia.ObjectFactory;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedClass;
+import io.harness.agent.sdk.HarnessTrace;
+import io.harness.exception.GeneralException;
+import io.harness.exception.UnexpectedException;
+import io.harness.reflection.CodeUtils;
+import io.harness.testing.TestExecution;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.extern.slf4j.Slf4j;
+
+import static io.harness.morphia.MorphiaRegistrar.putClass;
 
 @Slf4j
 public class MorphiaModule extends AbstractModule {
@@ -56,16 +57,16 @@ public class MorphiaModule extends AbstractModule {
   @Named("morphiaClasses")
   @Singleton
   Set<Class> classes(Set<Class<? extends MorphiaRegistrar>> registrars) {
-    Set<Class> classes = new HashSet<>();
-    try {
-      for (Class clazz : registrars) {
-        Constructor<?> constructor = clazz.getConstructor();
+    Set<Class> classes = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    registrars.forEach(registrar -> {
+      try {
+        Constructor<?> constructor = registrar.getConstructor();
         final MorphiaRegistrar morphiaRegistrar = (MorphiaRegistrar) constructor.newInstance();
         morphiaRegistrar.registerClasses(classes);
+      } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        throw new GeneralException("Failed initializing morphia", e);
       }
-    } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-      throw new GeneralException("Failed initializing morphia", e);
-    }
+    });
 
     return classes;
   }
@@ -79,16 +80,16 @@ public class MorphiaModule extends AbstractModule {
     MorphiaRegistrarHelperPut h = (name, clazz) -> putClass(map, "io.harness." + name, clazz);
     MorphiaRegistrarHelperPut w = (name, clazz) -> putClass(map, "software.wings." + name, clazz);
 
-    try {
-      for (Class clazz : registrars) {
-        Constructor<?> constructor = clazz.getConstructor();
+    registrars.forEach(registrar -> {
+      try {
+        Constructor<?> constructor = registrar.getConstructor();
         final MorphiaRegistrar morphiaRegistrar = (MorphiaRegistrar) constructor.newInstance();
 
         morphiaRegistrar.registerImplementationClasses(h, w);
+      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        throw new GeneralException("Failed to initialize MorphiaInterfaceImplementers", e);
       }
-    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new GeneralException("Failed to initialize MorphiaInterfaceImplementers", e);
-    }
+    });
 
     return map;
   }
