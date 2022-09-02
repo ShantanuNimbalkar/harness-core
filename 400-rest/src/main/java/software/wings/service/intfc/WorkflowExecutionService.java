@@ -126,7 +126,7 @@ public interface WorkflowExecutionService extends StateStatusUpdate {
 
   List<WorkflowExecution> getResumeHistory(String appId, WorkflowExecution workflowExecution);
 
-  WorkflowExecution triggerRollbackExecutionWorkflow(String appId, WorkflowExecution workflowExecution);
+  WorkflowExecution triggerRollbackExecutionWorkflow(String appId, WorkflowExecution workflowExecution, boolean fromPipe);
 
   RollbackConfirmation getOnDemandRollbackConfirmation(String appId, WorkflowExecution workflowExecution);
 

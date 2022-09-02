@@ -415,7 +415,7 @@ public class WorkflowExecutionServiceRollbackTest extends WingsBaseTest {
     when(artifactService.listByIds(any(), any())).thenReturn(Collections.singletonList(artifact));
     when(stateMachineExecutor.queue(any(), any())).thenReturn(new StateExecutionInstance());
 
-    WorkflowExecution rollbackWEResult = workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE);
+    WorkflowExecution rollbackWEResult = workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE, false);
     assertThat(rollbackWEResult.isOnDemandRollback()).isTrue();
     assertThat(rollbackWEResult.getOriginalExecution().getExecutionId()).isEqualTo(newWE.getUuid());
     assertThat(rollbackWEResult.getOriginalExecution().getStartTs()).isEqualTo(newWE.getStartTs());
@@ -459,7 +459,7 @@ public class WorkflowExecutionServiceRollbackTest extends WingsBaseTest {
     when(artifactService.listByIds(any(), any())).thenReturn(Collections.singletonList(artifact));
     when(stateMachineExecutor.queue(any(), any())).thenReturn(new StateExecutionInstance());
 
-    WorkflowExecution rollbackWEResult = workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE);
+    WorkflowExecution rollbackWEResult = workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE, false);
     assertThat(rollbackWEResult.isOnDemandRollback()).isTrue();
     assertThat(rollbackWEResult.getOriginalExecution().getExecutionId()).isEqualTo(newWE.getUuid());
     assertThat(rollbackWEResult.getOriginalExecution().getStartTs()).isEqualTo(newWE.getStartTs());
@@ -504,7 +504,7 @@ public class WorkflowExecutionServiceRollbackTest extends WingsBaseTest {
     when(artifactService.listByIds(any(), any())).thenReturn(Collections.singletonList(artifact));
     when(stateMachineExecutor.queue(any(), any())).thenReturn(new StateExecutionInstance());
 
-    assertThatThrownBy(() -> workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE))
+    assertThatThrownBy(() -> workflowExecutionService.triggerRollbackExecutionWorkflow(APP_ID, newWE, false))
         .isInstanceOf(InvalidRequestException.class)
         .extracting("message")
         .isEqualTo("No previous artifact found to rollback to");

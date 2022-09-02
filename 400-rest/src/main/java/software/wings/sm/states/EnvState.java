@@ -64,7 +64,6 @@ import software.wings.beans.ExecutionArgs;
 import software.wings.beans.HelmChartInputType;
 import software.wings.beans.ManifestVariable;
 import software.wings.beans.NameValuePair;
-import software.wings.beans.Pipeline;
 import software.wings.beans.VariableType;
 import software.wings.beans.Workflow;
 import software.wings.beans.WorkflowExecution;
@@ -473,7 +472,6 @@ public class EnvState extends State implements WorkflowState {
 
   @Override
   public ExecutionResponse handleAsyncResponse(ExecutionContext context, Map<String, ResponseData> response) {
-    Pipeline pipeline = pipelineService.getPipeline(context.getAppId(), pipelineId);
     EnvExecutionResponseData responseData = (EnvExecutionResponseData) response.values().iterator().next();
     ExecutionResponseBuilder executionResponseBuilder =
         ExecutionResponse.builder().executionStatus(responseData.getStatus());

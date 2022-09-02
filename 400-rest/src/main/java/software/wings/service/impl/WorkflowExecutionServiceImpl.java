@@ -3151,7 +3151,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
   }
 
   @Override
-  public WorkflowExecution triggerRollbackExecutionWorkflow(String appId, WorkflowExecution workflowExecution) {
+  public WorkflowExecution triggerRollbackExecutionWorkflow(String appId, WorkflowExecution workflowExecution, boolean fromPipe) {
     try (AutoLogContext ignore1 = new AccountLogContext(workflowExecution.getAccountId(), OVERRIDE_ERROR)) {
       if (!getOnDemandRollbackAvailable(appId, workflowExecution)) {
         throw new InvalidRequestException("On demand rollback should not be available for this execution");
@@ -3171,7 +3171,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
       oldExecutionArgs.setArtifacts(previousArtifacts);
       oldExecutionArgs.setArtifactVariables(null);
       oldExecutionArgs.setTriggeredFromPipeline(false);
-      return triggerRollbackExecution(appId, workflowExecution.getEnvId(), oldExecutionArgs, workflowExecution);
+      return triggerRollbackExecution(appId, workflowExecution.getEnvId(), oldExecutionArgs, workflowExecution, fromPipe);
     }
   }
 
@@ -3486,8 +3486,11 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
   }
 
   WorkflowExecution triggerRollbackExecution(
-      String appId, String envId, ExecutionArgs executionArgs, WorkflowExecution previousWorkflowExecution) {
+      String appId, String envId, ExecutionArgs executionArgs, WorkflowExecution previousWorkflowExecution, boolean fromPipe) {
     String accountId = appService.getAccountIdByAppId(appId);
+    if (PIPELINE == executionArgs.getWorkflowType()) {
+      throw new InvalidRequestException("Emergency rollback not supported for pipelines");
+    }
 
     log.debug("Received an emergency rollback  execution request");
     if (executionArgs.getOrchestrationId() == null) {
@@ -3529,7 +3532,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     stateMachine.setOrchestrationWorkflow(null);
 
     WorkflowExecution workflowExecution =
-        workflowExecutionServiceHelper.obtainExecution(workflow, stateMachine, envId, null, executionArgs);
+        workflowExecutionServiceHelper.obtainExecution(workflow, stateMachine, envId, fromPipe ? previousWorkflowExecution.getPipelineExecutionId() : null, executionArgs);
     workflowExecution.setOnDemandRollback(true);
     workflowExecution.setOriginalExecution(WorkflowExecutionInfo.builder()
                                                .name(previousWorkflowExecution.getName())

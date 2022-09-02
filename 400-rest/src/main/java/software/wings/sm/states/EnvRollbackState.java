@@ -1,20 +1,46 @@
 package software.wings.sm.states;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.beans.ExecutionStatus.SUCCESS;
+import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static java.util.Arrays.asList;
 import static software.wings.api.EnvStateExecutionData.Builder.anEnvStateExecutionData;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.beans.ExecutionStatus;
+import io.harness.beans.FeatureName;
+import io.harness.beans.OrchestrationWorkflowType;
 import io.harness.beans.RepairActionCode;
 
+import io.harness.beans.SweepingOutputInstance;
+import io.harness.beans.WorkflowType;
+import io.harness.delegate.beans.DelegateResponseData;
+import io.harness.ff.FeatureFlagService;
+import io.harness.tasks.ResponseData;
+import software.wings.api.ArtifactCollectionExecutionData;
 import software.wings.api.EnvStateExecutionData;
+import software.wings.api.artifact.ServiceArtifactElement;
+import software.wings.api.artifact.ServiceArtifactElements;
+import software.wings.api.artifact.ServiceArtifactVariableElement;
+import software.wings.api.artifact.ServiceArtifactVariableElements;
+import software.wings.api.helm.ServiceHelmElement;
+import software.wings.api.helm.ServiceHelmElements;
+import software.wings.beans.NameValuePair;
 import software.wings.beans.WorkflowExecution;
+import software.wings.beans.appmanifest.ApplicationManifest;
+import software.wings.beans.appmanifest.HelmChart;
+import software.wings.beans.artifact.Artifact;
 import software.wings.service.impl.WorkflowExecutionUpdate;
+import software.wings.service.intfc.ApplicationManifestService;
+import software.wings.service.intfc.ArtifactService;
+import software.wings.service.intfc.ArtifactStreamServiceBindingService;
 import software.wings.service.intfc.PipelineService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.WorkflowService;
+import software.wings.service.intfc.sweepingoutput.SweepingOutputService;
 import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.ExecutionResponse;
@@ -25,6 +51,9 @@ import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.Setter;
@@ -33,6 +62,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.annotations.Transient;
 import org.slf4j.Logger;
 import software.wings.sm.StateExecutionData;
+import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateMachine;
 import software.wings.sm.StateType;
 import software.wings.sm.rollback.RollbackStateMachineGenerator;
@@ -60,8 +90,11 @@ public class EnvRollbackState extends State implements WorkflowState {
   @Transient @Inject private PipelineService pipelineService;
   @Transient @Inject private WorkflowExecutionService executionService;
   @Transient @Inject private WorkflowExecutionUpdate executionUpdate;
-  @Inject private RollbackStateMachineGenerator rollbackStateMachineGenerator;
-
+  @Transient @Inject private SweepingOutputService sweepingOutputService;
+  @Transient @Inject private FeatureFlagService featureFlagService;
+  @Transient @Inject private ApplicationManifestService applicationManifestService;
+  @Transient @Inject private ArtifactStreamServiceBindingService artifactStreamServiceBindingService;
+  @Transient @Inject private ArtifactService artifactService;
   private static String ROLLBACK_PREFIX = "Rollback ";
 
   public EnvRollbackState(String name) {
@@ -77,14 +110,47 @@ public class EnvRollbackState extends State implements WorkflowState {
 
     EnvStateExecutionData stateExecutionData = (EnvStateExecutionData) executionContext.getStateExecutionInstance().getStateExecutionMap().get(this.getName().replace(ROLLBACK_PREFIX, ""));
     WorkflowExecution workflowExecution = executionService.getWorkflowExecution(executionContext.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    WorkflowExecution rollbackExecution = executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution);
+    WorkflowExecution rollbackExecution = executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution, true);
 
     envStateExecutionData.setWorkflowExecutionId(rollbackExecution.getUuid());
+    envStateExecutionData.setOrchestrationWorkflowType(rollbackExecution.getOrchestrationType());
     return ExecutionResponse.builder()
         .async(true)
         .correlationIds(asList(rollbackExecution.getUuid()))
         .stateExecutionData(envStateExecutionData)
         .build();
+  }
+
+  @Override
+  public ExecutionResponse handleAsyncResponse(ExecutionContext context, Map<String, ResponseData> response) {
+    EnvState.EnvExecutionResponseData responseData = (EnvState.EnvExecutionResponseData) response.values().iterator().next();
+    ExecutionResponse.ExecutionResponseBuilder executionResponseBuilder =
+        ExecutionResponse.builder().executionStatus(responseData.getStatus());
+
+    if (responseData.getStatus() != SUCCESS) {
+
+      return executionResponseBuilder.build();
+    }
+
+    EnvStateExecutionData stateExecutionData = context.getStateExecutionData();
+    if (stateExecutionData.getOrchestrationWorkflowType() == OrchestrationWorkflowType.BUILD) {
+      if (!featureFlagService.isEnabled(FeatureName.ARTIFACT_STREAM_REFACTOR, context.getAccountId())) {
+        saveArtifactAndManifestElements(context, stateExecutionData);
+      } else {
+        saveArtifactVariableElements(context, stateExecutionData);
+      }
+    }
+
+    if (context.getWorkflowType() == WorkflowType.PIPELINE
+        && featureFlagService.isEnabled(RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION, context.getApp().getAccountId())) {
+      executionUpdate.setAppId(context.getAppId());
+      executionUpdate.setWorkflowExecutionId(context.getWorkflowExecutionId());
+      final String workflowId = context.getWorkflowId(); // this will be pipelineId in case of pipeline
+      injector.injectMembers(executionUpdate);
+      List<NameValuePair> resolvedTags = executionUpdate.resolveDeploymentTags(context, workflowId);
+      executionUpdate.addTagsToWorkflowExecution(resolvedTags);
+    }
+    return executionResponseBuilder.build();
   }
 
   @Override
@@ -152,5 +218,148 @@ public class EnvRollbackState extends State implements WorkflowState {
   public ExecutionResponse checkDisableAssertion(
       ExecutionContextImpl context, WorkflowService workflowService, Logger log) {
     return WorkflowState.super.checkDisableAssertion(context, workflowService, log);
+  }
+
+  private void saveArtifactAndManifestElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
+    saveArtifactElements(context, stateExecutionData);
+    saveHelmChartElements(context, stateExecutionData);
+  }
+
+  private void saveArtifactElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
+    List<Artifact> artifacts =
+        executionService.getArtifactsCollected(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
+    if (isEmpty(artifacts)) {
+      return;
+    }
+
+    List<ServiceArtifactElement> artifactElements = new ArrayList<>();
+    artifacts.forEach(artifact
+        -> artifactElements.add(
+        ServiceArtifactElement.builder()
+            .uuid(artifact.getUuid())
+            .name(artifact.getDisplayName())
+            .serviceIds(artifactStreamServiceBindingService.listServiceIds(artifact.getArtifactStreamId()))
+            .build()));
+
+    sweepingOutputService.save(
+        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
+            .name(ServiceArtifactElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
+            .value(ServiceArtifactElements.builder().artifactElements(artifactElements).build())
+            .build());
+  }
+
+  private void saveHelmChartElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
+    List<HelmChart> charts =
+        executionService.getManifestsCollected(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
+    if (isEmpty(charts)) {
+      return;
+    }
+
+    List<ServiceHelmElement> helmElements = new ArrayList<>();
+    charts.forEach(chart -> {
+      ApplicationManifest manifest =
+          applicationManifestService.getById(context.getAppId(), chart.getApplicationManifestId());
+      String serviceId = null;
+      if (manifest != null) {
+        serviceId = manifest.getServiceId();
+      }
+      helmElements.add(ServiceHelmElement.builder()
+          .uuid(chart.getUuid())
+          .name(chart.getDisplayName())
+          .serviceIds(Collections.singletonList(serviceId))
+          .build());
+    });
+
+    sweepingOutputService.save(
+        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
+            .name(ServiceHelmElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
+            .value(ServiceHelmElements.builder().helmElements(helmElements).build())
+            .build());
+  }
+
+  private void saveArtifactVariableElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
+    List<StateExecutionInstance> allStateExecutionInstances =
+        executionService.getStateExecutionInstances(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
+    if (isEmpty(allStateExecutionInstances)) {
+      return;
+    }
+
+    List<ServiceArtifactVariableElement> artifactVariableElements = new ArrayList<>();
+    allStateExecutionInstances.forEach(stateExecutionInstance -> {
+      if (!(stateExecutionInstance.fetchStateExecutionData() instanceof ArtifactCollectionExecutionData)) {
+        return;
+      }
+
+      ArtifactCollectionExecutionData artifactCollectionExecutionData =
+          (ArtifactCollectionExecutionData) stateExecutionInstance.fetchStateExecutionData();
+      Artifact artifact = artifactService.get(artifactCollectionExecutionData.getArtifactId());
+      artifactVariableElements.add(ServiceArtifactVariableElement.builder()
+          .uuid(artifact.getUuid())
+          .name(artifact.getDisplayName())
+          .entityType(artifactCollectionExecutionData.getEntityType())
+          .entityId(artifactCollectionExecutionData.getEntityId())
+          .serviceId(artifactCollectionExecutionData.getServiceId())
+          .artifactVariableName(artifactCollectionExecutionData.getArtifactVariableName())
+          .build());
+    });
+
+    sweepingOutputService.save(
+        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
+            .name(ServiceArtifactVariableElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
+            .value(ServiceArtifactVariableElements.builder().artifactVariableElements(artifactVariableElements).build())
+            .build());
+  }
+
+  public static class EnvRollbackExecutionResponseData implements DelegateResponseData
+  {
+    private String workflowExecutionId;
+    private ExecutionStatus status;
+
+    /**
+     * Instantiates a new Env execution response data.
+     *
+     * @param workflowExecutionId the workflow execution id
+     * @param status              the status
+     */
+    public EnvRollbackExecutionResponseData(String workflowExecutionId, ExecutionStatus status) {
+      this.workflowExecutionId = workflowExecutionId;
+      this.status = status;
+    }
+
+    /**
+     * Gets workflow execution id.
+     *
+     * @return the workflow execution id
+     */
+    public String getWorkflowExecutionId() {
+      return workflowExecutionId;
+    }
+
+    /**
+     * Sets workflow execution id.
+     *
+     * @param workflowExecutionId the workflow execution id
+     */
+    public void setWorkflowExecutionId(String workflowExecutionId) {
+      this.workflowExecutionId = workflowExecutionId;
+    }
+
+    /**
+     * Gets status.
+     *
+     * @return the status
+     */
+    public ExecutionStatus getStatus() {
+      return status;
+    }
+
+    /**
+     * Sets status.
+     *
+     * @param status the status
+     */
+    public void setStatus(ExecutionStatus status) {
+      this.status = status;
+    }
   }
 }
