@@ -10,9 +10,7 @@ package software.wings.beans;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.encryption.Encrypted;
 
 import software.wings.annotation.EncryptableSetting;
