@@ -18,7 +18,6 @@ import static software.wings.beans.yaml.GitCommand.GitCommandType.VALIDATE;
 import static software.wings.utils.WingsTestConstants.ACCOUNT_ID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -27,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.beans.DelegateTask;
-import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidRequestException;
