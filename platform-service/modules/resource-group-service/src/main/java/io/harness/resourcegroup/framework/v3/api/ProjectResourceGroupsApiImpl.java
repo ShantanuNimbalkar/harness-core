@@ -12,16 +12,21 @@ import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGRO
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
 import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
 
+import static java.lang.String.format;
+
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
+import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
 import io.harness.resourcegroup.framework.v3.mapper.ResourceGroupApiUtils;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.platform.ProjectResourceGroupsApi;
 import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
@@ -30,9 +35,11 @@ import io.harness.spec.server.platform.model.ResourceSelectorFilter;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @NextGenManagerAuth
@@ -81,7 +88,20 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
   public Response listResourceGroupsProject(String org, String project, String account, Integer page, Integer limit,
       String searchTerm, List<String> identifierFilter, List<ResourceSelectorFilter> resourceFilter,
       String managedFilter) {
-    return null;
+    ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
+        account, org, project, searchTerm, identifierFilter, resourceFilter, managedFilter);
+    PageRequest pageRequest = ResourceGroupApiUtils.getPageRequest(page, limit);
+    Page<ResourceGroupResponse> pageResponse = resourceGroupService.list(resourceGroupFilterDTO, pageRequest);
+    Response.ResponseBuilder responseBuilder = Response.ok();
+    Response.ResponseBuilder responseBuilderWithLinks = ResourceGroupApiUtils.addLinksHeader(responseBuilder,
+        format("/v1/orgs/%s/projects/%s/resource-groups)", org, project), pageResponse.getContent().size(), page,
+        limit);
+    return responseBuilderWithLinks
+        .entity(pageResponse.getContent()
+                    .stream()
+                    .map(ResourceGroupApiUtils::getResourceGroupResponse)
+                    .collect(Collectors.toList()))
+        .build();
   }
 
   @Override

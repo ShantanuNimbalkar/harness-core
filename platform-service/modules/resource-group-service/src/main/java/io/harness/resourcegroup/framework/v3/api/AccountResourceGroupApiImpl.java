@@ -18,10 +18,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.Scope;
 import io.harness.enforcement.client.annotation.FeatureRestrictionCheck;
 import io.harness.enforcement.constants.FeatureRestrictionName;
+import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
 import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidatorImpl;
 import io.harness.resourcegroup.framework.v3.mapper.ResourceGroupApiUtils;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
 import io.harness.resourcegroup.v2.remote.dto.ResourceGroupRequest;
+import io.harness.resourcegroup.v2.remote.dto.ResourceGroupResponse;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.platform.AccountResourceGroupsApi;
 import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
@@ -30,9 +33,12 @@ import io.harness.spec.server.platform.model.ResourceSelectorFilter;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @NextGenManagerAuth
@@ -78,7 +84,19 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
   public Response listResourceGroupsAcc(String account, Integer page, Integer limit, String searchTerm,
       List<String> identifierFilter, List<ResourceSelectorFilter> resourceFilter, String managedFilter) {
-    return null;
+    ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
+        account, null, null, searchTerm, identifierFilter, resourceFilter, managedFilter);
+    PageRequest pageRequest = ResourceGroupApiUtils.getPageRequest(page, limit);
+    Page<ResourceGroupResponse> pageResponse = resourceGroupService.list(resourceGroupFilterDTO, pageRequest);
+    ResponseBuilder responseBuilder = Response.ok();
+    ResponseBuilder responseBuilderWithLinks = ResourceGroupApiUtils.addLinksHeader(
+        responseBuilder, "/v1/resource-groups", pageResponse.getContent().size(), page, limit);
+    return responseBuilderWithLinks
+        .entity(pageResponse.getContent()
+                    .stream()
+                    .map(ResourceGroupApiUtils::getResourceGroupResponse)
+                    .collect(Collectors.toList()))
+        .build();
   }
 
   @Override

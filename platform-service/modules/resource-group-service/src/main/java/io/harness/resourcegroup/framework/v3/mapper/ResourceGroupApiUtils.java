@@ -6,7 +6,11 @@
  */
 package io.harness.resourcegroup.framework.v3.mapper;
 
+import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.beans.ScopeFilterType;
+import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
+import io.harness.resourcegroup.v1.remote.dto.ResourceSelectorFilter;
 import io.harness.resourcegroup.v2.model.AttributeFilter;
 import io.harness.resourcegroup.v2.model.ResourceFilter;
 import io.harness.resourcegroup.v2.model.ResourceSelector;
@@ -18,9 +22,14 @@ import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
 import io.harness.spec.server.platform.model.ResourceGroupScope;
 import io.harness.spec.server.platform.model.ResourceGroupsResponse;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 public class ResourceGroupApiUtils {
   public static ResourceGroupRequest getResourceGroupRequestAcc(CreateResourceGroupRequest body, String account) {
@@ -170,5 +179,72 @@ public class ResourceGroupApiUtils {
     resourceFilter.setAttributeName(resourceSelector.getAttributeFilter().getAttributeName());
     resourceFilter.setAttributeValues(resourceSelector.getAttributeFilter().getAttributeValues());
     return resourceFilter;
+  }
+
+  public static ResourceGroupFilterDTO getResourceFilterDTO(String account, String org, String project,
+      String searchTerm, List<String> identifierFilter,
+      List<io.harness.spec.server.platform.model.ResourceSelectorFilter> resourceFilter, String managedFilter) {
+    return ResourceGroupFilterDTO.builder()
+        .accountIdentifier(account)
+        .orgIdentifier(org)
+        .projectIdentifier(project)
+        .searchTerm(searchTerm)
+        .identifierFilter(new HashSet<>(identifierFilter))
+        .resourceSelectorFilterList(
+            resourceFilter.stream().map(ResourceGroupApiUtils::getResourceSelectorFilter).collect(Collectors.toSet()))
+        .managedFilter(getManagedFilter(managedFilter))
+        .build();
+  }
+
+  public static ResourceSelectorFilter getResourceSelectorFilter(
+      io.harness.spec.server.platform.model.ResourceSelectorFilter filter) {
+    return ResourceSelectorFilter.builder()
+        .resourceType(filter.getResourceType())
+        .resourceIdentifier(filter.getResourceSlug())
+        .build();
+  }
+
+  public static ManagedFilter getManagedFilter(String managedFilter) {
+    if (managedFilter.equals("NO_FILTER")) {
+      return ManagedFilter.NO_FILTER;
+    }
+    if (managedFilter.equals("ONLY_MANAGED")) {
+      return ManagedFilter.ONLY_MANAGED;
+    }
+    return ManagedFilter.ONLY_CUSTOM;
+  }
+
+  public static PageRequest getPageRequest(Integer page, Integer limit) {
+    return PageRequest.builder().pageIndex(page).pageSize(limit).build();
+  }
+
+  public static Response.ResponseBuilder addLinksHeader(
+      Response.ResponseBuilder responseBuilder, String path, int currentResultCount, int page, int limit) {
+    ArrayList<Link> links = new ArrayList();
+    links.add(Link.fromUri(UriBuilder.fromPath(path)
+                               .queryParam("page", new Object[] {page})
+                               .queryParam("page_size", new Object[] {limit})
+                               .build(new Object[0]))
+                  .rel("self")
+                  .build(new Object[0]));
+    if (page >= 1) {
+      links.add(Link.fromUri(UriBuilder.fromPath(path)
+                                 .queryParam("page", new Object[] {page - 1})
+                                 .queryParam("page_size", new Object[] {limit})
+                                 .build(new Object[0]))
+                    .rel("previous")
+                    .build(new Object[0]));
+    }
+
+    if (limit == currentResultCount) {
+      links.add(Link.fromUri(UriBuilder.fromPath(path)
+                                 .queryParam("page", new Object[] {page + 1})
+                                 .queryParam("page_size", new Object[] {limit})
+                                 .build(new Object[0]))
+                    .rel("next")
+                    .build(new Object[0]));
+    }
+
+    return responseBuilder.links((Link[]) links.toArray(new Link[links.size()]));
   }
 }
