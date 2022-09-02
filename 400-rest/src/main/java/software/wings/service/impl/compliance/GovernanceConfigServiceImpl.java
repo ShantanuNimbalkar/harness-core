@@ -448,10 +448,11 @@ public class GovernanceConfigServiceImpl implements GovernanceConfigService {
             freezeConfig.getExcludeAppSelections().forEach(appSelection -> {
               Map<String, Set<String>> appEnvMap = getAppEnvMapForAppSelection(accountId, appSelection);
               if (isNotEmpty(appEnvMap)) {
-                appEnvMap.forEach((app, envSet) -> appEnvs.merge(app, envSet, (prevEnvSet, newEnvSet) -> {
-                  prevEnvSet.addAll(newEnvSet);
+                appEnvMap.forEach((app, envSet) -> appEnvs.merge(app, new HashSet<>(), (prevEnvSet, newEnvSet) -> {
+                  prevEnvSet.removeAll(envSet);
                   return prevEnvSet;
                 }));
+                appEnvs.values().removeIf(Set::isEmpty);
               }
               checkIfAllEnvAllServiceExcludedFromFreezeAndRemove(appSelection, allEnvFrozenApps, accountId);
             });
@@ -500,15 +501,13 @@ public class GovernanceConfigServiceImpl implements GovernanceConfigService {
   // Given an app selection row in a freeze window, this returns a map of frozen environments in each application as
   // specified by it
   private Map<String, Set<String>> getAppEnvMapForAppSelection(String accountId, ApplicationFilter appSelection) {
-    if (appSelection.getEnvSelection().getFilterType() == EnvironmentFilterType.ALL) {
-      return new HashMap<>();
-    }
     List<String> appIds = appSelection.getFilterType() == BlackoutWindowFilterType.ALL
         ? appService.getAppIdsByAccountId(accountId)
         : ((CustomAppFilter) appSelection).getApps();
     Map<String, Set<String>> appEnvMap = new HashMap<>();
     switch (appSelection.getEnvSelection().getFilterType()) {
       case ALL:
+        appEnvMap = environmentService.getAppIdEnvIdMap(new HashSet<>(appIds));
         break;
       case ALL_NON_PROD:
         appEnvMap = environmentService.getAppIdEnvIdMapByType(new HashSet<>(appIds), EnvironmentType.NON_PROD);
