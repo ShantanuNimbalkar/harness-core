@@ -62,7 +62,7 @@ public class EnvironmentGroupEntity implements PersistentEntity, GitSyncableEnti
   @Wither @Id @org.mongodb.morphia.annotations.Id private String uuid;
 
   // Yaml Of Env Group
-  @Wither @NotEmpty String yaml;
+  @Wither String yaml;
 
   @Trimmed @NotEmpty private String accountId;
   @Trimmed private String orgIdentifier;
