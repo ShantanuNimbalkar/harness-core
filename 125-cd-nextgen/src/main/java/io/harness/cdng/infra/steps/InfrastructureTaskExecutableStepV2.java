@@ -10,6 +10,7 @@ package io.harness.cdng.infra.steps;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants.INFRA_TASK_EXECUTABLE_STEP_V2;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static software.wings.beans.LogColor.Green;
 import static software.wings.beans.LogHelper.color;
@@ -29,6 +30,7 @@ import io.harness.cdng.infra.yaml.Infrastructure;
 import io.harness.cdng.infra.yaml.InfrastructureConfig;
 import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
+import io.harness.cdng.visitor.YamlTypes;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
@@ -50,6 +52,7 @@ import io.harness.pms.contracts.plan.ExecutionPrincipalInfo;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
+import io.harness.pms.merger.helpers.MergeHelper;
 import io.harness.pms.rbac.PipelineRbacHelper;
 import io.harness.pms.sdk.core.steps.executables.TaskExecutable;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
@@ -61,9 +64,12 @@ import io.harness.steps.OutputExpressionConstants;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.steps.shellscript.K8sInfraDelegateConfigOutput;
 import io.harness.supplier.ThrowingSupplier;
+import io.harness.utils.YamlPipelineUtils;
 
 import com.google.inject.Inject;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -97,15 +103,16 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     final InfrastructureConfig infrastructureConfig = fetchInfraConfigFromDB(ambiance, stepParameters);
     final Infrastructure infraSpec = infrastructureConfig.getInfrastructureDefinitionConfig().getSpec();
 
-    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
     validateResources(ambiance, infraSpec);
+
+    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true, "Execute");
     // Create delegate task for infra if needed
     if (isTaskStep(infraSpec.getKind())) {
       return obtainTaskInternal(ambiance, infraSpec, logCallback);
     }
 
     // If delegate task is not needed, just validate the infra spec
-    executeSync(ambiance, infraSpec);
+    executeSync(ambiance, infraSpec, logCallback);
     return null;
   }
 
@@ -114,20 +121,19 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       ThrowingSupplier<DelegateResponseData> responseDataSupplier) throws Exception {
     final InfrastructureTaskExecutableStepSweepingOutput infraOutput = fetchInfraStepOutputOrThrow(ambiance);
 
+    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, "Execute");
     // handle response from delegate if task was created
     if (isTaskStep(infraOutput.getInfrastructureOutcome().getKind())) {
-      return handleTaskResult(ambiance, infraOutput, responseDataSupplier);
+      return handleTaskResult(ambiance, infraOutput, responseDataSupplier, logCallback);
     }
 
     // just produce step response. Sync flow
-    return produceStepResponseForNonTaskStepInfra(ambiance, infraOutput);
+    return produceStepResponseForNonTaskStepInfra(ambiance, infraOutput, logCallback);
   }
 
   private StepResponse produceStepResponseForNonTaskStepInfra(
-      Ambiance ambiance, InfrastructureTaskExecutableStepSweepingOutput stepSweepingOutput) {
+      Ambiance ambiance, InfrastructureTaskExecutableStepSweepingOutput stepSweepingOutput, NGLogCallback logCallback) {
     final long startTime = System.currentTimeMillis();
-
-    final NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true);
 
     final OutcomeSet outcomeSet = fetchRequiredOutcomes(ambiance);
     final EnvironmentOutcome environmentOutcome = outcomeSet.getEnvironmentOutcome();
@@ -150,10 +156,8 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       }
     }
 
-    if (logCallback != null) {
-      logCallback.saveExecutionLog(
-          color("Completed infrastructure step", Green), LogLevel.INFO, CommandExecutionStatus.SUCCESS);
-    }
+    saveExecutionLog(
+        logCallback, color("Completed infrastructure step", Green), LogLevel.INFO, CommandExecutionStatus.SUCCESS);
 
     return stepResponseBuilder.status(Status.SUCCEEDED)
         .stepOutcome(StepResponse.StepOutcome.builder()
@@ -183,8 +187,7 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     pipelineRbacHelper.checkRuntimePermissions(ambiance, entityDetails);
   }
 
-  private void executeSync(Ambiance ambiance, Infrastructure infrastructure) {
-    NGLogCallback logCallback = infrastructureStepHelper.getInfrastructureLogCallback(ambiance, true);
+  private void executeSync(Ambiance ambiance, Infrastructure infrastructure, NGLogCallback logCallback) {
     validateConnector(infrastructure, ambiance);
     saveExecutionLog(logCallback, "Fetching environment information...");
     validateInfrastructure(infrastructure, ambiance);
@@ -211,16 +214,22 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
 
   private InfrastructureConfig fetchInfraConfigFromDB(
       Ambiance ambiance, InfrastructureTaskExecutableStepV2Params stepParameters) {
-    Optional<InfrastructureEntity> infrastructureEntity =
+    Optional<InfrastructureEntity> infrastructureEntityOpt =
         infrastructureEntityService.get(AmbianceUtils.getAccountId(ambiance), AmbianceUtils.getOrgIdentifier(ambiance),
             AmbianceUtils.getProjectIdentifier(ambiance), stepParameters.getEnvRef().getValue(),
             stepParameters.getInfraRef().getValue());
-    if (infrastructureEntity.isEmpty()) {
+    if (infrastructureEntityOpt.isEmpty()) {
       throw new InvalidRequestException(String.format("Infrastructure definition %s not found in environment %s",
           stepParameters.getInfraRef().getValue(), stepParameters.getEnvRef().getValue()));
     }
 
-    return InfrastructureEntityConfigMapper.toInfrastructureConfig(infrastructureEntity.get());
+    final InfrastructureEntity infrastructureEntity = infrastructureEntityOpt.get();
+    if (isNotEmpty(stepParameters.getInfraInputs())) {
+      String mergedYaml = mergeInfraInputs(infrastructureEntity.getYaml(), stepParameters.getInfraInputs());
+      infrastructureEntity.setYaml(mergedYaml);
+    }
+
+    return InfrastructureEntityConfigMapper.toInfrastructureConfig(infrastructureEntity);
   }
 
   private void publishInfraDelegateConfigOutput(
@@ -266,5 +275,14 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
       throw new InvalidRequestException(
           "Infrastructure Definition reference" + stepParameters.getInfraRef().getExpressionValue() + " not resolved");
     }
+  }
+
+  private String mergeInfraInputs(String originalYaml, Map<String, Object> inputs) {
+    if (isEmpty(inputs)) {
+      return originalYaml;
+    }
+    Map<String, Object> inputMap = new HashMap<>();
+    inputMap.put(YamlTypes.INFRASTRUCTURE_DEF, inputs);
+    return MergeHelper.mergeInputSetFormatYamlToOriginYaml(originalYaml, YamlPipelineUtils.writeYamlString(inputMap));
   }
 }
