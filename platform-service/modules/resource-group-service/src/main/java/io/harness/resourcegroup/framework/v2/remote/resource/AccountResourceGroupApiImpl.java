@@ -54,8 +54,8 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = DELETE_RESOURCEGROUP_PERMISSION)
   public Response deleteResourceGroupAcc(String resourceGroup, String account) {
-    ResourceGroupsResponse resourceGroupsResponse =
-        (ResourceGroupsResponse) getResourceGroupAcc(resourceGroup, account).getEntity();
+    ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
+        resourceGroupService.get(Scope.of(account, null, null), resourceGroup, NO_FILTER).orElse(null));
     if (resourceGroupService.delete(Scope.of(account, null, null), resourceGroup)) {
       return Response.ok().entity(resourceGroupsResponse).build();
     }
