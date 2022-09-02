@@ -495,6 +495,8 @@ import io.harness.delegate.task.http.HttpStepResponse;
 import io.harness.delegate.task.http.HttpTaskParameters;
 import io.harness.delegate.task.http.HttpTaskParametersNg;
 import io.harness.delegate.task.jenkins.JenkinsBuildTaskNGResponse;
+import io.harness.delegate.task.jira.JiraSearchUserData;
+import io.harness.delegate.task.jira.JiraSearchUserParams;
 import io.harness.delegate.task.jira.JiraTaskNGParameters;
 import io.harness.delegate.task.jira.JiraTaskNGResponse;
 import io.harness.delegate.task.k8s.AzureK8sInfraDelegateConfig;
@@ -634,6 +636,7 @@ import io.harness.delegate.task.ssh.PdcWinRmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.ScriptCommandUnit;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig;
+import io.harness.delegate.task.ssh.artifact.CustomArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.JenkinsArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.SkipCopyArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.SshWinRmArtifactDelegateConfig;
@@ -1634,6 +1637,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(FileDelegateConfig.class, 55318);
     kryo.register(HarnessStoreDelegateConfig.class, 55319);
     kryo.register(ConfigFileParameters.class, 55320);
+    kryo.register(CustomArtifactDelegateConfig.class, 55470);
     kryo.register(ServerlessPrepareRollbackDataRequest.class, 29309);
     kryo.register(ServerlessPrepareRollbackDataResponse.class, 29310);
     kryo.register(ServerlessPrepareRollbackDataResult.class, 29311);
@@ -1667,6 +1671,9 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(AzureResourceCreationTaskNGResponse.class, 55345);
     kryo.register(AzureBlueprintTaskNGParameters.class, 55342);
     kryo.register(AzureBlueprintTaskNGResponse.class, 55343);
+    kryo.register(JiraSearchUserParams.class, 55346);
+    kryo.register(JiraSearchUserData.class, 55347);
+
     kryo.register(LocalFileStoreDelegateConfig.class, 55404);
     kryo.register(LocalStoreFetchFilesResult.class, 55405);
     kryo.register(ManifestFiles.class, 55406);

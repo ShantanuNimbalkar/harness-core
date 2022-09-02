@@ -2637,8 +2637,7 @@
           ]
         },
         "environmentRef": {
-          "type": "string",
-          "pattern": "\\<\\+input\\>|^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+          "type": "string"
         },
         "gitOpsClusters": {
           "oneOf": [
@@ -3284,6 +3283,31 @@
               ]
             }
           ]
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "HarnessFileStoreSource": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ShellScriptBaseSource"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "pattern": "(^<\\+([a-zA-Z]\\w*\\.?)*([a-zA-Z]\\w*)>$|^<\\+input>.*)",
+                  "minLength": 1
+                }
+              ]
+            }
+          }
         }
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -7139,8 +7163,7 @@
           ]
         },
         "serviceRef": {
-          "type": "string",
-          "pattern": "\\<\\+input\\>|^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+          "type": "string"
         },
         "useFromStage": {
           "$ref": "#/definitions/ServiceUseFromStageV2"
@@ -7236,6 +7259,22 @@
       },
       "$schema": "http://json-schema.org/draft-07/schema#",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Harness"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/HarnessFileStoreSource"
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {
