@@ -350,6 +350,7 @@ import software.wings.sm.WorkflowStandardParams;
 import software.wings.sm.WorkflowStandardParamsExtensionService;
 import software.wings.sm.rollback.RollbackStateMachineGenerator;
 import software.wings.sm.states.ElementStateExecutionData;
+import software.wings.sm.states.EnvRollbackState;
 import software.wings.sm.states.EnvState.EnvStateKeys;
 import software.wings.sm.states.ForkState.ForkStateExecutionData;
 import software.wings.sm.states.HoldingScope;
@@ -1041,6 +1042,38 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
             }
           }
         });
+
+    stateExecutionInstanceMap.entrySet().stream().filter(entry -> entry.getKey().startsWith("Rollback")).forEach(
+      entry -> {
+        StateExecutionInstance stateExecutionInstance = entry.getValue();
+        StateExecutionData stateExecutionData = entry.getValue().fetchStateExecutionData();
+        if (stateExecutionData instanceof EnvStateExecutionData) {
+
+          EnvStateExecutionData envStateExecutionData = (EnvStateExecutionData) stateExecutionData;
+          PipelineStageExecution stageExecution =
+              PipelineStageExecution.builder()
+                  .stateType(stateExecutionInstance.getStateType())
+                  .status(stateExecutionInstance.getStatus())
+                  .stateName(stateExecutionInstance.getDisplayName())
+                  .startTs(stateExecutionInstance.getStartTs())
+                  .triggeredBy(workflowExecution.getTriggeredBy())
+                  .expiryTs(stateExecutionInstance.getExpiryTs())
+                  .endTs(stateExecutionInstance.getEndTs())
+                  .build();
+
+          if (envStateExecutionData.getWorkflowExecutionId() != null) {
+            WorkflowExecution workflowExecution2 = getExecutionDetailsWithoutGraph(
+                workflowExecution.getAppId(), envStateExecutionData.getWorkflowExecutionId());
+            workflowExecution2.setStateMachine(null);
+
+            stageExecution.setWorkflowExecutions(asList(workflowExecution2));
+            stageExecution.setStatus(workflowExecution2.getStatus());
+          }
+          stageExecution.setMessage(stateExecutionData.getErrorMsg());
+          stageExecutionDataList.add(stageExecution);
+        }
+      }
+    );
 
     pipelineExecution.setPipelineStageExecutions(stageExecutionDataList);
 
