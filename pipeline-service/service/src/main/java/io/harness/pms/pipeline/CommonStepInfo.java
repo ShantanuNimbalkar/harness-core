@@ -158,6 +158,18 @@ public class CommonStepInfo {
           .setFeatureRestrictionName(FeatureRestrictionName.INTEGRATED_APPROVALS_WITH_SERVICE_NOW.name())
           .build();
 
+  StepInfo serviceNowImportSetStepInfo =
+      StepInfo.newBuilder()
+          .setName("ServiceNow Import Set")
+          .setType(StepSpecTypeConstants.SERVICENOW_IMPORT_SET)
+          .setStepMetaData(StepMetaData.newBuilder()
+                               .addCategory(StepCategoryConstants.SERVICENOW)
+                               .addFolderPaths(FolderPathConstants.SERVICENOW)
+                               .build())
+          .setFeatureRestrictionName(FeatureRestrictionName.INTEGRATED_APPROVALS_WITH_SERVICE_NOW.name())
+          .setFeatureFlag(FeatureName.SERVICENOW_IMPORT_SET_NG.name())
+          .build();
+
   public List<StepInfo> getCommonSteps(String category) {
     List<StepInfo> stepInfos = new ArrayList<>();
     stepInfos.add(shellScriptStepInfo);
@@ -174,6 +186,7 @@ public class CommonStepInfo {
     stepInfos.add(serviceNowCreateStepInfo);
     stepInfos.add(serviceNowUpdateStepInfo);
     stepInfos.add(emailStepInfo);
+    stepInfos.add(serviceNowImportSetStepInfo);
     return stepInfos;
   }
 }

@@ -54,6 +54,10 @@ public class ServiceNowTaskNGParameters implements TaskParameters, ExecutionCapa
   // use template for creating/updating issues
   boolean useServiceNowTemplate;
 
+  // import set fields
+  String stagingTableName;
+  Map importData;
+
   List<String> delegateSelectors;
 
   public Set<String> getDelegateSelectors() {

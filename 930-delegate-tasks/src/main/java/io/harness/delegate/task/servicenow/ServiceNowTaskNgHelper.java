@@ -28,6 +28,10 @@ import io.harness.servicenow.ServiceNowFieldNG.ServiceNowFieldNGBuilder;
 import io.harness.servicenow.ServiceNowFieldSchemaNG;
 import io.harness.servicenow.ServiceNowFieldTypeNG;
 import io.harness.servicenow.ServiceNowFieldValueNG;
+import io.harness.servicenow.ServiceNowImportSetResponseNG;
+import io.harness.servicenow.ServiceNowImportSetResponseNG.ServiceNowImportSetResponseNGBuilder;
+import io.harness.servicenow.ServiceNowImportSetTransformMapResult;
+import io.harness.servicenow.ServiceNowStagingTable;
 import io.harness.servicenow.ServiceNowTemplate;
 import io.harness.servicenow.ServiceNowTicketNG;
 import io.harness.servicenow.ServiceNowTicketNG.ServiceNowTicketNGBuilder;
@@ -64,6 +68,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 @Singleton
 public class ServiceNowTaskNgHelper {
   public static final String INVALID_SERVICE_NOW_CREDENTIALS = "Invalid ServiceNow credentials";
+  public static final String SERVICE_NOW_RECORD_NOT_FOUND = "Target record not found";
   public static final String NOT_FOUND = "404 Not found";
   private final SecretDecryptionService secretDecryptionService;
   static final long TIME_OUT = 60;
@@ -90,6 +95,10 @@ public class ServiceNowTaskNgHelper {
         return getMetadata(serviceNowTaskNGParameters);
       case GET_TEMPLATE:
         return getTemplateList(serviceNowTaskNGParameters);
+      case IMPORT_SET:
+        return createImportSet(serviceNowTaskNGParameters);
+      case GET_IMPORT_SET_STAGING_TABLES:
+        return getStagingTableList(serviceNowTaskNGParameters);
       default:
         throw new InvalidRequestException(
             String.format("Invalid servicenow task action: %s", serviceNowTaskNGParameters.getAction()));
@@ -577,6 +586,112 @@ public class ServiceNowTaskNgHelper {
       log.error("Failed to get ServiceNow fields: {}", ExceptionUtils.getMessage(ex), ex);
       throw new ServiceNowException(ExceptionUtils.getMessage(ex), SERVICENOW_ERROR, USER, ex);
     }
+  }
+
+  private ServiceNowTaskNGResponse createImportSet(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
+    ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
+    String userName = getUserName(serviceNowConnectorDTO);
+    String password = new String(serviceNowConnectorDTO.getPasswordRef().getDecryptedValue());
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
+
+    final Call<JsonNode> request = serviceNowRestClient.createImportSet(Credentials.basic(userName, password),
+        serviceNowTaskNGParameters.getStagingTableName(), "all", serviceNowTaskNGParameters.getImportData());
+
+    Response<JsonNode> response = null;
+    try {
+      response = request.execute();
+      log.info("Response received from serviceNow for IMPORT_SET: {}", response);
+      handleResponse(response, "Failed to create ServiceNow import set");
+      JsonNode responseObj = response.body();
+      if (responseObj.isEmpty()) {
+        log.info(
+            "Empty response received from serviceNow for IMPORT_SET, might because of missing permissions to view target record");
+        return ServiceNowTaskNGResponse.builder()
+            .serviceNowImportSetResponseNG(new ServiceNowImportSetResponseNG())
+            .build();
+      }
+      JsonNode transformMapResultBody = responseObj.get("result");
+      if (JsonNodeUtils.isNull(transformMapResultBody) || !transformMapResultBody.isArray()
+          || transformMapResultBody.isEmpty()) {
+        // even if no transform maps corresponds to table, then also one entry in result.
+        throw new ServiceNowException(
+            "Transformation details are missing or invalid in the response received from ServiceNow", SERVICENOW_ERROR,
+            USER);
+      }
+      ServiceNowImportSetResponseNGBuilder serviceNowImportSetResponseNGBuilder =
+          parseFromServiceNowImportSetResponse(transformMapResultBody, serviceNowConnectorDTO);
+      serviceNowImportSetResponseNGBuilder.importSet(JsonNodeUtils.mustGetString(responseObj, "import_set"));
+      serviceNowImportSetResponseNGBuilder.stagingTable(JsonNodeUtils.mustGetString(responseObj, "staging_table"));
+      ServiceNowImportSetResponseNG serviceNowImportSetResponseNG = serviceNowImportSetResponseNGBuilder.build();
+      log.info("Corresponding ServiceNow import set : {}", serviceNowImportSetResponseNG.getImportSet());
+      return ServiceNowTaskNGResponse.builder().serviceNowImportSetResponseNG(serviceNowImportSetResponseNG).build();
+    } catch (ServiceNowException e) {
+      log.error("Failed to create/execute ServiceNow import set: {}", ExceptionUtils.getMessage(e), e);
+      throw e;
+    } catch (Exception ex) {
+      log.error("Failed to create/execute ServiceNow import set: {}", ExceptionUtils.getMessage(ex), ex);
+      throw new ServiceNowException(ExceptionUtils.getMessage(ex), SERVICENOW_ERROR, USER, ex);
+    }
+  }
+
+  private ServiceNowTaskNGResponse getStagingTableList(ServiceNowTaskNGParameters serviceNowTaskNGParameters) {
+    ServiceNowConnectorDTO serviceNowConnectorDTO = serviceNowTaskNGParameters.getServiceNowConnectorDTO();
+    String userName = getUserName(serviceNowConnectorDTO);
+    String password = new String(serviceNowConnectorDTO.getPasswordRef().getDecryptedValue());
+    ServiceNowRestClient serviceNowRestClient = getServiceNowRestClient(serviceNowConnectorDTO.getServiceNowUrl());
+
+    final Call<JsonNode> request = serviceNowRestClient.getStagingTableList(Credentials.basic(userName, password));
+    Response<JsonNode> response = null;
+    try {
+      response = request.execute();
+      log.info("Response received from serviceNow: {}", response);
+      handleResponse(response, "Failed to get ServiceNow staging tables");
+      JsonNode responseObj = response.body().get("result");
+      List<ServiceNowStagingTable> stagingTableList = new ArrayList<>();
+      if (responseObj != null && responseObj.isArray()) {
+        for (final JsonNode stagingTable : responseObj) {
+          String name = JsonNodeUtils.mustGetString(stagingTable, "name");
+          stagingTableList.add(ServiceNowStagingTable.builder()
+                                   .name(name)
+                                   .label(JsonNodeUtils.getString(stagingTable, "label", name))
+                                   .build());
+        }
+        return ServiceNowTaskNGResponse.builder().serviceNowStagingTableList(stagingTableList).build();
+      } else {
+        throw new ServiceNowException("Failed to fetch staging tables "
+                + " response: " + response,
+            SERVICENOW_ERROR, USER);
+      }
+    } catch (ServiceNowException e) {
+      log.error("Failed to fetch staging tables: {}", ExceptionUtils.getMessage(e), e);
+      throw e;
+    } catch (Exception ex) {
+      log.error("Failed to fetch staging tables: {}", ExceptionUtils.getMessage(ex), ex);
+      throw new ServiceNowException(ExceptionUtils.getMessage(ex), SERVICENOW_ERROR, USER, ex);
+    }
+  }
+
+  private ServiceNowImportSetResponseNGBuilder parseFromServiceNowImportSetResponse(
+      JsonNode responseObj, ServiceNowConnectorDTO serviceNowConnectorDTO) {
+    List<ServiceNowImportSetTransformMapResult> transformMapResultList = new ArrayList<>();
+    for (final JsonNode transformMapBody : responseObj) {
+      String targetTableName = JsonNodeUtils.getString(transformMapBody, "table");
+      transformMapResultList.add(
+          ServiceNowImportSetTransformMapResult
+              .builder()
+              // these two fields are always present even in error case
+              .transformMap(JsonNodeUtils.mustGetString(transformMapBody, "transform_map"))
+              .status(JsonNodeUtils.mustGetString(transformMapBody, "status"))
+              .targetTable(targetTableName)
+              .displayName(JsonNodeUtils.getString(transformMapBody, "display_name"))
+              .displayValue(JsonNodeUtils.getString(transformMapBody, "display_value"))
+              .errorMessage(JsonNodeUtils.getString(transformMapBody, "error_message"))
+              .statusMessage(JsonNodeUtils.getString(transformMapBody, "status_message"))
+              .targetRecordURL(ServiceNowUtils.prepareTicketUrlFromTicketIdV2(serviceNowConnectorDTO.getServiceNowUrl(),
+                  JsonNodeUtils.getString(transformMapBody, "sys_id"), targetTableName))
+              .build());
+    }
+    return ServiceNowImportSetResponseNG.builder().serviceNowImportSetTransformMapResultList(transformMapResultList);
   }
 
   private List<ServiceNowFieldAllowedValueNG> buildAllowedValues(JsonNode choices) {
