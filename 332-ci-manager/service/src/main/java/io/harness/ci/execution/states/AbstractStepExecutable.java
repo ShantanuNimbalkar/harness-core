@@ -493,13 +493,24 @@ public abstract class AbstractStepExecutable implements AsyncExecutableWithRbac<
 
       StepArtifacts stepArtifacts = handleArtifact(stepStatus.getArtifactMetadata(), stepParameters);
       if (stepArtifacts != null) {
-        StepResponse.StepOutcome stepArtifactOutcome =
+        StepResponse.StepOutcome stepArtifactOutcomeOld =
             StepResponse.StepOutcome.builder()
                 .outcome(CIStepArtifactOutcome.builder().stepArtifacts(stepArtifacts).build())
                 .group(StepOutcomeGroup.STAGE.name())
                 .name("artifact-" + stepIdentifier)
                 .build();
-        stepResponseBuilder.stepOutcome(stepArtifactOutcome);
+        stepResponseBuilder.stepOutcome(stepArtifactOutcomeOld);
+
+        // since jexl doesn't understand - therefore we are adding a new outcome with artifact_ appended
+        // Also keeping the old one to have backward compatibility since - is supported in a different form which
+        // customer could be using in their pipeline
+        StepResponse.StepOutcome stepArtifactOutcomeNew =
+            StepResponse.StepOutcome.builder()
+                .outcome(CIStepArtifactOutcome.builder().stepArtifacts(stepArtifacts).build())
+                .group(StepOutcomeGroup.STAGE.name())
+                .name("artifact_" + stepIdentifier)
+                .build();
+        stepResponseBuilder.stepOutcome(stepArtifactOutcomeNew);
       }
 
       return stepResponseBuilder.status(Status.SUCCEEDED).build();
