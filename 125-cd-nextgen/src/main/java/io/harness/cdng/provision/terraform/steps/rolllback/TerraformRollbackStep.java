@@ -141,15 +141,19 @@ public class TerraformRollbackStep extends TaskExecutableWithRollbackAndRbac<Ter
           TerraformConfigSweepingOutput.builder().terraformConfig(rollbackConfig).tfTaskType(tfTaskType).build(),
           StepOutcomeGroup.STEP.name());
 
-      TerraformTaskNGParametersBuilder builder = TerraformTaskNGParameters.builder()
-                                                     .accountId(AmbianceUtils.getAccountId(ambiance))
-                                                     .currentStateFileId(terraformStepHelper.getLatestFileId(entityId))
-                                                     .taskType(tfTaskType)
-                                                     .terraformCommandUnit(TerraformCommandUnit.Rollback)
-                                                     .entityId(entityId)
-                                                     .workspace(rollbackConfig.getWorkspace())
-                                                     .varFileInfos(terraformStepHelper.prepareTerraformVarFileInfo(
-                                                         rollbackConfig.getVarFileConfigs(), ambiance));
+      TerraformTaskNGParametersBuilder builder =
+          TerraformTaskNGParameters.builder()
+              .accountId(AmbianceUtils.getAccountId(ambiance))
+              .currentStateFileId(terraformStepHelper.getLatestFileId(entityId))
+              .taskType(tfTaskType)
+              .terraformCommandUnit(TerraformCommandUnit.Rollback)
+              .entityId(entityId)
+              .workspace(rollbackConfig.getWorkspace())
+              .varFileInfos(
+                  terraformStepHelper.prepareTerraformVarFileInfo(rollbackConfig.getVarFileConfigs(), ambiance))
+              .backendConfigFileInfo(terraformStepHelper.prepareTerraformBackendConfigFileInfo(
+                  rollbackConfig.getBackendConfigFileConfig(), ambiance));
+
       if (rollbackConfig.getConfigFiles() != null) {
         builder.configFile(terraformStepHelper.getGitFetchFilesConfig(
             rollbackConfig.getConfigFiles().toGitStoreConfig(), ambiance, TerraformStepHelper.TF_CONFIG_FILES));

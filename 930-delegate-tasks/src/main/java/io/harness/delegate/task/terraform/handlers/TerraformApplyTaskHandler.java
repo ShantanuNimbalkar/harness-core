@@ -172,7 +172,7 @@ public class TerraformApplyTaskHandler extends TerraformAbstractTaskHandler {
             taskParameters.getAccountId(), taskParameters.getVarFileInfos(), commitIdToFetchedFilesMap);
       }
 
-      if (configFileInfo != null) {
+      if (taskParameters.getBackendConfigFileInfo() != null) {
         terraformBaseHelper.addBackendFileCommitIdsToMap(
             taskParameters.getAccountId(), taskParameters.getBackendConfigFileInfo(), commitIdToFetchedFilesMap);
       }

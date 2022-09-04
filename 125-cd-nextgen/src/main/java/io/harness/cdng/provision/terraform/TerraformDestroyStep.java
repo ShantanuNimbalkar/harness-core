@@ -197,7 +197,8 @@ public class TerraformDestroyStep extends TaskExecutableWithRollbackAndRbac<Terr
             inheritOutput.getFileStoreConfig(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
         .varFileInfos(helper.prepareTerraformVarFileInfo(inheritOutput.getVarFileConfigs(), ambiance))
         .backendConfig(inheritOutput.getBackendConfig())
-        .backendConfigFileInfo(inheritOutput.getBackendConfigurationFileConfig())
+        .backendConfigFileInfo(
+            helper.prepareTerraformBackendConfigFileInfo(inheritOutput.getBackendConfigurationFileConfig(), ambiance))
         .targets(inheritOutput.getTargets())
         .saveTerraformStateJson(false)
         .encryptionConfig(inheritOutput.getEncryptionConfig())
@@ -237,7 +238,8 @@ public class TerraformDestroyStep extends TaskExecutableWithRollbackAndRbac<Terr
     builder.workspace(terraformConfig.getWorkspace())
         .varFileInfos(helper.prepareTerraformVarFileInfo(terraformConfig.getVarFileConfigs(), ambiance))
         .backendConfig(terraformConfig.getBackendConfig())
-        .backendConfigFileInfo(helper.toTerraformBackendFileInfo(terraformConfig.getBackendConfig(), ambiance))
+        .backendConfigFileInfo(
+            helper.prepareTerraformBackendConfigFileInfo(terraformConfig.getBackendConfigFileConfig(), ambiance))
         .targets(terraformConfig.getTargets())
         .saveTerraformStateJson(false)
         .environmentVariables(terraformConfig.getEnvironmentVariables() == null

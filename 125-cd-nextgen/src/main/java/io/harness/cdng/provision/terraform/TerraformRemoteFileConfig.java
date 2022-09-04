@@ -12,11 +12,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.manifest.yaml.FileStorageConfigDTO;
 import io.harness.cdng.manifest.yaml.GitStoreConfigDTO;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
 @OwnedBy(HarnessTeam.CDP)
-public class TerraformRemoteVarFileConfig extends TerraformRemoteFileConfig implements TerraformVarFileConfig {}
+public class TerraformRemoteFileConfig {
+  GitStoreConfigDTO gitStoreConfigDTO;
+  FileStorageConfigDTO fileStoreConfigDTO;
+}

@@ -854,10 +854,10 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
 
   public String checkoutRemoteBackendConfigFileAndConvertToFilePath(TerraformBackendConfigFileInfo configFileInfo,
       String scriptDir, LogCallback logCallback, String accountId, String tfConfigDirectory) throws IOException {
-    if (configFileInfo instanceof InlineTerraformFileInfo
-        && ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent() != null) {
+    if (configFileInfo instanceof InlineTerraformBackendConfigFileInfo
+        && ((InlineTerraformBackendConfigFileInfo) configFileInfo).getBackendConfigFileContent() != null) {
       return TerraformHelperUtils.createFileFromStringContent(
-          ((InlineTerraformBackendConfigFileInfo) configFileInfo).getVarFileContent(), scriptDir,
+          ((InlineTerraformBackendConfigFileInfo) configFileInfo).getBackendConfigFileContent(), scriptDir,
           TERRAFORM_BACKEND_CONFIGS_FILE_NAME);
     } else if (configFileInfo instanceof RemoteTerraformFileInfo) {
       List<String> tfBackendConfigFilePath = new ArrayList<>();
@@ -882,7 +882,7 @@ public class TerraformBaseHelperImpl implements TerraformBaseHelper {
       }
     } else if (remoteFileInfo.getFilestoreFetchFilesConfig() != null) {
       ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
-          (ArtifactoryStoreDelegateConfig) ((RemoteTerraformFileInfo) remoteFileInfo).getFilestoreFetchFilesConfig();
+          (ArtifactoryStoreDelegateConfig) remoteFileInfo.getFilestoreFetchFilesConfig();
       handleFileStorageFiles(logCallback, filesDirAbsPath, filePaths, artifactoryStoreDelegateConfig);
     }
   }

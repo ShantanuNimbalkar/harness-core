@@ -338,7 +338,8 @@ public class TerraformStepHelper {
 
     builder.varFileConfigs(toTerraformVarFileConfig(configuration.getVarFiles(), terraformTaskNGResponse, ambiance))
         .backendConfig(getBackendConfig(configuration.getBackendConfig()))
-        .backendConfigurationFileConfig(toTerraformBackendFileInfo(configuration.getBackendConfig(), ambiance))
+        .backendConfigurationFileConfig(
+            toTerraformBackendConfigFileConfig(configuration.getBackendConfig(), terraformTaskNGResponse))
         .environmentVariables(getEnvironmentVariablesMap(configuration.getEnvironmentVariables()))
         .targets(ParameterFieldHelper.getParameterFieldValue(configuration.getTargets()))
         .encryptedTfPlan(terraformTaskNGResponse.getEncryptedTfPlan())
@@ -486,6 +487,7 @@ public class TerraformStepHelper {
                     : null)
             .varFileConfigs(inheritOutput.getVarFileConfigs())
             .backendConfig(inheritOutput.getBackendConfig())
+            .backendConfigFileConfig(inheritOutput.getBackendConfigurationFileConfig())
             .environmentVariables(inheritOutput.getEnvironmentVariables())
             .workspace(inheritOutput.getWorkspace())
             .targets(inheritOutput.getTargets())
@@ -571,6 +573,7 @@ public class TerraformStepHelper {
     }
     builder.varFileConfigs(toTerraformVarFileConfig(spec.getVarFiles(), response, ambiance))
         .backendConfig(getBackendConfig(spec.getBackendConfig()))
+        .backendConfigFileConfig(toTerraformBackendConfigFileConfig(spec.getBackendConfig(), response))
         .environmentVariables(getEnvironmentVariablesMap(spec.getEnvironmentVariables()))
         .workspace(ParameterFieldHelper.getParameterFieldValue(spec.getWorkspace()))
         .targets(ParameterFieldHelper.getParameterFieldValue(spec.getTargets()));
@@ -682,7 +685,7 @@ public class TerraformStepHelper {
         String content =
             ParameterFieldHelper.getParameterFieldValue(((InlineTerraformBackendConfigSpec) spec).getContent());
         if (EmptyPredicate.isNotEmpty(content)) {
-          fileInfo = InlineTerraformBackendConfigFileInfo.builder().varFileContent(content).build();
+          fileInfo = InlineTerraformBackendConfigFileInfo.builder().backendConfigFileContent(content).build();
         }
       } else if (spec instanceof RemoteTerraformBackendConfigSpec) {
         StoreConfigWrapper storeConfigWrapper = ((RemoteTerraformBackendConfigSpec) spec).getStore();
@@ -740,6 +743,38 @@ public class TerraformStepHelper {
       return varFileInfo;
     }
     return Collections.emptyList();
+  }
+
+  public TerraformBackendConfigFileConfig toTerraformBackendConfigFileConfig(
+      TerraformBackendConfig backendConfig, TerraformTaskNGResponse response) {
+    TerraformBackendConfigFileConfig fileConfig = null;
+    if (backendConfig != null) {
+      TerraformBackendConfigSpec spec = backendConfig.getTerraformBackendConfigSpec();
+      if (spec instanceof InlineTerraformBackendConfigSpec) {
+        String content =
+            ParameterFieldHelper.getParameterFieldValue(((InlineTerraformBackendConfigSpec) spec).getContent());
+        if (EmptyPredicate.isNotEmpty(content)) {
+          fileConfig = TerraformInlineBackendConfigFileConfig.builder().backendConfigFileContent(content).build();
+        }
+      } else if (spec instanceof RemoteTerraformBackendConfigSpec) {
+        StoreConfigWrapper storeConfigWrapper = ((RemoteTerraformBackendConfigSpec) spec).getStore();
+        if (storeConfigWrapper != null) {
+          StoreConfig storeConfig = storeConfigWrapper.getSpec();
+          if (storeConfig.getKind().equals(ManifestStoreType.ARTIFACTORY)) {
+            fileConfig = TerraformRemoteBackendConfigFileConfig.builder()
+                             .fileStoreConfigDTO(((FileStorageStoreConfig) storeConfig).toFileStorageConfigDTO())
+                             .build();
+          } else {
+            GitStoreConfigDTO gitStoreConfigDTO = getStoreConfigAtCommitId(
+                storeConfig, response.getCommitIdForConfigFilesMap().get(TF_BACKEND_CONFIG_FILE))
+                                                      .toGitStoreConfigDTO();
+
+            fileConfig = TerraformRemoteBackendConfigFileConfig.builder().gitStoreConfigDTO(gitStoreConfigDTO).build();
+          }
+        }
+      }
+    }
+    return fileConfig;
   }
 
   public List<TerraformVarFileConfig> toTerraformVarFileConfig(
@@ -813,5 +848,37 @@ public class TerraformStepHelper {
       return varFileInfo;
     }
     return Collections.emptyList();
+  }
+
+  public TerraformBackendConfigFileInfo prepareTerraformBackendConfigFileInfo(
+      TerraformBackendConfigFileConfig bcFileConfig, Ambiance ambiance) {
+    TerraformBackendConfigFileInfo fileInfo = null;
+    if (bcFileConfig != null) {
+      if (bcFileConfig instanceof TerraformInlineBackendConfigFileConfig) {
+        fileInfo = InlineTerraformBackendConfigFileInfo.builder()
+                       .backendConfigFileContent(
+                           ((TerraformInlineBackendConfigFileConfig) bcFileConfig).getBackendConfigFileContent())
+                       .build();
+      } else if (bcFileConfig instanceof TerraformRemoteBackendConfigFileConfig) {
+        RemoteTerraformBackendConfigFileInfo
+            .RemoteTerraformBackendConfigFileInfoBuilder remoteTerraformBCFileInfoBuilder =
+            RemoteTerraformBackendConfigFileInfo.builder();
+        TerraformRemoteBackendConfigFileConfig terraformRemoteBCFileConfig =
+            (TerraformRemoteBackendConfigFileConfig) bcFileConfig;
+        if (terraformRemoteBCFileConfig.getGitStoreConfigDTO() != null) {
+          GitStoreConfig gitStoreConfig =
+              ((TerraformRemoteBackendConfigFileConfig) bcFileConfig).getGitStoreConfigDTO().toGitStoreConfig();
+          remoteTerraformBCFileInfoBuilder.gitFetchFilesConfig(
+              getGitFetchFilesConfig(gitStoreConfig, ambiance, format(TerraformStepHelper.TF_BACKEND_CONFIG_FILE)));
+        }
+        if (terraformRemoteBCFileConfig.getFileStoreConfigDTO() != null) {
+          remoteTerraformBCFileInfoBuilder.filestoreFetchFilesConfig(getFileStoreFetchFilesConfig(
+              terraformRemoteBCFileConfig.getFileStoreConfigDTO().toFileStorageStoreConfig(), ambiance,
+              format(TerraformStepHelper.TF_BACKEND_CONFIG_FILE)));
+        }
+        fileInfo = remoteTerraformBCFileInfoBuilder.build();
+      }
+    }
+    return fileInfo;
   }
 }
