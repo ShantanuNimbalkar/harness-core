@@ -12,6 +12,7 @@ import static io.harness.resourcegroup.ResourceGroupPermissions.VIEW_RESOURCEGRO
 import static io.harness.resourcegroup.ResourceGroupResourceTypes.RESOURCE_GROUP;
 import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
 
+import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -49,7 +50,7 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
-  public Response createResourceGroupAcc(CreateResourceGroupRequest body, String account) {
+  public Response createResourceGroupAcc(CreateResourceGroupRequest body, @AccountIdentifier String account) {
     ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestAcc(body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
@@ -74,7 +75,7 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.get(Scope.of(account, null, null), resourceGroup, NO_FILTER).orElse(null));
     if (resourceGroupsResponse == null) {
-      return Response.status(404).build();
+      return Response.status(404).entity("Resource Group with given identifier not found.").build();
     }
     return Response.ok().entity(resourceGroupsResponse).build();
   }

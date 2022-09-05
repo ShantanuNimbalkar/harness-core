@@ -210,6 +210,9 @@ public class ResourceGroupApiUtils {
   }
 
   public static ManagedFilter getManagedFilter(String managedFilter) {
+    if (managedFilter == null) {
+      return null;
+    }
     if (managedFilter.equals("NO_FILTER")) {
       return ManagedFilter.NO_FILTER;
     }

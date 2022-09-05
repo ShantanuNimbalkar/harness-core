@@ -14,6 +14,7 @@ import static io.harness.resourcegroup.v1.remote.dto.ManagedFilter.NO_FILTER;
 
 import static java.lang.String.format;
 
+import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.NGAccessControlCheck;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -52,7 +53,7 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
   public Response createResourceGroupProject(
-      String org, String project, CreateResourceGroupRequest body, String account) {
+      String org, String project, CreateResourceGroupRequest body, @AccountIdentifier String account) {
     ResourceGroupRequest resourceGroupRequest =
         ResourceGroupApiUtils.getResourceGroupRequestProject(org, project, body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
@@ -78,7 +79,7 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.get(Scope.of(account, org, project), resourceGroup, NO_FILTER).orElse(null));
     if (resourceGroupsResponse == null) {
-      return Response.status(404).build();
+      return Response.status(404).entity("Resource Group with given identifier not found.").build();
     }
     return Response.ok().entity(resourceGroupsResponse).build();
   }
