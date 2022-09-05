@@ -153,16 +153,17 @@ public class DockerStepTest extends CIExecutionTestBase {
             .stepStatus(
                 StepStatus.builder()
                     .stepExecutionStatus(StepExecutionStatus.SUCCESS)
-                    .artifactMetadata(ArtifactMetadata.builder()
-                         .type(ArtifactMetadataType.DOCKER_ARTIFACT_METADATA)
-                         .spec(DockerArtifactMetadata.builder()
-                                   .dockerArtifacts(Collections.singletonList(DockerArtifactDescriptor.builder()
-                                                                                  .digest("digest")
-                                                                                  .imageName("imageName:1.0")
-                                                                                  .build()))
-                                   .registryUrl("https://index.docker.io/v1/")
-                                   .build())
-                         .build())
+                    .artifactMetadata(
+                        ArtifactMetadata.builder()
+                            .type(ArtifactMetadataType.DOCKER_ARTIFACT_METADATA)
+                            .spec(DockerArtifactMetadata.builder()
+                                      .dockerArtifacts(Collections.singletonList(DockerArtifactDescriptor.builder()
+                                                                                     .digest("digest")
+                                                                                     .imageName("imageName:1.0")
+                                                                                     .build()))
+                                      .registryUrl("https://index.docker.io/v1/")
+                                      .build())
+                            .build())
                     .build())
             .build();
 
