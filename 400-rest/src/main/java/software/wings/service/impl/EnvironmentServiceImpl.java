@@ -668,13 +668,11 @@ public class EnvironmentServiceImpl implements EnvironmentService {
       return new HashMap<>();
     }
 
-    List<Environment> environments = wingsPersistence.createQuery(Environment.class)
-            .field(EnvironmentKeys.appId)
-            .in(appIds)
-            .asList();
+    List<Environment> environments =
+        wingsPersistence.createQuery(Environment.class).field(EnvironmentKeys.appId).in(appIds).asList();
 
     final Map<String, Set<String>> appEnvMap = environments.stream().collect(
-            Collectors.groupingBy(Environment::getAppId, Collectors.mapping(Environment::getUuid, Collectors.toSet())));
+        Collectors.groupingBy(Environment::getAppId, Collectors.mapping(Environment::getUuid, Collectors.toSet())));
     appIds.forEach(appId -> {
       appEnvMap.putIfAbsent(appId, new HashSet<>());
       log.info("No environments found for app {}", appId);
