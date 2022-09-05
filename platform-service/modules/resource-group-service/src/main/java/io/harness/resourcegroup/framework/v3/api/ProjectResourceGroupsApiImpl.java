@@ -37,6 +37,7 @@ import com.google.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -92,8 +93,8 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
         account, org, project, searchTerm, identifierFilter, resourceFilter, managedFilter);
     PageRequest pageRequest = ResourceGroupApiUtils.getPageRequest(page, limit);
     Page<ResourceGroupResponse> pageResponse = resourceGroupService.list(resourceGroupFilterDTO, pageRequest);
-    Response.ResponseBuilder responseBuilder = Response.ok();
-    Response.ResponseBuilder responseBuilderWithLinks = ResourceGroupApiUtils.addLinksHeader(responseBuilder,
+    ResponseBuilder responseBuilder = Response.ok();
+    ResponseBuilder responseBuilderWithLinks = ResourceGroupApiUtils.addLinksHeader(responseBuilder,
         format("/v1/orgs/%s/projects/%s/resource-groups)", org, project), pageResponse.getContent().size(), page,
         limit);
     return responseBuilderWithLinks

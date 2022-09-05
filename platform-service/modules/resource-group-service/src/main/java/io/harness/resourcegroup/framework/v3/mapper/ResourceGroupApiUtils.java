@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 
 public class ResourceGroupApiUtils {
@@ -218,8 +218,8 @@ public class ResourceGroupApiUtils {
     return PageRequest.builder().pageIndex(page).pageSize(limit).build();
   }
 
-  public static Response.ResponseBuilder addLinksHeader(
-      Response.ResponseBuilder responseBuilder, String path, int currentResultCount, int page, int limit) {
+  public static ResponseBuilder addLinksHeader(
+      ResponseBuilder responseBuilder, String path, int currentResultCount, int page, int limit) {
     ArrayList<Link> links = new ArrayList();
     links.add(Link.fromUri(UriBuilder.fromPath(path)
                                .queryParam("page", new Object[] {page})
