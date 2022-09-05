@@ -22,12 +22,16 @@ import io.harness.artifacts.docker.client.DockerRestClientFactory;
 import io.harness.artifacts.docker.client.DockerRestClientFactoryImpl;
 import io.harness.artifacts.docker.service.DockerRegistryService;
 import io.harness.artifacts.docker.service.DockerRegistryServiceImpl;
+import io.harness.artifacts.gar.service.GARApiServiceImpl;
+import io.harness.artifacts.gar.service.GarApiService;
 import io.harness.artifacts.gcr.service.GcrApiService;
 import io.harness.artifacts.gcr.service.GcrApiServiceImpl;
 import io.harness.aws.AWSCloudformationClient;
 import io.harness.aws.AWSCloudformationClientImpl;
 import io.harness.aws.AwsClient;
 import io.harness.aws.AwsClientImpl;
+import io.harness.aws.v2.ecs.EcsV2Client;
+import io.harness.aws.v2.ecs.EcsV2ClientImpl;
 import io.harness.awscli.AwsCliClient;
 import io.harness.awscli.AwsCliClientImpl;
 import io.harness.azure.client.AzureAuthorizationClient;
@@ -94,6 +98,12 @@ import io.harness.delegate.cf.PcfRouteUpdateCommandTaskHandler;
 import io.harness.delegate.cf.PcfRunPluginCommandTaskHandler;
 import io.harness.delegate.cf.PcfValidationCommandTaskHandler;
 import io.harness.delegate.configuration.DelegateConfiguration;
+import io.harness.delegate.ecs.EcsCanaryDeleteCommandTaskHandler;
+import io.harness.delegate.ecs.EcsCanaryDeployCommandTaskHandler;
+import io.harness.delegate.ecs.EcsCommandTaskNGHandler;
+import io.harness.delegate.ecs.EcsPrepareRollbackCommandTaskHandler;
+import io.harness.delegate.ecs.EcsRollingDeployCommandTaskHandler;
+import io.harness.delegate.ecs.EcsRollingRollbackCommandTaskHandler;
 import io.harness.delegate.exceptionhandler.handler.AmazonClientExceptionHandler;
 import io.harness.delegate.exceptionhandler.handler.AmazonServiceExceptionHandler;
 import io.harness.delegate.exceptionhandler.handler.AuthenticationExceptionHandler;
@@ -163,6 +173,7 @@ import io.harness.delegate.task.artifacts.docker.DockerArtifactTaskHandler;
 import io.harness.delegate.task.artifacts.docker.DockerArtifactTaskNG;
 import io.harness.delegate.task.artifacts.ecr.EcrArtifactTaskNG;
 import io.harness.delegate.task.artifacts.gcr.GcrArtifactTaskNG;
+import io.harness.delegate.task.artifacts.googleartifactregistry.GARArtifactTaskNG;
 import io.harness.delegate.task.artifacts.jenkins.JenkinsArtifactDelegateRequest;
 import io.harness.delegate.task.artifacts.jenkins.JenkinsArtifactTaskHandler;
 import io.harness.delegate.task.artifacts.jenkins.JenkinsArtifactTaskNG;
@@ -215,6 +226,9 @@ import io.harness.delegate.task.cloudformation.handlers.CloudformationCreateStac
 import io.harness.delegate.task.cloudformation.handlers.CloudformationDeleteStackTaskHandler;
 import io.harness.delegate.task.cvng.CVConnectorValidationHandler;
 import io.harness.delegate.task.docker.DockerTestConnectionDelegateTask;
+import io.harness.delegate.task.ecs.EcsCommandTaskNG;
+import io.harness.delegate.task.ecs.EcsCommandTypeNG;
+import io.harness.delegate.task.ecs.EcsGitFetchTask;
 import io.harness.delegate.task.executioncapability.BatchCapabilityCheckTask;
 import io.harness.delegate.task.gcp.GcpTask;
 import io.harness.delegate.task.gcp.GcpTaskType;
@@ -249,6 +263,7 @@ import io.harness.delegate.task.k8s.exception.KubernetesApiExceptionHandler;
 import io.harness.delegate.task.k8s.exception.KubernetesCliRuntimeExceptionHandler;
 import io.harness.delegate.task.ldap.NGLdapGroupSearchTask;
 import io.harness.delegate.task.ldap.NGLdapGroupSyncTask;
+import io.harness.delegate.task.ldap.NGLdapTestAuthenticationTask;
 import io.harness.delegate.task.ldap.NGLdapValidateConnectionSettingTask;
 import io.harness.delegate.task.ldap.NGLdapValidateGroupQuerySettingTask;
 import io.harness.delegate.task.ldap.NGLdapValidateUserQuerySettingTask;
@@ -1029,6 +1044,7 @@ public class DelegateModule extends AbstractModule {
     bind(EcrService.class).to(EcrServiceImpl.class);
     bind(EcrClassicService.class).to(EcrClassicServiceImpl.class);
     bind(GcrApiService.class).to(GcrApiServiceImpl.class);
+    bind(GarApiService.class).to(GARApiServiceImpl.class);
     bind(GcrBuildService.class).to(GcrBuildServiceImpl.class);
     bind(AcrService.class).to(AcrServiceImpl.class);
     bind(AcrBuildService.class).to(AcrBuildServiceImpl.class);
@@ -1525,6 +1541,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.NG_LDAP_TEST_GROUP_SETTINGS).toInstance(NGLdapValidateGroupQuerySettingTask.class);
     mapBinder.addBinding(TaskType.NG_LDAP_SEARCH_GROUPS).toInstance(NGLdapGroupSearchTask.class);
     mapBinder.addBinding(TaskType.NG_LDAP_GROUPS_SYNC).toInstance(NGLdapGroupSyncTask.class);
+    mapBinder.addBinding(TaskType.NG_LDAP_TEST_AUTHENTICATION).toInstance(NGLdapTestAuthenticationTask.class);
     mapBinder.addBinding(TaskType.APM_VALIDATE_CONNECTOR_TASK).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.CUSTOM_LOG_VALIDATE_CONNECTOR_TASK).toInstance(ServiceImplDelegateTask.class);
     mapBinder.addBinding(TaskType.APM_GET_TASK).toInstance(ServiceImplDelegateTask.class);
@@ -1699,6 +1716,7 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.DOCKER_ARTIFACT_TASK_NG).toInstance(DockerArtifactTaskNG.class);
     mapBinder.addBinding(TaskType.AMAZON_S3_ARTIFACT_TASK_NG).toInstance(S3ArtifactTaskNG.class);
     mapBinder.addBinding(TaskType.JENKINS_ARTIFACT_TASK_NG).toInstance(JenkinsArtifactTaskNG.class);
+    mapBinder.addBinding(TaskType.GOOGLE_ARTIFACT_REGISTRY_TASK_NG).toInstance(GARArtifactTaskNG.class);
     mapBinder.addBinding(TaskType.GCR_ARTIFACT_TASK_NG).toInstance(GcrArtifactTaskNG.class);
     mapBinder.addBinding(TaskType.ECR_ARTIFACT_TASK_NG).toInstance(EcrArtifactTaskNG.class);
     mapBinder.addBinding(TaskType.ACR_ARTIFACT_TASK_NG).toInstance(AcrArtifactTaskNG.class);
@@ -1781,6 +1799,24 @@ public class DelegateModule extends AbstractModule {
     mapBinder.addBinding(TaskType.SERVERLESS_COMMAND_TASK).toInstance(ServerlessCommandTask.class);
     mapBinder.addBinding(TaskType.AZURE_WEB_APP_TASK_NG).toInstance(AzureWebAppTaskNG.class);
     mapBinder.addBinding(TaskType.COMMAND_TASK_NG).toInstance(CommandTaskNG.class);
+    // ECS NG
+    MapBinder<String, EcsCommandTaskNGHandler> ecsTaskTypeToTaskHandlerMap =
+        MapBinder.newMapBinder(binder(), String.class, EcsCommandTaskNGHandler.class);
+    ecsTaskTypeToTaskHandlerMap.addBinding(EcsCommandTypeNG.ECS_ROLLING_DEPLOY.name())
+        .to(EcsRollingDeployCommandTaskHandler.class);
+    ecsTaskTypeToTaskHandlerMap.addBinding(EcsCommandTypeNG.ECS_PREPARE_ROLLBACK_DATA.name())
+        .to(EcsPrepareRollbackCommandTaskHandler.class);
+    ecsTaskTypeToTaskHandlerMap.addBinding(EcsCommandTypeNG.ECS_ROLLING_ROLLBACK.name())
+        .to(EcsRollingRollbackCommandTaskHandler.class);
+    ecsTaskTypeToTaskHandlerMap.addBinding(EcsCommandTypeNG.ECS_CANARY_DELETE.name())
+        .to(EcsCanaryDeleteCommandTaskHandler.class);
+    ecsTaskTypeToTaskHandlerMap.addBinding(EcsCommandTypeNG.ECS_CANARY_DEPLOY.name())
+        .to(EcsCanaryDeployCommandTaskHandler.class);
+
+    mapBinder.addBinding(TaskType.ECS_GIT_FETCH_TASK_NG).toInstance(EcsGitFetchTask.class);
+    mapBinder.addBinding(TaskType.ECS_COMMAND_TASK_NG).toInstance(EcsCommandTaskNG.class);
+
+    bind(EcsV2Client.class).to(EcsV2ClientImpl.class);
     mapBinder.addBinding(TaskType.AZURE_NG_ARM).toInstance(AzureResourceCreationTaskNG.class);
   }
 
