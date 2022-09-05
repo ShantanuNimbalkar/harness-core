@@ -332,8 +332,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject @Named("grpcServiceExecutor") private ExecutorService grpcServiceExecutor;
   @Inject @Named("taskProgressExecutor") private ExecutorService taskProgressExecutor;
 
-  @Inject @Named("logStreamingExecutor") private ThreadPoolExecutor logStreamingExecutor;
-
   @Inject private SignalService signalService;
   @Inject private MessageService messageService;
   @Inject private Injector injector;
@@ -348,7 +346,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   @Inject(optional = true) @Nullable private PerpetualTaskWorker perpetualTaskWorker;
   @Inject(optional = true) @Nullable private LogStreamingClient logStreamingClient;
 
-  private DelegateLogStreamingDispatcher delegateLogStreamingDispatcher;
+  @Inject private DelegateLogStreamingDispatcher delegateLogStreamingDispatcher;
 
   @Inject DelegateTaskFactory delegateTaskFactory;
   @Inject(optional = true) @Nullable private DelegateServiceAgentClient delegateServiceAgentClient;
@@ -1296,9 +1294,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       if (perpetualTaskWorker != null) {
         perpetualTaskWorker.stop();
       }
-      if (delegateLogStreamingDispatcher != null) {
-        delegateLogStreamingDispatcher.stop();
-      }
     }
   }
 
@@ -2156,16 +2151,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         ? LogStreamingHelper.generateLogBaseKey(delegateTaskPackage.getLogStreamingAbstractions())
         : EMPTY;
 
-    if (delegateLogStreamingDispatcher == null) {
-      delegateLogStreamingDispatcher = new DelegateLogStreamingDispatcher(
-          delegateTaskPackage.getAccountId(), logStreamingClient, logStreamingExecutor);
-    }
-
-    if (!delegateTaskPackage.getLogStreamingToken().equals(logStreamingToken)) {
-      logStreamingToken = delegateTaskPackage.getLogStreamingToken();
-      delegateLogStreamingDispatcher.setToken(logStreamingToken);
-    }
-
+    delegateLogStreamingDispatcher.setAccountId(delegateTaskPackage.getAccountId());
+    delegateLogStreamingDispatcher.setToken(logStreamingToken);
     delegateLogStreamingDispatcher.start();
 
     LogStreamingTaskClientBuilder taskClientBuilder =
@@ -2506,10 +2493,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     DelegateStackdriverLogAppender.setManagerClient(null);
     if (perpetualTaskWorker != null) {
       perpetualTaskWorker.stop();
-    }
-
-    if (delegateLogStreamingDispatcher != null) {
-      delegateLogStreamingDispatcher.stop();
     }
   }
 

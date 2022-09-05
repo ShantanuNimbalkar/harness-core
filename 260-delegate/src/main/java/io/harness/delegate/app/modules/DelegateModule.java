@@ -948,12 +948,11 @@ public class DelegateModule extends AbstractModule {
                                                 .build());
   }
 
-  // Question? IMO we should use common task executor threadPool
   @Provides
   @Singleton
   @Named("logStreamingExecutor")
   public ThreadPoolExecutor logStreamingExecutor() {
-    return ThreadPool.create(10, 40, 500, TimeUnit.MILLISECONDS,
+    return ThreadPool.create(2, 10, 3, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("log-streaming-client-%d").setPriority(Thread.NORM_PRIORITY).build());
   }
 

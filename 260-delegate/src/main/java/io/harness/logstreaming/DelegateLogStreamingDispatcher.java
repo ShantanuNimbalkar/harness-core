@@ -13,7 +13,9 @@ import io.harness.network.SafeHttpCall;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,31 +32,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 public class DelegateLogStreamingDispatcher {
-  private final String accountId;
+  private String accountId;
   private String token;
-  private final LogStreamingClient logStreamingClient;
+  @Inject private LogStreamingClient logStreamingClient;
 
-  private final ThreadPoolExecutor logStreamingExecutor;
+  @Inject @Named("logStreamingExecutor") private ThreadPoolExecutor logStreamingExecutor;
 
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicReference<DelegateLogStreamingDispatcherService> svcHolder = new AtomicReference<>();
 
-  private final AtomicBoolean isWritingInPrimaryLogCache = new AtomicBoolean(true);
-
-  private final Map<String, List<LogLine>> primaryLogCache = new HashMap<>();
-  private final Map<String, List<LogLine>> secondaryLogCache = new HashMap<>();
-
+  private Map<String, List<LogLine>> logCache = new HashMap<>();
+  private Map<String, List<LogLine>> logCacheToBeFlushed;
   ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
-  public DelegateLogStreamingDispatcher(
-      String accountId, LogStreamingClient logStreamingClient, ThreadPoolExecutor logStreamingExecutor) {
-    this.accountId = accountId;
-    this.logStreamingClient = logStreamingClient;
-    this.logStreamingExecutor = logStreamingExecutor;
-  }
-
   private class DelegateLogStreamingDispatcherService extends AbstractScheduledService {
-    // Question? what is its use?
     DelegateLogStreamingDispatcherService() {
       addListener(new LoggingListener(this), MoreExecutors.directExecutor());
     }
@@ -64,81 +55,46 @@ public class DelegateLogStreamingDispatcher {
       swapMapsAndDispatchLogs();
     }
 
-    // question? what should be ideal time
     @Override
     protected Scheduler scheduler() {
-      return Scheduler.newFixedRateSchedule(0, 1, TimeUnit.SECONDS);
+      return Scheduler.newFixedRateSchedule(0, 2, TimeUnit.SECONDS);
     }
   }
 
   public void swapMapsAndDispatchLogs() {
-    // swap primary cache
+    if (logCache.isEmpty() || token == null) {
+      return;
+    }
     try {
       readWriteLock.writeLock().lock();
-      if (isWritingInPrimaryLogCache.get()) {
-        isWritingInPrimaryLogCache.set(false);
-      } else {
-        isWritingInPrimaryLogCache.set(true);
-      }
+      logCacheToBeFlushed = logCache;
+      logCache = new HashMap<>();
     } finally {
       readWriteLock.writeLock().unlock();
     }
-
-    // now dispatch from secondary cache
-    dispatchLogs(isWritingInPrimaryLogCache.get() ? secondaryLogCache : primaryLogCache);
+    dispatchLogs(logCacheToBeFlushed);
   }
 
   private void dispatchLogs(Map<String, List<LogLine>> logCache) {
-    if (logCache.isEmpty()) {
-      return;
-    }
     for (Iterator<Map.Entry<String, List<LogLine>>> iterator = logCache.entrySet().iterator(); iterator.hasNext();) {
       Map.Entry<String, List<LogLine>> next = iterator.next();
-      // Question? are we able to send logs before removing from iterator
       logStreamingExecutor.submit(() -> sendLogsOverHttp(next.getKey(), next.getValue()));
       iterator.remove();
     }
   }
 
-  public boolean dispatchAllLogsBeforeClosingStream(String logKey) {
-    // it was currently writing in primaryLogCache, hence dispatch from primaryLogCache
-    // no need of lock here since it will not be writing logs after calling closeStream
-    if (isWritingInPrimaryLogCache.get()) {
-      return dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, primaryLogCache);
-    }
-    return dispatchAllLogsFromPrimaryCacheBeforeClosingStream(logKey, secondaryLogCache);
-  }
-
-  private boolean dispatchAllLogsFromPrimaryCacheBeforeClosingStream(
-      String logKey, Map<String, List<LogLine>> primaryLogCache) {
-    if (!primaryLogCache.containsKey(logKey)) {
-      return false;
-    }
-    logStreamingExecutor.submit(() -> sendLogsOverHttp(logKey, primaryLogCache.get(logKey)));
-    primaryLogCache.remove(logKey);
-    return true;
-  }
-
   public void saveLogsInCache(String logKey, LogLine logLine) {
     try {
       readWriteLock.readLock().lock();
-      if (isWritingInPrimaryLogCache.get()) {
-        if (!primaryLogCache.containsKey(logKey)) {
-          primaryLogCache.put(logKey, new ArrayList<>());
-        }
-        primaryLogCache.get(logKey).add(logLine);
-      } else {
-        if (!secondaryLogCache.containsKey(logKey)) {
-          secondaryLogCache.put(logKey, new ArrayList<>());
-        }
-        secondaryLogCache.get(logKey).add(logLine);
+      if (!logCache.containsKey(logKey)) {
+        logCache.put(logKey, new ArrayList<>());
       }
+      logCache.get(logKey).add(logLine);
     } finally {
       readWriteLock.readLock().unlock();
     }
   }
 
-  // Question? should we add a retry logic in case of failure
   private void sendLogsOverHttp(String logKey, List<LogLine> logLines) {
     try {
       SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
@@ -167,5 +123,9 @@ public class DelegateLogStreamingDispatcher {
 
   public void setToken(String token) {
     this.token = token;
+  }
+
+  public void setAccountId(String accountId) {
+    this.accountId = accountId;
   }
 }
