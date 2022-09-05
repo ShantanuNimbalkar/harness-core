@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -182,26 +183,30 @@ public class ResourceGroupApiUtils {
   }
 
   public static ResourceGroupFilterDTO getResourceFilterDTO(String account, String org, String project,
-      String searchTerm, List<String> identifierFilter,
-      List<io.harness.spec.server.platform.model.ResourceSelectorFilter> resourceFilter, String managedFilter) {
+      String searchTerm, List<String> identifierFilter, String managedFilter, List<String> resourceTypeFilter,
+      List<String> resourceSlugFilter) {
     return ResourceGroupFilterDTO.builder()
         .accountIdentifier(account)
         .orgIdentifier(org)
         .projectIdentifier(project)
         .searchTerm(searchTerm)
         .identifierFilter(new HashSet<>(identifierFilter))
-        .resourceSelectorFilterList(
-            resourceFilter.stream().map(ResourceGroupApiUtils::getResourceSelectorFilter).collect(Collectors.toSet()))
+        .resourceSelectorFilterList(getResourceSelectorFilter(resourceTypeFilter, resourceSlugFilter))
         .managedFilter(getManagedFilter(managedFilter))
         .build();
   }
 
-  public static ResourceSelectorFilter getResourceSelectorFilter(
-      io.harness.spec.server.platform.model.ResourceSelectorFilter filter) {
-    return ResourceSelectorFilter.builder()
-        .resourceType(filter.getResourceType())
-        .resourceIdentifier(filter.getResourceSlug())
-        .build();
+  public static Set<ResourceSelectorFilter> getResourceSelectorFilter(
+      List<String> resourceTypeFilter, List<String> resourceSlugFilter) {
+    int size = resourceSlugFilter.size();
+    Set<ResourceSelectorFilter> resourceSelectorFilter = new HashSet<>();
+    for (int i = 0; i < size; i++) {
+      resourceSelectorFilter.add(ResourceSelectorFilter.builder()
+                                     .resourceType(resourceTypeFilter.get(i))
+                                     .resourceIdentifier(resourceSlugFilter.get(i))
+                                     .build());
+    }
+    return resourceSelectorFilter;
   }
 
   public static ManagedFilter getManagedFilter(String managedFilter) {

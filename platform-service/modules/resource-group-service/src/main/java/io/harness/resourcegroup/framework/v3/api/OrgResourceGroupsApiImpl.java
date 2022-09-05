@@ -31,7 +31,6 @@ import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.platform.OrganizationResourceGroupsApi;
 import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
 import io.harness.spec.server.platform.model.ResourceGroupsResponse;
-import io.harness.spec.server.platform.model.ResourceSelectorFilter;
 
 import com.google.inject.Inject;
 import java.util.List;
@@ -85,9 +84,18 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
   public Response listResourceGroupsOrg(String org, String account, Integer page, Integer limit, String searchTerm,
-      List<String> identifierFilter, List<ResourceSelectorFilter> resourceFilter, String managedFilter) {
+      List<String> identifierFilter, String managedFilter, List<String> resourceTypeFilter,
+      List<String> resourceSlugFilter) {
+    if ((resourceTypeFilter != null && resourceSlugFilter != null
+            && resourceSlugFilter.size() != resourceTypeFilter.size())
+        || (resourceSlugFilter != null && resourceTypeFilter == null)
+        || (resourceSlugFilter == null && resourceTypeFilter != null)) {
+      return Response.status(400)
+          .entity("Resource Type and Resource String should have same number of entries.")
+          .build();
+    }
     ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
-        account, org, null, searchTerm, identifierFilter, resourceFilter, managedFilter);
+        account, org, null, searchTerm, identifierFilter, managedFilter, resourceTypeFilter, resourceSlugFilter);
     PageRequest pageRequest = ResourceGroupApiUtils.getPageRequest(page, limit);
     Page<ResourceGroupResponse> pageResponse = resourceGroupService.list(resourceGroupFilterDTO, pageRequest);
     ResponseBuilder responseBuilder = Response.ok();
