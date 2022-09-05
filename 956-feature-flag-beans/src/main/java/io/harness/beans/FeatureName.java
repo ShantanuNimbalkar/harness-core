@@ -317,7 +317,7 @@ public enum FeatureName {
   CHAOS_ENABLED,
   DEPLOYMENT_SUBFORMIK_APPLICATION_DROPDOWN,
   USAGE_SCOPE_RBAC,
-  ALLOW_USER_TYPE_FIELDS_JIRA,
+  ALLOW_USER_TYPE_FIELDS_JIRA("used to hide jira userfields input in ui in both cg and ng", HarnessTeam.SPG),
   HARD_DELETE_ENTITIES,
   ACTIVITY_ID_BASED_TF_BASE_DIR,
   INHERITED_USER_GROUP,
@@ -388,6 +388,7 @@ public enum FeatureName {
       HarnessTeam.SPG),
   HOSTED_BUILDS("Used to enabled Hosted builds in paid accounts", HarnessTeam.CI),
   CD_ONBOARDING_ENABLED,
+  ECS_NG,
   ATTRIBUTE_TYPE_ACL_ENABLED("Enable attribute filter on NG UI for ACL", HarnessTeam.PL),
   CREATE_DEFAULT_PROJECT("Enables auto create default project after user signup", HarnessTeam.GTM),
   ANALYSE_TF_PLAN_SUMMARY(
@@ -430,10 +431,10 @@ public enum FeatureName {
   SERVICE_V2_EXPRESSION(
       "Allow service reference to be an expression in a pipeline for the new service entity", HarnessTeam.CDC),
   CIE_HOSTED_VMS(
-      "Enabled hosted VMs in favor of hosted K8s for CIE. This flag will be deprecated once all the feature work has been checked in",
+      "Enables hosted VMs in favor of hosted K8s for CIE. This flag will be deprecated once all the feature work has been checked in",
       HarnessTeam.CI),
-  CHANGE_INSTANCE_QUERY_OPERATOR_TO_NE("Change instance service query operator from $exists to $ne", HarnessTeam.SPG);
-
+  CHANGE_INSTANCE_QUERY_OPERATOR_TO_NE("Change instance service query operator from $exists to $ne", HarnessTeam.SPG),
+  NEXUS3_RAW_REPOSITORY("Enable support for Nexus3 raw repository format on CG", HarnessTeam.SPG);
   @Deprecated
   FeatureName() {
     scope = Scope.PER_ACCOUNT;

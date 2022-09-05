@@ -165,6 +165,7 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
                          .name(OutcomeExpressionConstants.OUTPUT)
                          .group(OutcomeExpressionConstants.INFRASTRUCTURE_GROUP)
                          .build())
+
         .unitProgressList(Collections.singletonList(UnitProgress.newBuilder()
                                                         .setUnitName("Execute")
                                                         .setStatus(UnitStatus.SUCCESS)
@@ -224,8 +225,9 @@ public class InfrastructureTaskExecutableStepV2 extends AbstractInfrastructureTa
     }
 
     final InfrastructureEntity infrastructureEntity = infrastructureEntityOpt.get();
-    if (isNotEmpty(stepParameters.getInfraInputs())) {
-      String mergedYaml = mergeInfraInputs(infrastructureEntity.getYaml(), stepParameters.getInfraInputs());
+    if (ParameterField.isNotNull(stepParameters.getInfraInputs())
+        && isNotEmpty(stepParameters.getInfraInputs().getValue())) {
+      String mergedYaml = mergeInfraInputs(infrastructureEntity.getYaml(), stepParameters.getInfraInputs().getValue());
       infrastructureEntity.setYaml(mergedYaml);
     }
 
