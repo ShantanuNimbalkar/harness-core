@@ -16,8 +16,6 @@ import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_ORCHE
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_PROGRESS_EVENT_TOPIC;
 import static io.harness.eventsframework.EventsFrameworkConstants.START_PARTIAL_PLAN_CREATOR_EVENT_TOPIC;
 
-import static org.apache.commons.collections4.CollectionUtils.subtract;
-
 import io.harness.ModuleType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -40,12 +38,10 @@ import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.events.base.PmsEventCategory;
 import io.harness.pms.exception.InitializeSdkException;
 import io.harness.pms.sdk.core.governance.JsonExpansionHandlerInfo;
-import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
 import io.harness.pms.sdk.core.registries.StepRegistry;
 import io.harness.pms.sdk.core.steps.Step;
-import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.redis.RedisConfig;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -57,10 +53,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,59 +79,12 @@ public class PmsSdkInitHelper {
       return Collections.emptyMap();
     }
 
-    Map<String, Set<String>> supportedTypes = new HashMap<>();
-    for (PartialPlanCreator<?> planCreator : planCreators) {
-      Map<String, Set<String>> currTypes = planCreator.getSupportedTypes();
-      if (EmptyPredicate.isEmpty(currTypes)) {
-        continue;
-      }
-
-      currTypes.forEach((k, v) -> {
-        if (EmptyPredicate.isEmpty(v)) {
-          return;
-        }
-
-        if (supportedTypes.containsKey(k)) {
-          supportedTypes.get(k).addAll(v);
-        } else {
-          supportedTypes.put(k, new HashSet<>(v));
-        }
-      });
-    }
-
-    validateSupportedTypes(supportedTypes, pipelineServiceInfoProvider);
+    Map<String, Set<String>> supportedTypes = PmsSdkInitValidator.supportedTypesP(planCreators);
+    PmsSdkInitValidator.validatePlanCreators(supportedTypes, pipelineServiceInfoProvider);
 
     Map<String, Types> finalMap = new HashMap<>();
     supportedTypes.forEach((k, v) -> finalMap.put(k, Types.newBuilder().addAllTypes(v).build()));
     return finalMap;
-  }
-
-  private static void validateSupportedTypes(
-      Map<String, Set<String>> supportedTypes, PipelineServiceInfoProvider pipelineServiceInfoProvider) {
-    // VERIFY DECLARED SUPPORTED TYPES VS. SUPPORTED FILTER CREATORS
-    final Set<String> filters = new HashSet<>();
-    pipelineServiceInfoProvider.getFilterJsonCreators()
-        .stream()
-        .map(FilterJsonCreator::getSupportedTypes)
-        .forEach(m -> filters.addAll(m.keySet()));
-    removeUnsupportedTypesAndNotify("FilterJsonCreator", supportedTypes, filters);
-
-    // VERIFY DECLARED SUPPORTED TYPES VS. SUPPORTED VARIABLE CREATORS
-    final Set<String> variables = new HashSet<>();
-    pipelineServiceInfoProvider.getVariableCreators()
-        .stream()
-        .map(VariableCreator::getSupportedTypes)
-        .forEach(m -> variables.addAll(m.keySet()));
-    removeUnsupportedTypesAndNotify("VariableCreator", supportedTypes, variables);
-  }
-
-  private static void removeUnsupportedTypesAndNotify(
-      String name, Map<String, Set<String>> supportedTypes, Set<String> pending) {
-    final Collection<String> unsupported = subtract(supportedTypes.keySet(), pending);
-    if (!unsupported.isEmpty()) {
-      log.error("[PMS-SDK] The {} has unsupported types, removing from supported for safety: {}", name, unsupported);
-      unsupported.forEach(supportedTypes::remove);
-    }
   }
 
   public static void initializeSDKInstance(Injector injector, PmsSdkConfiguration pmsSdkConfiguration) {

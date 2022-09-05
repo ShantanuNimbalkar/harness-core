@@ -14,7 +14,11 @@ import static io.harness.rule.OwnerRule.FERNANDOD;
 import static io.harness.rule.OwnerRule.NAMAN;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
@@ -24,37 +28,29 @@ import io.harness.category.element.UnitTests;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.governance.ExpansionRequestMetadata;
 import io.harness.pms.contracts.plan.JsonExpansionInfo;
-import io.harness.pms.contracts.plan.Types;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.execution.expression.SdkFunctor;
 import io.harness.pms.sdk.core.governance.ExpansionResponse;
 import io.harness.pms.sdk.core.governance.JsonExpansionHandler;
 import io.harness.pms.sdk.core.governance.JsonExpansionHandlerInfo;
-import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
-import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.rule.Owner;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.MockedStatic;
 
 @OwnedBy(PIPELINE)
 public class PmsSdkInitHelperTest extends CategoryTest {
-  // VALIDATION OF SUPPORTED TYPES DON'T CARE ABOUT THE TYPE.
-  // THE CHECK IS DONE BY KEY MAP, NOT THE VALUE.
-  private static final Set<String> DEFAULT_EMPTY_TYPE_CONTENT = ImmutableSet.of("a1", "b2", "c3");
-
   @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
@@ -120,127 +116,15 @@ public class PmsSdkInitHelperTest extends CategoryTest {
   @Test
   @Owner(developers = FERNANDOD)
   @Category(UnitTests.class)
-  public void shouldValidateSupportedTypesWhenMissingFilterCreators() {
-    List<PartialPlanCreator<?>> planCreators = new ArrayList<>();
-    planCreators.add(createPlanCreator("water", "fire"));
-    planCreators.add(createPlanCreator("earth"));
+  public void shouldCalculateSupportedTypesValidateSupportedTypes() {
+    PipelineServiceInfoProvider provider = mock(PipelineServiceInfoProvider.class);
+    when(provider.getPlanCreators()).thenReturn(ImmutableList.of(mock(PartialPlanCreator.class)));
 
-    List<FilterJsonCreator> filterCreators = new ArrayList<>();
-    filterCreators.add(createFilterCreator("fire", "wind", "void"));
-
-    List<VariableCreator> variableCreators = new ArrayList<>();
-    variableCreators.add(createVariableCreator("water", "earth"));
-    variableCreators.add(createVariableCreator("fire"));
-
-    PipelineServiceInfoProvider pipelineServiceInfoProvider =
-        createPipelineServiceInfoProvider(planCreators, filterCreators, variableCreators);
-
-    final Map<String, Types> result = PmsSdkInitHelper.calculateSupportedTypes(pipelineServiceInfoProvider);
-    assertThat(result).isNotEmpty();
-    assertThat(result).containsOnlyKeys("fire");
-  }
-
-  @Test
-  @Owner(developers = FERNANDOD)
-  @Category(UnitTests.class)
-  public void shouldValidateSupportedTypesWhenMorePlanCreatorsThanFilterCreators() {
-    List<PartialPlanCreator<?>> planCreators = new ArrayList<>();
-    planCreators.add(createPlanCreator("water", "fire"));
-    planCreators.add(createPlanCreator("earth"));
-
-    List<FilterJsonCreator> filterCreators = new ArrayList<>();
-    filterCreators.add(createFilterCreator("fire"));
-
-    List<VariableCreator> variableCreators = new ArrayList<>();
-    variableCreators.add(createVariableCreator("water", "earth"));
-    variableCreators.add(createVariableCreator("fire"));
-
-    PipelineServiceInfoProvider pipelineServiceInfoProvider =
-        createPipelineServiceInfoProvider(planCreators, filterCreators, variableCreators);
-
-    final Map<String, Types> result = PmsSdkInitHelper.calculateSupportedTypes(pipelineServiceInfoProvider);
-    assertThat(result).isNotEmpty();
-    assertThat(result).containsOnlyKeys("fire");
-  }
-
-  @Test
-  @Owner(developers = FERNANDOD)
-  @Category(UnitTests.class)
-  public void shouldValidateSupportedTypesWhenMissingVariableCreators() {
-    List<PartialPlanCreator<?>> planCreators = new ArrayList<>();
-    planCreators.add(createPlanCreator("water", "fire"));
-    planCreators.add(createPlanCreator("earth"));
-
-    List<FilterJsonCreator> filterCreators = new ArrayList<>();
-    filterCreators.add(createFilterCreator("water", "fire", "earth"));
-
-    List<VariableCreator> variableCreators = new ArrayList<>();
-    variableCreators.add(createVariableCreator("water", "wind"));
-    variableCreators.add(createVariableCreator("fire"));
-
-    PipelineServiceInfoProvider pipelineServiceInfoProvider =
-        createPipelineServiceInfoProvider(planCreators, filterCreators, variableCreators);
-
-    final Map<String, Types> result = PmsSdkInitHelper.calculateSupportedTypes(pipelineServiceInfoProvider);
-    assertThat(result).isNotEmpty();
-    assertThat(result).containsOnlyKeys("fire", "water");
-  }
-
-  @Test
-  @Owner(developers = FERNANDOD)
-  @Category(UnitTests.class)
-  public void shouldValidateSupportedTypes() {
-    List<PartialPlanCreator<?>> planCreators = new ArrayList<>();
-    planCreators.add(createPlanCreator("water", "fire"));
-    planCreators.add(createPlanCreator("earth"));
-
-    List<FilterJsonCreator> filterCreators = new ArrayList<>();
-    filterCreators.add(createFilterCreator("water", "fire", "earth"));
-
-    List<VariableCreator> variableCreators = new ArrayList<>();
-    variableCreators.add(createVariableCreator("water", "earth"));
-    variableCreators.add(createVariableCreator("fire"));
-
-    PipelineServiceInfoProvider pipelineServiceInfoProvider =
-        createPipelineServiceInfoProvider(planCreators, filterCreators, variableCreators);
-
-    final Map<String, Types> result = PmsSdkInitHelper.calculateSupportedTypes(pipelineServiceInfoProvider);
-    assertThat(result).isNotEmpty();
-    assertThat(result).containsOnlyKeys("fire", "water", "earth");
-  }
-
-  private PartialPlanCreator createPlanCreator(String... elements) {
-    PartialPlanCreator creator = mock(PartialPlanCreator.class);
-    when(creator.getSupportedTypes()).thenReturn(createSupportedTypes(elements));
-    return creator;
-  }
-
-  private FilterJsonCreator createFilterCreator(String... elements) {
-    FilterJsonCreator creator = mock(FilterJsonCreator.class);
-    when(creator.getSupportedTypes()).thenReturn(createSupportedTypes(elements));
-    return creator;
-  }
-
-  private VariableCreator createVariableCreator(String... elements) {
-    VariableCreator creator = mock(VariableCreator.class);
-    when(creator.getSupportedTypes()).thenReturn(createSupportedTypes(elements));
-    return creator;
-  }
-
-  private Map<String, Set<String>> createSupportedTypes(String... elements) {
-    Map<String, Set<String>> supportedTypes = new HashMap<>(elements.length);
-    Arrays.stream(elements).forEach(e -> supportedTypes.put(e, DEFAULT_EMPTY_TYPE_CONTENT));
-    return supportedTypes;
-  }
-
-  @NotNull
-  private PipelineServiceInfoProvider createPipelineServiceInfoProvider(List<PartialPlanCreator<?>> planCreators,
-      List<FilterJsonCreator> filterCreators, List<VariableCreator> variableCreators) {
-    PipelineServiceInfoProvider pipelineServiceInfoProvider = mock(PipelineServiceInfoProvider.class);
-    when(pipelineServiceInfoProvider.getPlanCreators()).thenReturn(planCreators);
-    when(pipelineServiceInfoProvider.getFilterJsonCreators()).thenReturn(filterCreators);
-    when(pipelineServiceInfoProvider.getVariableCreators()).thenReturn(variableCreators);
-    return pipelineServiceInfoProvider;
+    try (MockedStatic<PmsSdkInitValidator> validator = mockStatic(PmsSdkInitValidator.class)) {
+      validator.when(() -> PmsSdkInitValidator.supportedTypesP(any())).thenReturn(ImmutableMap.of());
+      PmsSdkInitHelper.calculateSupportedTypes(provider);
+      validator.verify(() -> PmsSdkInitValidator.validatePlanCreators(notNull(), eq(provider)));
+    }
   }
 
   private static class Dummy1 implements JsonExpansionHandler {
