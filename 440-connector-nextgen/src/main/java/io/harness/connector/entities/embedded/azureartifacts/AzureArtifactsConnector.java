@@ -8,5 +8,65 @@
 package io.harness.connector.entities.embedded.azureartifacts;
 
 import io.harness.connector.entities.Connector;
+import io.harness.delegate.beans.connector.scm.GitAuthType;
 
-public class AzureArtifactsConnector extends Connector {}
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.mongodb.morphia.annotations.Entity;
+import org.springframework.data.annotation.Persistent;
+import org.springframework.data.annotation.TypeAlias;
+
+@Value
+@Builder
+@EqualsAndHashCode(callSuper = true)
+@FieldNameConstants(innerTypeName = "AzureArtifactsConnectorKeys")
+@Entity(value = "connectors", noClassnameStored = true)
+@Persistent
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@TypeAlias("io.harness.connector.entities.embedded.jenkins.AzureArtifactsConnector")
+public class AzureArtifactsConnector extends Connector {
+  /**
+   * Connection URL
+   */
+  String url;
+
+  /**
+   * Connection Type - Project / Repo level
+   */
+  @NotEmpty AzureArtifactsConnectionType connectionType;
+
+  /**
+   * For Project Connection Type - test repo for connection
+   */
+  String validationRepo;
+
+  /**
+   * Git auth type - HTTP or SSH
+   */
+  @NotEmpty GitAuthType authType;
+
+  /**
+   * Authentication Details
+   */
+  @NotEmpty AzureArtifactsConnectorAuthentication authenticationDetails;
+
+  /**
+   * is API Access enabled
+   */
+  @NotEmpty boolean hasApiAccess;
+
+  /**
+   * API Acess Type - TOKEN
+   */
+  AzureArtifactsApiAccessType apiAccessType;
+
+  /**
+   * Authentication Details
+   */
+  AzureArtifactsApiAccessDetails azureRepoApiAccess;
+}
