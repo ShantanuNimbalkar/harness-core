@@ -84,6 +84,9 @@ public class ResourceGroupApiUtils {
         .build();
   }
   public static List<ScopeSelector> getIncludedScopeRequest(List<ResourceGroupScope> resourceGroupScopes) {
+    if (resourceGroupScopes == null) {
+      return null;
+    }
     return resourceGroupScopes.stream()
         .map(scope
             -> ScopeSelector.builder()
@@ -118,7 +121,7 @@ public class ResourceGroupApiUtils {
 
   public static io.harness.spec.server.platform.model.ResourceGroupsResponse getResourceGroupResponse(
       ResourceGroupResponse response) {
-    if (response == null) {
+    if (response == null || response.getResourceGroup() == null) {
       return null;
     }
     ResourceGroupsResponse resourceGroupsResponse = new ResourceGroupsResponse();

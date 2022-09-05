@@ -54,6 +54,9 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
   public Response createResourceGroupProject(
       String org, String project, CreateResourceGroupRequest body, @AccountIdentifier String account) {
+    if (body == null) {
+      return Response.status(400).entity("Request body empty.").build();
+    }
     ResourceGroupRequest resourceGroupRequest =
         ResourceGroupApiUtils.getResourceGroupRequestProject(org, project, body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
@@ -70,7 +73,7 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
     if (resourceGroupService.delete(Scope.of(account, org, project), resourceGroup)) {
       return Response.ok().entity(resourceGroupsResponse).build();
     }
-    return Response.status(404).build();
+    return Response.status(404).entity("Resource Group with given identifier not found.").build();
   }
 
   @Override
@@ -94,7 +97,7 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
         || (resourceSlugFilter != null && resourceTypeFilter == null)
         || (resourceSlugFilter == null && resourceTypeFilter != null)) {
       return Response.status(400)
-          .entity("Resource Type and Resource String should have same number of entries.")
+          .entity("Resource Type and Resource String should have same number of entries for one-to-one mapping.")
           .build();
     }
     ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
@@ -117,6 +120,9 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   public Response updateResourceGroupProject(
       String org, String project, String resourceGroup, CreateResourceGroupRequest body, String account) {
+    if (body == null) {
+      return Response.status(400).entity("Request body empty.").build();
+    }
     if (!resourceGroup.equals(body.getSlug())) {
       return Response.status(400)
           .entity("Resource Group identifier in the request body and the URL do not match.")

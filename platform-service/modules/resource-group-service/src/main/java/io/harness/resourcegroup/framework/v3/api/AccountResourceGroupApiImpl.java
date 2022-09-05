@@ -51,6 +51,9 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
   public Response createResourceGroupAcc(CreateResourceGroupRequest body, @AccountIdentifier String account) {
+    if (body == null) {
+      return Response.status(400).entity("Request body empty.").build();
+    }
     ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestAcc(body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
@@ -66,7 +69,7 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
     if (resourceGroupService.delete(Scope.of(account, null, null), resourceGroup)) {
       return Response.ok().entity(resourceGroupsResponse).build();
     }
-    return Response.status(404).build();
+    return Response.status(404).entity("Resource Group with given identifier not found.").build();
   }
 
   @Override
@@ -90,7 +93,7 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
         || (resourceSlugFilter != null && resourceTypeFilter == null)
         || (resourceSlugFilter == null && resourceTypeFilter != null)) {
       return Response.status(400)
-          .entity("Resource Type and Resource String should have same number of entries.")
+          .entity("Resource Type and Resource String should have same number of entries for one-to-one mapping.")
           .build();
     }
     ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
@@ -111,6 +114,9 @@ public class AccountResourceGroupApiImpl implements AccountResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   public Response updateResourceGroupAcc(String resourceGroup, CreateResourceGroupRequest body, String account) {
+    if (body == null) {
+      return Response.status(400).entity("Request body empty.").build();
+    }
     if (!resourceGroup.equals(body.getSlug())) {
       return Response.status(400)
           .entity("Resource Group identifier in the request body and the URL do not match.")
