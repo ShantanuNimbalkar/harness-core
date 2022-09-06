@@ -261,7 +261,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
   }
 
   @Test
@@ -362,7 +362,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
   }
 
   @Test
@@ -463,6 +463,6 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
   }
 }
