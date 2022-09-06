@@ -26,6 +26,12 @@ import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsIamCredentia
 import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsManualCredential;
 import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsStsCredential;
 import io.harness.connector.entities.embedded.awssecretmanager.AwsSecretManagerConnector;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsApiAccessDetails;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsConnector;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsHttpAuthentication;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsSshAuthentication;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsTokenApiAccess;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsUsernameToken;
 import io.harness.connector.entities.embedded.azureconnector.AzureConfig;
 import io.harness.connector.entities.embedded.azureconnector.AzureManagedIdentityCredential;
 import io.harness.connector.entities.embedded.azureconnector.AzureManualCredential;
@@ -152,6 +158,7 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
     set.add(OciHelmConnector.class);
     set.add(CustomSecretManagerConnector.class);
     set.add(ELKConnector.class);
+    set.add(AzureArtifactsConnector.class);
   }
 
   @Override
@@ -219,5 +226,12 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
     h.put("connector.entities.embedded.azurerepoconnector.AzureRepoHttpAuthentication",
         AzureRepoHttpAuthentication.class);
     h.put("connector.entities.embedded.azurerepoconnector.AzureRepoUsernameToken", AzureRepoUsernameToken.class);
+    h.put("connector.entities.embedded.azureartifacts.AzureRepoAppApiAccess", AzureArtifactsApiAccessDetails.class);
+    h.put("connector.entities.embedded.azureartifacts.AzureRepoTokenApiAccess", AzureArtifactsTokenApiAccess.class);
+    h.put(
+        "connector.entities.embedded.azureartifacts.AzureRepoSshAuthentication", AzureArtifactsSshAuthentication.class);
+    h.put("connector.entities.embedded.azureartifacts.AzureRepoHttpAuthentication",
+        AzureArtifactsHttpAuthentication.class);
+    h.put("connector.entities.embedded.azureartifacts.AzureRepoUsernameToken", AzureArtifactsUsernameToken.class);
   }
 }
