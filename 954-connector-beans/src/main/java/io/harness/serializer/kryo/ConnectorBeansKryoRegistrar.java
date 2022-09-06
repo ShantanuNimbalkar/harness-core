@@ -45,7 +45,19 @@ import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCred
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialSpecDTO;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialType;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerDTO;
-import io.harness.delegate.beans.connector.azureartifacts.*;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessSpecDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessType;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsAuthenticationDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectionTypeDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpAuthenticationType;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpCredentialsSpecDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsSshCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTokenSpecDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsUsernameTokenDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureAuthCredentialDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureAuthDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureClientKeyCertDTO;
@@ -428,5 +440,6 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureArtifactsCredentialsDTO.class, 10000110);
     kryo.register(AzureArtifactsUsernameTokenDTO.class, 10000111);
     kryo.register(AzureArtifactsHttpCredentialsSpecDTO.class, 10000112);
+    kryo.register(AzureArtifactsConnectionTypeDTO.class, 10000113);
   }
 }
