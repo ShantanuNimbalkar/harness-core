@@ -43,6 +43,7 @@ pkg_tar(
         "//350-event-server:keystore.jks",
     ],
     files = {
+        "@alpn_boot_8.1.13.v20181017//file": "alpn-boot-8.1.13.v20181017.jar",
         "//350-event-server:module_deploy.jar": "event-server-capsule.jar",
     },
     mode = "0600",
