@@ -10,9 +10,9 @@ package software.wings.timescale.migrations;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.beans.Pipeline.PipelineKeys;
+import static software.wings.timescale.migrations.TimescaleEntityMigrationHelper.insertArrayData;
 
 import io.harness.persistence.HIterator;
-import io.harness.timescaledb.DBUtils;
 import io.harness.timescaledb.TimeScaleDBService;
 
 import software.wings.beans.Pipeline;
@@ -23,11 +23,8 @@ import software.wings.dl.WingsPersistence;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
-import io.fabric8.utils.Lists;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,8 +79,6 @@ public class MigratePipelinesToTimeScaleDB {
     boolean successful = false;
     int retryCount = 0;
     while (!successful && retryCount < MAX_RETRY) {
-      ResultSet queryResult = null;
-
       try (Connection connection = timeScaleDBService.getDBConnection();
            PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
         upsertDataInTimeScaleDB(pipeline, connection, upsertStatement);
@@ -99,7 +94,6 @@ public class MigratePipelinesToTimeScaleDB {
         log.error("Failed to save pipeline,[{}]", pipeline.getUuid(), e);
         retryCount = MAX_RETRY + 1;
       } finally {
-        DBUtils.close(queryResult);
         log.info("Total time =[{}] for pipeline:[{}]", System.currentTimeMillis() - startTime, pipeline.getUuid());
       }
     }
@@ -159,15 +153,5 @@ public class MigratePipelinesToTimeScaleDB {
     upsertPreparedStatement.setString(10, updated_by);
 
     upsertPreparedStatement.execute();
-  }
-
-  private void insertArrayData(
-      int index, Connection dbConnection, PreparedStatement preparedStatement, List<String> data) throws SQLException {
-    if (!Lists.isNullOrEmpty(data)) {
-      Array array = dbConnection.createArrayOf("text", data.toArray());
-      preparedStatement.setArray(index, array);
-    } else {
-      preparedStatement.setArray(index, null);
-    }
   }
 }

@@ -10,9 +10,9 @@ package software.wings.timescale.migrations;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import static software.wings.beans.Service.ServiceKeys;
+import static software.wings.timescale.migrations.TimescaleEntityMigrationHelper.insertArrayData;
 
 import io.harness.persistence.HIterator;
-import io.harness.timescaledb.DBUtils;
 import io.harness.timescaledb.TimeScaleDBService;
 
 import software.wings.beans.Service;
@@ -21,13 +21,9 @@ import software.wings.dl.WingsPersistence;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
-import io.fabric8.utils.Lists;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.query.FindOptions;
 
@@ -77,8 +73,6 @@ public class MigrateServicesToTimeScaleDB {
     boolean successful = false;
     int retryCount = 0;
     while (!successful && retryCount < MAX_RETRY) {
-      ResultSet queryResult = null;
-
       try (Connection connection = timeScaleDBService.getDBConnection();
            PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
         upsertDataInTimeScaleDB(service, connection, upsertStatement);
@@ -94,7 +88,6 @@ public class MigrateServicesToTimeScaleDB {
         log.error("Failed to save service,[{}]", service.getUuid(), e);
         retryCount = MAX_RETRY + 1;
       } finally {
-        DBUtils.close(queryResult);
         log.info("Total time =[{}] for service:[{}]", System.currentTimeMillis() - startTime, service.getUuid());
       }
     }
@@ -127,15 +120,5 @@ public class MigrateServicesToTimeScaleDB {
         12, service.getDeploymentType() != null ? service.getDeploymentType().getDisplayName() : null);
 
     upsertPreparedStatement.execute();
-  }
-
-  private void insertArrayData(
-      int index, Connection dbConnection, PreparedStatement preparedStatement, List<String> data) throws SQLException {
-    if (!Lists.isNullOrEmpty(data)) {
-      Array array = dbConnection.createArrayOf("text", data.toArray());
-      preparedStatement.setArray(index, array);
-    } else {
-      preparedStatement.setArray(index, null);
-    }
   }
 }

@@ -12,7 +12,6 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 import static software.wings.beans.SettingAttribute.SettingCategory.CLOUD_PROVIDER;
 
 import io.harness.persistence.HIterator;
-import io.harness.timescaledb.DBUtils;
 import io.harness.timescaledb.TimeScaleDBService;
 
 import software.wings.beans.SettingAttribute;
@@ -24,7 +23,6 @@ import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.query.FindOptions;
@@ -76,8 +74,6 @@ public class MigrateCloudProvidersToTimescaleDB {
     boolean successful = false;
     int retryCount = 0;
     while (!successful && retryCount < MAX_RETRY) {
-      ResultSet queryResult = null;
-
       try (Connection connection = timeScaleDBService.getDBConnection();
            PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
         if (settingAttribute.getCategory().equals(CLOUD_PROVIDER)) {
@@ -95,7 +91,6 @@ public class MigrateCloudProvidersToTimescaleDB {
         log.error("Failed to save CloudProvider,[{}]", settingAttribute.getUuid(), e);
         retryCount = MAX_RETRY + 1;
       } finally {
-        DBUtils.close(queryResult);
         log.info("Total time =[{}] for CloudProvider:[{}]", System.currentTimeMillis() - startTime,
             settingAttribute.getUuid());
       }

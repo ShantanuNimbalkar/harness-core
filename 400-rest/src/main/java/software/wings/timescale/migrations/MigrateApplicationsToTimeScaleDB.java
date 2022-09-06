@@ -12,7 +12,6 @@ import static io.harness.persistence.HQuery.excludeAuthority;
 import static software.wings.beans.Application.ApplicationKeys;
 
 import io.harness.persistence.HIterator;
-import io.harness.timescaledb.DBUtils;
 import io.harness.timescaledb.TimeScaleDBService;
 
 import software.wings.beans.Application;
@@ -23,7 +22,6 @@ import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.query.FindOptions;
@@ -75,8 +73,6 @@ public class MigrateApplicationsToTimeScaleDB {
     boolean successful = false;
     int retryCount = 0;
     while (!successful && retryCount < MAX_RETRY) {
-      ResultSet queryResult = null;
-
       try (Connection connection = timeScaleDBService.getDBConnection();
            PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
         upsertDataInTimeScaleDB(application, upsertStatement);
@@ -92,7 +88,6 @@ public class MigrateApplicationsToTimeScaleDB {
         log.error("Failed to save application,[{}]", application.getAppId(), e);
         retryCount = MAX_RETRY + 1;
       } finally {
-        DBUtils.close(queryResult);
         log.info(
             "Total time =[{}] for application:[{}]", System.currentTimeMillis() - startTime, application.getAppId());
       }

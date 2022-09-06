@@ -10,7 +10,6 @@ package software.wings.timescale.migrations;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
 import io.harness.persistence.HIterator;
-import io.harness.timescaledb.DBUtils;
 import io.harness.timescaledb.TimeScaleDBService;
 
 import software.wings.beans.HarnessTagLink;
@@ -20,13 +19,9 @@ import software.wings.dl.WingsPersistence;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.ReadPreference;
-import io.fabric8.utils.Lists;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.query.FindOptions;
 
@@ -77,8 +72,6 @@ public class MigrateTagLinksToTImeScaleDB {
     boolean successful = false;
     int retryCount = 0;
     while (!successful && retryCount < MAX_RETRY) {
-      ResultSet queryResult = null;
-
       try (Connection connection = timeScaleDBService.getDBConnection();
            PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
         upsertDataInTimeScaleDB(harnessTagLink, upsertStatement);
@@ -94,7 +87,6 @@ public class MigrateTagLinksToTImeScaleDB {
         log.error("Failed to save application,[{}]", harnessTagLink.getUuid(), e);
         retryCount = MAX_RETRY + 1;
       } finally {
-        DBUtils.close(queryResult);
         log.info(
             "Total time =[{}] for application:[{}]", System.currentTimeMillis() - startTime, harnessTagLink.getUuid());
       }
