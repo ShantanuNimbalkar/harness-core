@@ -42,13 +42,8 @@ public class MigrateWorkflowsToTimeScaleDB {
 
   private static final int MAX_RETRY = 5;
 
-  private static final String insert_statement =
-      "INSERT INTO CG_WORKFLOWS (ID,NAME,ACCOUNT_ID,ORCHESTRATION_WORKFLOW_TYPE,ENV_ID,APP_ID,SERVICE_IDS,DEPLOYMENT_TYPE,CREATED_AT,LAST_UPDATED_AT,CREATED_BY,LAST_UPDATED_BY) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-
-  private static final String update_statement =
-      "UPDATE CG_WORKFLOWS SET NAME=?, ACCOUNT_ID=?, ORCHESTRATION_WORKFLOW_TYPE=?, ENV_ID=?, APP_ID=?, SERVICE_IDS=?, DEPLOYMENT_TYPE=?, CREATED_AT=?, LAST_UPDATED_AT=?, CREATED_BY=?, LAST_UPDATED_BY=? WHERE ID=?";
-
-  private static final String query_statement = "SELECT * FROM CG_WORKFLOWS WHERE ID=?";
+  private static final String upsert_statement =
+      "INSERT INTO CG_WORKFLOWS (ID,NAME,ACCOUNT_ID,ORCHESTRATION_WORKFLOW_TYPE,ENV_ID,APP_ID,SERVICE_IDS,DEPLOYMENT_TYPE,CREATED_AT,LAST_UPDATED_AT,CREATED_BY,LAST_UPDATED_BY) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(ID) DO UPDATE SET NAME = excluded.NAME,ACCOUNT_ID = excluded.ACCOUNT_ID,ORCHESTRATION_WORKFLOW_TYPE = excluded.ORCHESTRATION_WORKFLOW_TYPE,ENV_ID = excluded.ENV_ID,APP_ID = excluded.APP_ID,SERVICE_IDS = excluded.SERVICE_IDS,DEPLOYMENT_TYPE = excluded.DEPLOYMENT_TYPE,CREATED_AT = excluded.CREATED_AT,LAST_UPDATED_AT = excluded.LAST_UPDATED_AT,CREATED_BY = excluded.CREATED_BY,LAST_UPDATED_BY = excluded.LAST_UPDATED_BY;";
 
   public boolean runTimeScaleMigration(String accountId) {
     if (!timeScaleDBService.isValid()) {
@@ -87,18 +82,8 @@ public class MigrateWorkflowsToTimeScaleDB {
       ResultSet queryResult = null;
 
       try (Connection connection = timeScaleDBService.getDBConnection();
-           PreparedStatement queryStatement = connection.prepareStatement(query_statement);
-           PreparedStatement updateStatement = connection.prepareStatement(update_statement);
-           PreparedStatement insertStatement = connection.prepareStatement(insert_statement)) {
-        queryStatement.setString(1, workflow.getUuid());
-        queryResult = queryStatement.executeQuery();
-        if (queryResult != null && queryResult.next()) {
-          log.info("Workflow found in the timescaleDB:[{}],updating it", workflow.getUuid());
-          updateDataInTimeScaleDB(workflow, connection, updateStatement);
-        } else {
-          log.info("Workflow not found in the timescaleDB:[{}],inserting it", workflow.getUuid());
-          insertDataInTimeScaleDB(workflow, connection, insertStatement);
-        }
+           PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
+        upsertDataInTimeScaleDB(workflow, connection, upsertStatement);
         successful = true;
       } catch (SQLException e) {
         if (retryCount >= MAX_RETRY) {
@@ -117,55 +102,16 @@ public class MigrateWorkflowsToTimeScaleDB {
     }
   }
 
-  private void insertDataInTimeScaleDB(
-      Workflow workflow, Connection connection, PreparedStatement insertPreparedStatement) throws SQLException {
-    insertPreparedStatement.setString(1, workflow.getUuid());
-    insertPreparedStatement.setString(2, workflow.getName());
-    insertPreparedStatement.setString(3, workflow.getAccountId());
-    insertPreparedStatement.setString(4, workflow.getOrchestration().getOrchestrationWorkflowType().toString());
-    insertPreparedStatement.setString(5, workflow.getEnvId());
-    insertPreparedStatement.setString(6, workflow.getAppId());
+  private void upsertDataInTimeScaleDB(
+      Workflow workflow, Connection connection, PreparedStatement upsertPreparedStatement) throws SQLException {
+    upsertPreparedStatement.setString(1, workflow.getUuid());
+    upsertPreparedStatement.setString(2, workflow.getName());
+    upsertPreparedStatement.setString(3, workflow.getAccountId());
+    upsertPreparedStatement.setString(4, workflow.getOrchestration().getOrchestrationWorkflowType().toString());
+    upsertPreparedStatement.setString(5, workflow.getEnvId());
+    upsertPreparedStatement.setString(6, workflow.getAppId());
 
-    insertArrayData(7, connection, insertPreparedStatement, workflow.getOrchestration().getServiceIds());
-
-    List<String> deploymentTypes = new LinkedList<>();
-    CanaryOrchestrationWorkflow coWorkflow = (CanaryOrchestrationWorkflow) workflow.getOrchestration();
-    if (coWorkflow != null && coWorkflow.getWorkflowPhaseIdMap() != null) {
-      coWorkflow.getWorkflowPhaseIdMap().values().forEach(workflowPhase -> {
-        if (workflowPhase.getDeploymentType() != null) {
-          deploymentTypes.add(workflowPhase.getDeploymentType().getDisplayName());
-        }
-      });
-    }
-    insertArrayData(8, connection, insertPreparedStatement, deploymentTypes);
-
-    insertPreparedStatement.setLong(9, workflow.getCreatedAt());
-    insertPreparedStatement.setLong(10, workflow.getLastUpdatedAt());
-
-    String created_by = null;
-    if (workflow.getCreatedBy() != null) {
-      created_by = workflow.getCreatedBy().getName();
-    }
-    insertPreparedStatement.setString(11, created_by);
-
-    String last_updated_by = null;
-    if (workflow.getLastUpdatedBy() != null) {
-      last_updated_by = workflow.getLastUpdatedBy().getName();
-    }
-    insertPreparedStatement.setString(12, last_updated_by);
-
-    insertPreparedStatement.execute();
-  }
-
-  private void updateDataInTimeScaleDB(Workflow workflow, Connection connection, PreparedStatement updateStatement)
-      throws SQLException {
-    updateStatement.setString(1, workflow.getName());
-    updateStatement.setString(2, workflow.getAccountId());
-    updateStatement.setString(3, workflow.getOrchestration().getOrchestrationWorkflowType().toString());
-    updateStatement.setString(4, workflow.getEnvId());
-    updateStatement.setString(5, workflow.getAppId());
-
-    insertArrayData(6, connection, updateStatement, workflow.getOrchestration().getServiceIds());
+    insertArrayData(7, connection, upsertPreparedStatement, workflow.getOrchestration().getServiceIds());
 
     List<String> deploymentTypes = new LinkedList<>();
     CanaryOrchestrationWorkflow coWorkflow = (CanaryOrchestrationWorkflow) workflow.getOrchestration();
@@ -176,24 +122,24 @@ public class MigrateWorkflowsToTimeScaleDB {
         }
       });
     }
-    insertArrayData(7, connection, updateStatement, deploymentTypes);
+    insertArrayData(8, connection, upsertPreparedStatement, deploymentTypes);
 
-    updateStatement.setLong(8, workflow.getCreatedAt());
-    updateStatement.setLong(9, workflow.getLastUpdatedAt());
+    upsertPreparedStatement.setLong(9, workflow.getCreatedAt());
+    upsertPreparedStatement.setLong(10, workflow.getLastUpdatedAt());
 
     String created_by = null;
     if (workflow.getCreatedBy() != null) {
       created_by = workflow.getCreatedBy().getName();
     }
-    updateStatement.setString(10, created_by);
+    upsertPreparedStatement.setString(11, created_by);
 
     String last_updated_by = null;
     if (workflow.getLastUpdatedBy() != null) {
       last_updated_by = workflow.getLastUpdatedBy().getName();
     }
-    updateStatement.setString(11, last_updated_by);
-    updateStatement.setString(12, workflow.getUuid());
-    updateStatement.execute();
+    upsertPreparedStatement.setString(12, last_updated_by);
+
+    upsertPreparedStatement.execute();
   }
 
   private void insertArrayData(

@@ -39,13 +39,8 @@ public class MigrateTagLinksToTImeScaleDB {
 
   private static final int MAX_RETRY = 5;
 
-  private static final String insert_statement =
-      "INSERT INTO CG_TAGS (ID,ACCOUNT_ID,APP_ID,TAG_KEY,TAG_VALUE,ENTITY_TYPE,ENTITY_ID,CREATED_AT,LAST_UPDATED_AT,CREATED_BY,LAST_UPDATED_BY) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-
-  private static final String update_statement =
-      "UPDATE CG_TAGS SET NAME=?, ACCOUNT_ID=?, APP_ID=?, TAG_KEY=?, TAG_VALUE=?, ENTITY_TYPE=?, ENTITY_ID=?, CREATED_AT=?, LAST_UPDATED_AT=?, CREATED_BY=?, LAST_UPDATED_BY=? WHERE ID=?";
-
-  private static final String query_statement = "SELECT * FROM CG_TAGS WHERE ID=?";
+  private static final String upsert_statement =
+      "INSERT INTO CG_TAGS (ID,ACCOUNT_ID,APP_ID,TAG_KEY,TAG_VALUE,ENTITY_TYPE,ENTITY_ID,CREATED_AT,LAST_UPDATED_AT,CREATED_BY,LAST_UPDATED_BY) VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(ID) DO UPDATE SET ACCOUNT_ID = excluded.ACCOUNT_ID,APP_ID = excluded.APP_ID,TAG_KEY = excluded.TAG_KEY,TAG_VALUE = excluded.TAG_VALUE,ENTITY_TYPE = excluded.ENTITY_TYPE,ENTITY_ID = excluded.ENTITY_ID,CREATED_AT = excluded.CREATED_AT,LAST_UPDATED_AT = excluded.LAST_UPDATED_AT,CREATED_BY = excluded.CREATED_BY,LAST_UPDATED_BY = excluded.LAST_UPDATED_BY;";
 
   public boolean runTimeScaleMigration(String accountId) {
     if (!timeScaleDBService.isValid()) {
@@ -85,18 +80,8 @@ public class MigrateTagLinksToTImeScaleDB {
       ResultSet queryResult = null;
 
       try (Connection connection = timeScaleDBService.getDBConnection();
-           PreparedStatement queryStatement = connection.prepareStatement(query_statement);
-           PreparedStatement updateStatement = connection.prepareStatement(update_statement);
-           PreparedStatement insertStatement = connection.prepareStatement(insert_statement)) {
-        queryStatement.setString(1, harnessTagLink.getUuid());
-        queryResult = queryStatement.executeQuery();
-        if (queryResult != null && queryResult.next()) {
-          log.info("Application found in the timescaleDB:[{}],updating it", harnessTagLink.getUuid());
-          updateDataInTimeScaleDB(harnessTagLink, connection, updateStatement);
-        } else {
-          log.info("Application not found in the timescaleDB:[{}],inserting it", harnessTagLink.getUuid());
-          insertDataInTimeScaleDB(harnessTagLink, connection, insertStatement);
-        }
+           PreparedStatement upsertStatement = connection.prepareStatement(upsert_statement)) {
+        upsertDataInTimeScaleDB(harnessTagLink, upsertStatement);
         successful = true;
       } catch (SQLException e) {
         if (retryCount >= MAX_RETRY) {
@@ -116,51 +101,22 @@ public class MigrateTagLinksToTImeScaleDB {
     }
   }
 
-  private void insertDataInTimeScaleDB(HarnessTagLink harnessTagLink, Connection connection,
-      PreparedStatement insertPreparedStatement) throws SQLException {
-    insertPreparedStatement.setString(1, harnessTagLink.getUuid());
-    insertPreparedStatement.setString(2, harnessTagLink.getAccountId());
-    insertPreparedStatement.setString(3, harnessTagLink.getAppId());
-    insertPreparedStatement.setString(4, harnessTagLink.getKey());
-    insertPreparedStatement.setString(5, harnessTagLink.getValue());
-    insertPreparedStatement.setString(6, harnessTagLink.getEntityType().name());
-    insertPreparedStatement.setString(7, harnessTagLink.getEntityId());
-    insertPreparedStatement.setLong(8, harnessTagLink.getCreatedAt());
-    insertPreparedStatement.setLong(9, harnessTagLink.getLastUpdatedAt());
-    insertPreparedStatement.setString(
+  private void upsertDataInTimeScaleDB(HarnessTagLink harnessTagLink, PreparedStatement upsertPreparedStatement)
+      throws SQLException {
+    upsertPreparedStatement.setString(1, harnessTagLink.getUuid());
+    upsertPreparedStatement.setString(2, harnessTagLink.getAccountId());
+    upsertPreparedStatement.setString(3, harnessTagLink.getAppId());
+    upsertPreparedStatement.setString(4, harnessTagLink.getKey());
+    upsertPreparedStatement.setString(5, harnessTagLink.getValue());
+    upsertPreparedStatement.setString(6, harnessTagLink.getEntityType().name());
+    upsertPreparedStatement.setString(7, harnessTagLink.getEntityId());
+    upsertPreparedStatement.setLong(8, harnessTagLink.getCreatedAt());
+    upsertPreparedStatement.setLong(9, harnessTagLink.getLastUpdatedAt());
+    upsertPreparedStatement.setString(
         10, harnessTagLink.getCreatedBy() != null ? harnessTagLink.getCreatedBy().getName() : null);
-    insertPreparedStatement.setString(
+    upsertPreparedStatement.setString(
         11, harnessTagLink.getLastUpdatedBy() != null ? harnessTagLink.getLastUpdatedBy().getName() : null);
 
-    insertPreparedStatement.execute();
-  }
-
-  private void updateDataInTimeScaleDB(
-      HarnessTagLink harnessTagLink, Connection connection, PreparedStatement updateStatement) throws SQLException {
-    updateStatement.setString(1, harnessTagLink.getAccountId());
-    updateStatement.setString(2, harnessTagLink.getAppId());
-    updateStatement.setString(3, harnessTagLink.getKey());
-    updateStatement.setString(4, harnessTagLink.getValue());
-    updateStatement.setString(5, harnessTagLink.getEntityType().name());
-    updateStatement.setString(6, harnessTagLink.getEntityId());
-    updateStatement.setLong(7, harnessTagLink.getCreatedAt());
-    updateStatement.setLong(8, harnessTagLink.getLastUpdatedAt());
-    updateStatement.setString(
-        9, harnessTagLink.getCreatedBy() != null ? harnessTagLink.getCreatedBy().getName() : null);
-    updateStatement.setString(
-        10, harnessTagLink.getLastUpdatedBy() != null ? harnessTagLink.getLastUpdatedBy().getName() : null);
-
-    updateStatement.setString(11, harnessTagLink.getUuid());
-    updateStatement.execute();
-  }
-
-  private void insertArrayData(
-      int index, Connection dbConnection, PreparedStatement preparedStatement, List<String> data) throws SQLException {
-    if (!Lists.isNullOrEmpty(data)) {
-      Array array = dbConnection.createArrayOf("text", data.toArray());
-      preparedStatement.setArray(index, array);
-    } else {
-      preparedStatement.setArray(index, null);
-    }
+    upsertPreparedStatement.execute();
   }
 }
