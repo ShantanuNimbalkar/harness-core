@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 import io.harness.category.element.UnitTests;
 import io.harness.resourcegroup.beans.ScopeFilterType;
 import io.harness.resourcegroup.framework.v2.service.ResourceGroupService;
@@ -26,6 +27,7 @@ import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidator
 import io.harness.resourcegroup.framework.v3.api.AccountResourceGroupApiImpl;
 import io.harness.resourcegroup.framework.v3.api.OrgResourceGroupsApiImpl;
 import io.harness.resourcegroup.framework.v3.api.ProjectResourceGroupsApiImpl;
+import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v2.model.AttributeFilter;
 import io.harness.resourcegroup.v2.model.ResourceSelector;
 import io.harness.resourcegroup.v2.model.ScopeSelector;
@@ -39,6 +41,7 @@ import io.harness.spec.server.platform.model.ResourceGroupsResponse;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +55,9 @@ public class ResourceGroupApiImplTest extends CategoryTest {
   private AccountResourceGroupApiImpl accountResourceGroupApi;
   private OrgResourceGroupsApiImpl orgResourceGroupsApi;
   private ProjectResourceGroupsApiImpl projectResourceGroupsApi;
+  private ResourceGroupResponse resourceGroupResponseAcc;
+  private ResourceGroupResponse resourceGroupResponseOrg;
+  private ResourceGroupResponse resourceGroupResponseProject;
 
   String slug = randomAlphabetic(10);
   String name = randomAlphabetic(10);
@@ -68,35 +74,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     accountResourceGroupApi = new AccountResourceGroupApiImpl(resourceGroupService, resourceGroupValidator);
     orgResourceGroupsApi = new OrgResourceGroupsApiImpl(resourceGroupService, resourceGroupValidator);
     projectResourceGroupsApi = new ProjectResourceGroupsApiImpl(resourceGroupService, resourceGroupValidator);
-  }
-
-  @Test
-  @Owner(developers = MANKRIT)
-  @Category(UnitTests.class)
-  public void testAccountScopedRGCreate() {
-    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
-    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
-    resourceGroupScope.setAccount(account);
-    resourceGroupScope.setOrg(org);
-    resourceGroupScope.setProject(project);
-    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
-
-    ResourceFilter resourceFilter = new ResourceFilter();
-    resourceFilter.setResourceType("RESOURCE");
-    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
-    resourceFilter.setAttributeName("name");
-    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
-
-    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
-    request.setSlug(slug);
-    request.setName(name);
-    request.setIncludedScope(includedScopes);
-    request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
-
-    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
-
-    ResourceGroupResponse resourceGroupResponse =
+    resourceGroupResponseAcc =
         ResourceGroupResponse.builder()
             .resourceGroup(
                 ResourceGroupDTO.builder()
@@ -125,46 +103,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
                             .build())
                     .build())
             .build();
-    when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
-        .thenReturn(resourceGroupResponse);
-
-    Response response = accountResourceGroupApi.createResourceGroupAcc(request, account);
-    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
-    assertEquals(slug, newResourceGroupResponse.getSlug());
-    assertEquals(name, newResourceGroupResponse.getName());
-    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
-        newResourceGroupResponse.getAllowedScopeLevels());
-    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(Collections.singletonList(resourceFilter), newResourceGroupResponse.getResourceFilter());
-  }
-
-  @Test
-  @Owner(developers = MANKRIT)
-  @Category(UnitTests.class)
-  public void testOrgScopedRGCreate() {
-    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
-    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
-    resourceGroupScope.setAccount(account);
-    resourceGroupScope.setOrg(org);
-    resourceGroupScope.setProject(project);
-    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
-
-    ResourceFilter resourceFilter = new ResourceFilter();
-    resourceFilter.setResourceType("RESOURCE");
-    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
-    resourceFilter.setAttributeName("name");
-    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
-
-    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
-    request.setSlug(slug);
-    request.setName(name);
-    request.setIncludedScope(includedScopes);
-    request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
-
-    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
-
-    ResourceGroupResponse resourceGroupResponse =
+    resourceGroupResponseOrg =
         ResourceGroupResponse.builder()
             .resourceGroup(
                 ResourceGroupDTO.builder()
@@ -193,46 +132,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
                             .build())
                     .build())
             .build();
-    when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
-        .thenReturn(resourceGroupResponse);
-
-    Response response = orgResourceGroupsApi.createResourceGroupOrg(org, request, account);
-    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
-    assertEquals(slug, newResourceGroupResponse.getSlug());
-    assertEquals(name, newResourceGroupResponse.getName());
-    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
-        newResourceGroupResponse.getAllowedScopeLevels());
-    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(Collections.singletonList(resourceFilter), newResourceGroupResponse.getResourceFilter());
-  }
-
-  @Test
-  @Owner(developers = MANKRIT)
-  @Category(UnitTests.class)
-  public void testProjectScopedRGCreate() {
-    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
-    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
-    resourceGroupScope.setAccount(account);
-    resourceGroupScope.setOrg(org);
-    resourceGroupScope.setProject(project);
-    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
-
-    ResourceFilter resourceFilter = new ResourceFilter();
-    resourceFilter.setResourceType("RESOURCE");
-    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
-    resourceFilter.setAttributeName("name");
-    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
-
-    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
-    request.setSlug(slug);
-    request.setName(name);
-    request.setIncludedScope(includedScopes);
-    request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
-
-    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
-
-    ResourceGroupResponse resourceGroupResponse =
+    resourceGroupResponseProject =
         ResourceGroupResponse.builder()
             .resourceGroup(
                 ResourceGroupDTO.builder()
@@ -261,8 +161,169 @@ public class ResourceGroupApiImplTest extends CategoryTest {
                             .build())
                     .build())
             .build();
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testAccountScopedRGCreate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    ResourceFilter resourceFilter = new ResourceFilter();
+    resourceFilter.setResourceType("RESOURCE");
+    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
+    resourceFilter.setAttributeName("name");
+    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setResourceFilter(Collections.singletonList(resourceFilter));
+    request.setIncludeAll(false);
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
-        .thenReturn(resourceGroupResponse);
+        .thenReturn(resourceGroupResponseAcc);
+
+    Response response = accountResourceGroupApi.createResourceGroupAcc(request, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
+        newResourceGroupResponse.getAllowedScopeLevels());
+    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
+    assertEquals(Collections.singletonList(resourceFilter), newResourceGroupResponse.getResourceFilter());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testAccountScopedRGDelete() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseAcc));
+    when(resourceGroupService.delete(any(Scope.class), any(String.class))).thenReturn(true);
+
+    Response response = accountResourceGroupApi.deleteResourceGroupAcc(slug, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
+        newResourceGroupResponse.getAllowedScopeLevels());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testAccountScopedRGGetFail() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.empty());
+
+    Response response = accountResourceGroupApi.getResourceGroupAcc(slug, account);
+    String message = (String) response.getEntity();
+    assertEquals(response.getStatus(), 404);
+    assertEquals(message, "Resource Group with given identifier not found.");
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testOrgScopedRGCreate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    ResourceFilter resourceFilter = new ResourceFilter();
+    resourceFilter.setResourceType("RESOURCE");
+    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
+    resourceFilter.setAttributeName("name");
+    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setResourceFilter(Collections.singletonList(resourceFilter));
+    request.setIncludeAll(false);
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
+    when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
+        .thenReturn(resourceGroupResponseOrg);
+
+    Response response = orgResourceGroupsApi.createResourceGroupOrg(org, request, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
+        newResourceGroupResponse.getAllowedScopeLevels());
+    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
+    assertEquals(Collections.singletonList(resourceFilter), newResourceGroupResponse.getResourceFilter());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testOrgScopedRGDelete() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseOrg));
+    when(resourceGroupService.delete(any(Scope.class), any(String.class))).thenReturn(true);
+
+    Response response = orgResourceGroupsApi.deleteResourceGroupOrg(org, slug, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
+        newResourceGroupResponse.getAllowedScopeLevels());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testOrgScopedRGGetFail() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.empty());
+
+    Response response = orgResourceGroupsApi.getResourceGroupOrg(org, slug, account);
+    String message = (String) response.getEntity();
+    assertEquals(response.getStatus(), 404);
+    assertEquals(message, "Resource Group with given identifier not found.");
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testProjectScopedRGCreate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    ResourceFilter resourceFilter = new ResourceFilter();
+    resourceFilter.setResourceType("RESOURCE");
+    resourceFilter.setIdentifiers(Collections.singletonList("identifier"));
+    resourceFilter.setAttributeName("name");
+    resourceFilter.setAttributeValues(Collections.singletonList("resource1"));
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setResourceFilter(Collections.singletonList(resourceFilter));
+    request.setIncludeAll(false);
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
+    when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
+        .thenReturn(resourceGroupResponseProject);
 
     Response response = projectResourceGroupsApi.createResourceGroupProject(org, project, request, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
@@ -272,5 +333,34 @@ public class ResourceGroupApiImplTest extends CategoryTest {
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
     assertEquals(Collections.singletonList(resourceFilter), newResourceGroupResponse.getResourceFilter());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testProjectScopedRGDelete() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseProject));
+    when(resourceGroupService.delete(any(Scope.class), any(String.class))).thenReturn(true);
+
+    Response response = projectResourceGroupsApi.deleteResourceGroupProject(org, project, slug, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT),
+        newResourceGroupResponse.getAllowedScopeLevels());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testProjectScopedRGGetFail() {
+    when(resourceGroupService.get(any(Scope.class), any(String.class), any(ManagedFilter.class)))
+        .thenReturn(Optional.empty());
+
+    Response response = projectResourceGroupsApi.getResourceGroupProject(org, project, slug, account);
+    String message = (String) response.getEntity();
+    assertEquals(response.getStatus(), 404);
+    assertEquals(message, "Resource Group with given identifier not found.");
   }
 }
