@@ -127,29 +127,6 @@ public class EnvRollbackState extends State implements WorkflowState {
     ExecutionResponse.ExecutionResponseBuilder executionResponseBuilder =
         ExecutionResponse.builder().executionStatus(responseData.getStatus());
 
-    if (responseData.getStatus() != SUCCESS) {
-
-      return executionResponseBuilder.build();
-    }
-
-    EnvStateExecutionData stateExecutionData = context.getStateExecutionData();
-    if (stateExecutionData.getOrchestrationWorkflowType() == OrchestrationWorkflowType.BUILD) {
-      if (!featureFlagService.isEnabled(FeatureName.ARTIFACT_STREAM_REFACTOR, context.getAccountId())) {
-        saveArtifactAndManifestElements(context, stateExecutionData);
-      } else {
-        saveArtifactVariableElements(context, stateExecutionData);
-      }
-    }
-
-    if (context.getWorkflowType() == WorkflowType.PIPELINE
-        && featureFlagService.isEnabled(RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION, context.getApp().getAccountId())) {
-      executionUpdate.setAppId(context.getAppId());
-      executionUpdate.setWorkflowExecutionId(context.getWorkflowExecutionId());
-      final String workflowId = context.getWorkflowId(); // this will be pipelineId in case of pipeline
-      injector.injectMembers(executionUpdate);
-      List<NameValuePair> resolvedTags = executionUpdate.resolveDeploymentTags(context, workflowId);
-      executionUpdate.addTagsToWorkflowExecution(resolvedTags);
-    }
     return executionResponseBuilder.build();
   }
 
@@ -218,96 +195,6 @@ public class EnvRollbackState extends State implements WorkflowState {
   public ExecutionResponse checkDisableAssertion(
       ExecutionContextImpl context, WorkflowService workflowService, Logger log) {
     return WorkflowState.super.checkDisableAssertion(context, workflowService, log);
-  }
-
-  private void saveArtifactAndManifestElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
-    saveArtifactElements(context, stateExecutionData);
-    saveHelmChartElements(context, stateExecutionData);
-  }
-
-  private void saveArtifactElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
-    List<Artifact> artifacts =
-        executionService.getArtifactsCollected(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    if (isEmpty(artifacts)) {
-      return;
-    }
-
-    List<ServiceArtifactElement> artifactElements = new ArrayList<>();
-    artifacts.forEach(artifact
-        -> artifactElements.add(
-        ServiceArtifactElement.builder()
-            .uuid(artifact.getUuid())
-            .name(artifact.getDisplayName())
-            .serviceIds(artifactStreamServiceBindingService.listServiceIds(artifact.getArtifactStreamId()))
-            .build()));
-
-    sweepingOutputService.save(
-        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
-            .name(ServiceArtifactElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
-            .value(ServiceArtifactElements.builder().artifactElements(artifactElements).build())
-            .build());
-  }
-
-  private void saveHelmChartElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
-    List<HelmChart> charts =
-        executionService.getManifestsCollected(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    if (isEmpty(charts)) {
-      return;
-    }
-
-    List<ServiceHelmElement> helmElements = new ArrayList<>();
-    charts.forEach(chart -> {
-      ApplicationManifest manifest =
-          applicationManifestService.getById(context.getAppId(), chart.getApplicationManifestId());
-      String serviceId = null;
-      if (manifest != null) {
-        serviceId = manifest.getServiceId();
-      }
-      helmElements.add(ServiceHelmElement.builder()
-          .uuid(chart.getUuid())
-          .name(chart.getDisplayName())
-          .serviceIds(Collections.singletonList(serviceId))
-          .build());
-    });
-
-    sweepingOutputService.save(
-        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
-            .name(ServiceHelmElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
-            .value(ServiceHelmElements.builder().helmElements(helmElements).build())
-            .build());
-  }
-
-  private void saveArtifactVariableElements(ExecutionContext context, EnvStateExecutionData stateExecutionData) {
-    List<StateExecutionInstance> allStateExecutionInstances =
-        executionService.getStateExecutionInstances(context.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    if (isEmpty(allStateExecutionInstances)) {
-      return;
-    }
-
-    List<ServiceArtifactVariableElement> artifactVariableElements = new ArrayList<>();
-    allStateExecutionInstances.forEach(stateExecutionInstance -> {
-      if (!(stateExecutionInstance.fetchStateExecutionData() instanceof ArtifactCollectionExecutionData)) {
-        return;
-      }
-
-      ArtifactCollectionExecutionData artifactCollectionExecutionData =
-          (ArtifactCollectionExecutionData) stateExecutionInstance.fetchStateExecutionData();
-      Artifact artifact = artifactService.get(artifactCollectionExecutionData.getArtifactId());
-      artifactVariableElements.add(ServiceArtifactVariableElement.builder()
-          .uuid(artifact.getUuid())
-          .name(artifact.getDisplayName())
-          .entityType(artifactCollectionExecutionData.getEntityType())
-          .entityId(artifactCollectionExecutionData.getEntityId())
-          .serviceId(artifactCollectionExecutionData.getServiceId())
-          .artifactVariableName(artifactCollectionExecutionData.getArtifactVariableName())
-          .build());
-    });
-
-    sweepingOutputService.save(
-        context.prepareSweepingOutputBuilder(SweepingOutputInstance.Scope.PIPELINE)
-            .name(ServiceArtifactVariableElements.SWEEPING_OUTPUT_NAME + context.getStateExecutionInstanceId())
-            .value(ServiceArtifactVariableElements.builder().artifactVariableElements(artifactVariableElements).build())
-            .build());
   }
 
   public static class EnvRollbackExecutionResponseData implements DelegateResponseData

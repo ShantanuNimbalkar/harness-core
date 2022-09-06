@@ -3203,7 +3203,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
       ExecutionArgs oldExecutionArgs = workflowExecution.getExecutionArgs();
       oldExecutionArgs.setArtifacts(previousArtifacts);
       oldExecutionArgs.setArtifactVariables(null);
-      oldExecutionArgs.setTriggeredFromPipeline(false);
+      oldExecutionArgs.setTriggeredFromPipeline(fromPipe);
       return triggerRollbackExecution(appId, workflowExecution.getEnvId(), oldExecutionArgs, workflowExecution, fromPipe);
     }
   }

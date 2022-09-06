@@ -65,6 +65,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.mongodb.morphia.mapping.Mapper.ID_KEY;
+import static software.wings.sm.StateType.ENV_ROLLBACK_STATE;
 
 import io.harness.alert.AlertData;
 import io.harness.annotations.dev.BreakDependencyOn;
@@ -1459,6 +1460,10 @@ public class StateMachineExecutor implements StateInspectionListener {
           "nextSuccessState is null.. ending execution  - currentState : {}", stateExecutionInstance.getStateName());
 
       log.info("State Machine execution ended for the stateMachine: {}", sm.getName());
+
+      if (ENV_ROLLBACK_STATE.getType().equals(stateExecutionInstance.getStateType())) {
+        endTransition(context, stateExecutionInstance, FAILED, null);
+      }
 
       endTransition(context, stateExecutionInstance, SUCCESS, null);
     } else {
