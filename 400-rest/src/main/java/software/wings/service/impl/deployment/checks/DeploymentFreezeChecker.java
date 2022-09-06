@@ -113,38 +113,32 @@ public class DeploymentFreezeChecker implements PreDeploymentChecker {
     //
     boolean isFrozen = false;
     for (ApplicationFilter applicationFilter : window.getAppSelections()) {
-      if (BlackoutWindowFilterType.ALL.equals(applicationFilter.getFilterType())) {
-        isFrozen = true;
-        break;
-      } else if (BlackoutWindowFilterType.CUSTOM.equals(applicationFilter.getFilterType())) {
+      if (BlackoutWindowFilterType.CUSTOM.equals(applicationFilter.getFilterType())) {
         // custom app filters with more than 1 entry cannot freeze individual services so those cases would be handled
         // by isEnvFrozen logic
         List<String> appIds = ((CustomAppFilter) applicationFilter).getApps();
-        if (appIds.size() == 1) {
-          if (!Collections.disjoint(governanceConfigService.getEnvIdsFromAppSelection(appIds.get(0), applicationFilter),
+        for (String appId : appIds) {
+          if (!Collections.disjoint(governanceConfigService.getEnvIdsFromAppSelection(appId, applicationFilter),
                   deploymentCtx.getEnvIds())
-              && !Collections.disjoint(
-                  governanceConfigService.getServiceIdsFromAppSelection(appIds.get(0), applicationFilter),
+              && !Collections.disjoint(governanceConfigService.getServiceIdsFromAppSelection(appId, applicationFilter),
                   deploymentCtx.getServiceIds())) {
             isFrozen = true;
+            break;
           }
         }
       }
     }
     // Handle exclusion logic
     for (ApplicationFilter applicationFilter : window.getExcludeAppSelections()) {
-      if (BlackoutWindowFilterType.ALL.equals(applicationFilter.getFilterType())) {
-        isFrozen = false;
-        break;
-      } else if (BlackoutWindowFilterType.CUSTOM.equals(applicationFilter.getFilterType())) {
+      if (BlackoutWindowFilterType.CUSTOM.equals(applicationFilter.getFilterType())) {
         List<String> appIds = ((CustomAppFilter) applicationFilter).getApps();
-        if (appIds.size() == 1) {
-          if (!Collections.disjoint(governanceConfigService.getEnvIdsFromAppSelection(appIds.get(0), applicationFilter),
+        for (String appId : appIds) {
+          if (!Collections.disjoint(governanceConfigService.getEnvIdsFromAppSelection(appId, applicationFilter),
                   deploymentCtx.getEnvIds())
-              && !Collections.disjoint(
-                  governanceConfigService.getServiceIdsFromAppSelection(appIds.get(0), applicationFilter),
+              && !Collections.disjoint(governanceConfigService.getServiceIdsFromAppSelection(appId, applicationFilter),
                   deploymentCtx.getServiceIds())) {
             isFrozen = false;
+            break;
           }
         }
       }
