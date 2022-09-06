@@ -20,7 +20,6 @@ import io.harness.cvng.beans.TimeSeriesMetricType;
 import io.harness.cvng.beans.TimeSeriesThresholdType;
 import io.harness.cvng.core.beans.DatadogMetricHealthDefinition;
 import io.harness.cvng.core.beans.monitoredService.TimeSeriesMetricPackDTO;
-import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.DynatraceHealthSourceSpec;
 import io.harness.cvng.core.constant.MonitoredServiceConstants;
 import io.harness.cvng.core.entities.DatadogMetricCVConfig.MetricInfo;
 import io.harness.cvng.core.utils.analysisinfo.AnalysisInfoUtility;

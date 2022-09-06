@@ -21,7 +21,6 @@ import io.harness.cvng.beans.TimeSeriesThresholdType;
 import io.harness.cvng.beans.stackdriver.StackDriverMetricDefinition;
 import io.harness.cvng.core.beans.StackdriverDefinition;
 import io.harness.cvng.core.beans.monitoredService.TimeSeriesMetricPackDTO;
-import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.DynatraceHealthSourceSpec;
 import io.harness.cvng.core.constant.MonitoredServiceConstants;
 import io.harness.cvng.core.entities.MetricPack.MetricDefinition;
 import io.harness.cvng.core.entities.StackdriverCVConfig.MetricInfo;
