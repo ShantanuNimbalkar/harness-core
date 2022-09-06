@@ -7,4 +7,30 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public class AzureArtifactsTokenSpecDTO {}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.encryption.SecretRefData;
+import io.harness.encryption.SecretReference;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+
+@OwnedBy(HarnessTeam.CDC)
+@Data
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ApiModel("AzureArtifactsTokenSpec")
+@Schema(name = "AzureArtifactsTokenSpec",
+    description =
+        "This contains details of the information such as references of token needed for AzureArtifacts API access")
+public class AzureArtifactsTokenSpecDTO implements AzureArtifactsApiAccessSpecDTO {
+  @ApiModelProperty(dataType = "string") @NotNull @SecretReference SecretRefData tokenRef;
+}

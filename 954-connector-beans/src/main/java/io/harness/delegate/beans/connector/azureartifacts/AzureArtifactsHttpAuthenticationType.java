@@ -7,4 +7,31 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public enum AzureArtifactsHttpAuthenticationType {}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+;
+
+@OwnedBy(HarnessTeam.CDC)
+public enum AzureArtifactsHttpAuthenticationType {
+  @JsonProperty(AzureArtifactsConnectorConstants.USERNAME_AND_TOKEN)
+  USERNAME_AND_TOKEN(AzureArtifactsConnectorConstants.USERNAME_AND_TOKEN);
+
+  private final String displayName;
+
+  AzureArtifactsHttpAuthenticationType(String displayName) {
+    this.displayName = displayName;
+  }
+
+  @JsonValue
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  @Override
+  public String toString() {
+    return displayName;
+  }
+}

@@ -7,4 +7,20 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public interface AzureArtifactsHttpCredentialsSpecDTO {}
+import static io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorConstants.USERNAME_AND_TOKEN;
+
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DecryptableEntity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@OwnedBy(HarnessTeam.CDC)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSubTypes({ @JsonSubTypes.Type(value = AzureArtifactsUsernameTokenDTO.class, name = USERNAME_AND_TOKEN) })
+@Schema(name = "AzureArtifactsHttpCredentialsSpec",
+    description =
+        "This is a interface for details of the AzureArtifacts credentials Specs such as references of username and password")
+public interface AzureArtifactsHttpCredentialsSpecDTO extends DecryptableEntity {}

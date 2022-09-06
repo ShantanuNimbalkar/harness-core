@@ -7,4 +7,12 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public class AzureArtifactsConnectorConstants {}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+
+@OwnedBy(HarnessTeam.CDC)
+public class AzureArtifactsConnectorConstants {
+  public static final String TOKEN = "Token";
+
+  public static final String USERNAME_AND_TOKEN = "UsernameToken";
+}

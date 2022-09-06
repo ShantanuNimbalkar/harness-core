@@ -7,4 +7,30 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public enum AzureArtifactsApiAccessType {}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorConstants;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+@OwnedBy(HarnessTeam.CDC)
+public enum AzureArtifactsApiAccessType {
+  @JsonProperty(AzureArtifactsConnectorConstants.TOKEN) TOKEN(AzureArtifactsConnectorConstants.TOKEN);
+
+  private final String displayName;
+
+  AzureArtifactsApiAccessType(String displayName) {
+    this.displayName = displayName;
+  }
+
+  @JsonValue
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  @Override
+  public String toString() {
+    return displayName;
+  }
+}

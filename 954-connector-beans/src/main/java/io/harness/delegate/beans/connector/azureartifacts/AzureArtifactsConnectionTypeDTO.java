@@ -7,4 +7,11 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public enum AzureArtifactsConnectionTypeDTO {}
+import io.harness.delegate.beans.connector.scm.GitConfigConstants;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public enum AzureArtifactsConnectionTypeDTO {
+  @JsonProperty(GitConfigConstants.PROJECT) PROJECT,
+  @JsonProperty(GitConfigConstants.REPO) REPO
+}

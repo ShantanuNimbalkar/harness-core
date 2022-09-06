@@ -7,4 +7,31 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public class AzureArtifactsUsernameTokenDTO {}
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.encryption.SecretRefData;
+import io.harness.encryption.SecretReference;
+import io.harness.validation.OneOfField;
+
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+
+@OwnedBy(HarnessTeam.CDC)
+@Data
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ApiModel("AzureArtifactsUsernameToken")
+@Schema(name = "AzureArtifactsUsernameToken",
+    description =
+        "This contains details of the AzureArtifacts credentials Specs such as references of username and token")
+@OneOfField(fields = {"username", "usernameRef"})
+public class AzureArtifactsUsernameTokenDTO {
+  String username;
+
+  @SecretReference @ApiModelProperty(dataType = "string") SecretRefData usernameRef;
+
+  @SecretReference @NotNull @ApiModelProperty(dataType = "string") SecretRefData tokenRef;
+}
