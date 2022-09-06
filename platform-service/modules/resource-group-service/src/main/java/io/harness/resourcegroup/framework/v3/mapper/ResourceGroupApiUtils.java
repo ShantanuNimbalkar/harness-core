@@ -147,17 +147,26 @@ public class ResourceGroupApiUtils {
                                                 .stream()
                                                 .map(ResourceGroupApiUtils::getIncludedScopeResponse)
                                                 .collect(Collectors.toList()));
-    resourceGroupsResponse.setResourceFilter(response.getResourceGroup()
-                                                 .getResourceFilter()
-                                                 .getResources()
-                                                 .stream()
-                                                 .map(ResourceGroupApiUtils::getResourceFilterResponse)
-                                                 .collect(Collectors.toList()));
+    resourceGroupsResponse.setResourceFilter(getResourceFilters(response));
     resourceGroupsResponse.setIncludeAll(response.getResourceGroup().getResourceFilter().isIncludeAllResources());
     resourceGroupsResponse.setCreated(response.getCreatedAt());
     resourceGroupsResponse.setUpdated(response.getLastModifiedAt());
     resourceGroupsResponse.setHarnessManaged(response.isHarnessManaged());
     return resourceGroupsResponse;
+  }
+
+  private static List<io.harness.spec.server.platform.model.ResourceFilter> getResourceFilters(
+      ResourceGroupResponse response) {
+    if (response.getResourceGroup().getResourceFilter() == null
+        || response.getResourceGroup().getResourceFilter().getResources() == null) {
+      return null;
+    }
+    return response.getResourceGroup()
+        .getResourceFilter()
+        .getResources()
+        .stream()
+        .map(ResourceGroupApiUtils::getResourceFilterResponse)
+        .collect(Collectors.toList());
   }
 
   public static ResourceGroupsResponse.AllowedScopeLevelsEnum getAllowedScopeEnum(String scope) {

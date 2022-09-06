@@ -134,7 +134,7 @@ public class ProjectResourceGroupsApiImpl implements ProjectResourceGroupsApi {
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.update(resourceGroupRequest.getResourceGroup(), false).orElse(null));
     if (resourceGroupsResponse == null) {
-      return Response.status(404).build();
+      return Response.status(404).entity("Resource Group with given identifier not found.").build();
     }
     return Response.ok().entity(resourceGroupsResponse).build();
   }

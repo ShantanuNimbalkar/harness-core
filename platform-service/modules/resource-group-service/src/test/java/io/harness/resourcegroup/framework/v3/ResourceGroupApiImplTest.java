@@ -233,6 +233,40 @@ public class ResourceGroupApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = MANKRIT)
   @Category(UnitTests.class)
+  public void testAccountScopedRGUpdate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setIncludeAll(true);
+
+    resourceGroupResponseAcc.getResourceGroup().setResourceFilter(
+        io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
+    when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseAcc));
+
+    Response response = accountResourceGroupApi.updateResourceGroupAcc(slug, request, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
+        newResourceGroupResponse.getAllowedScopeLevels());
+    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
   public void testOrgScopedRGCreate() {
     ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
     resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
@@ -300,6 +334,40 @@ public class ResourceGroupApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = MANKRIT)
   @Category(UnitTests.class)
+  public void testOrgScopedRGUpdate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setIncludeAll(true);
+
+    resourceGroupResponseOrg.getResourceGroup().setResourceFilter(
+        io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
+    when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseOrg));
+
+    Response response = orgResourceGroupsApi.updateResourceGroupOrg(org, slug, request, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
+        newResourceGroupResponse.getAllowedScopeLevels());
+    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
   public void testProjectScopedRGCreate() {
     ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
     resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
@@ -362,5 +430,39 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     String message = (String) response.getEntity();
     assertEquals(response.getStatus(), 404);
     assertEquals(message, "Resource Group with given identifier not found.");
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testProjectScopedRGUpdate() {
+    ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
+    resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
+    resourceGroupScope.setAccount(account);
+    resourceGroupScope.setOrg(org);
+    resourceGroupScope.setProject(project);
+    List<ResourceGroupScope> includedScopes = Collections.singletonList(resourceGroupScope);
+
+    CreateResourceGroupRequest request = new CreateResourceGroupRequest();
+    request.setSlug(slug);
+    request.setName(name);
+    request.setIncludedScope(includedScopes);
+    request.setIncludeAll(true);
+
+    resourceGroupResponseProject.getResourceGroup().setResourceFilter(
+        io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
+
+    doNothing().when(resourceGroupValidator).validateResourceGroup(any());
+    when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
+        .thenReturn(Optional.ofNullable(resourceGroupResponseProject));
+
+    Response response = projectResourceGroupsApi.updateResourceGroupProject(org, project, slug, request, account);
+    ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
+    assertEquals(slug, newResourceGroupResponse.getSlug());
+    assertEquals(name, newResourceGroupResponse.getName());
+    assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT),
+        newResourceGroupResponse.getAllowedScopeLevels());
+    assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
+    assertEquals(true, newResourceGroupResponse.isIncludeAll());
   }
 }
