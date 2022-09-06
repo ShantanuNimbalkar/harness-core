@@ -1,0 +1,55 @@
+/*
+ * Copyright 2021 Harness Inc. All rights reserved.
+ * Use of this source code is governed by the PolyForm Shield 1.0.0 license
+ * that can be found in the licenses directory at the root of this repository, also available at
+ * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
+ */
+
+package io.harness.cvng.beans.cloudwatch;
+
+import static io.harness.annotations.dev.HarnessTeam.CV;
+
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.cvng.beans.DataCollectionRequest;
+import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
+import io.harness.delegate.beans.cvng.cloudwatch.CloudWatchUtils;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@JsonTypeName("CLOUDWATCH_METRIC_SAMPLE_DATA_REQUEST")
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@OwnedBy(CV)
+public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionRequest<AwsConnectorDTO> {
+  public static final String DSL = DataCollectionRequest.readDSL(
+      "cloudwatch-metrics-sample-fetch.datacollection", CloudWatchMetricFetchSampleDataRequest.class);
+  // TODO: Revisit this once DSL is working
+  String query;
+  @Override
+  public String getDSL() {
+    return DSL;
+  }
+
+  @Override
+  public String getBaseUrl() {
+    return CloudWatchUtils.getBaseUrl(getConnectorConfigDTO());
+  }
+
+  @Override
+  public Map<String, String> collectionHeaders() {
+    return CloudWatchUtils.collectionHeaders(getConnectorConfigDTO());
+  }
+
+  @Override
+  public Map<String, Object> fetchDslEnvVariables() {
+    Map<String, Object> variables = new HashMap<>();
+    // TODO: Put env variables
+    return variables;
+  }
+}
