@@ -7,4 +7,14 @@
 
 package io.harness.connector.entities.embedded.azureartifacts;
 
-public class AzureArtifactsSshAuthentication {}
+import lombok.Builder;
+import lombok.Value;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.data.annotation.TypeAlias;
+
+@Value
+@Builder
+@TypeAlias("io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsSshAuthentication")
+public class AzureArtifactsSshAuthentication implements AzureArtifactsAuthentication {
+  @NotEmpty String sshKeyRef;
+}

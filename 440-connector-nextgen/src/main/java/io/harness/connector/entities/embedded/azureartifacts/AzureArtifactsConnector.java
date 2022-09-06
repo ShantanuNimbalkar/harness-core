@@ -29,7 +29,7 @@ import org.springframework.data.annotation.TypeAlias;
 @Entity(value = "connectors", noClassnameStored = true)
 @Persistent
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@TypeAlias("io.harness.connector.entities.embedded.jenkins.AzureArtifactsConnector")
+@TypeAlias("io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsConnector")
 public class AzureArtifactsConnector extends Connector {
   /**
    * Connection URL
@@ -54,7 +54,7 @@ public class AzureArtifactsConnector extends Connector {
   /**
    * Authentication Details
    */
-  @NotEmpty AzureArtifactsConnectorAuthentication authenticationDetails;
+  @NotEmpty AzureArtifactsAuthentication authenticationDetails;
 
   /**
    * is API Access enabled

@@ -7,4 +7,15 @@
 
 package io.harness.connector.entities.embedded.azureartifacts;
 
-public class AzureArtifactsUsernameToken {}
+import lombok.Builder;
+import lombok.Value;
+import org.hibernate.validator.constraints.NotEmpty;
+
+@Value
+@Builder
+@TypeAlias("io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsUsernameToken")
+public class AzureArtifactsUsernameToken implements AzureArtifactsHttpAuth {
+  String username;
+  String usernameRef;
+  @NotEmpty String tokenRef;
+}

@@ -7,4 +7,17 @@
 
 package io.harness.connector.entities.embedded.azureartifacts;
 
-public class AzureArtifactsHttpAuthentication {}
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpAuthenticationType;
+
+import lombok.Builder;
+import lombok.Value;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.data.annotation.TypeAlias;
+
+@Value
+@Builder
+@TypeAlias("io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsHttpAuthentication")
+public class AzureArtifactsHttpAuthentication implements AzureArtifactsAuthentication {
+  @NotEmpty AzureArtifactsHttpAuthenticationType type;
+  @NotEmpty AzureArtifactsHttpAuth auth;
+}
