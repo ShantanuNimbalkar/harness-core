@@ -8,6 +8,7 @@
 package io.harness.cvng.core.entities;
 
 import static io.harness.cvng.core.utils.ErrorMessageUtils.generateErrorMessageFromParam;
+import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -189,8 +190,10 @@ public class AppDynamicsCVConfig extends MetricCVConfig<MetricInfo> {
     if (isEmpty(timeSeriesMetricPacks)) {
       return;
     }
-    Map<String, AppDMetricDefinitions> mapOfMetricDefinitions = metricDefinitions.stream().collect(
-        Collectors.toMap(AppDMetricDefinitions::getMetricName, metricDefinition -> metricDefinition));
+    Map<String, AppDMetricDefinitions> mapOfMetricDefinitions =
+        emptyIfNull(metricDefinitions)
+            .stream()
+            .collect(Collectors.toMap(AppDMetricDefinitions::getMetricName, metricDefinition -> metricDefinition));
     getMetricPack().getMetrics().forEach(metric -> {
       timeSeriesMetricPacks.forEach(timeSeriesMetricPackDTO -> {
         if (!isEmpty(timeSeriesMetricPackDTO.getMetricThresholds())) {
@@ -201,8 +204,10 @@ public class AppDynamicsCVConfig extends MetricCVConfig<MetricInfo> {
                 List<TimeSeriesThreshold> timeSeriesThresholds =
                     metric.getThresholds() != null ? metric.getThresholds() : new ArrayList<>();
                 String metricName = metricPackDTO.getMetricName();
-                List<TimeSeriesThresholdType> thresholdTypes =
-                    mapOfMetricDefinitions.get(metricName).getRiskProfile().getThresholdTypes();
+                List<TimeSeriesThresholdType> thresholdTypes = null;
+                if (mapOfMetricDefinitions.containsKey(metricName)) {
+                  thresholdTypes = mapOfMetricDefinitions.get(metricName).getRiskProfile().getThresholdTypes();
+                }
                 TimeSeriesThreshold timeSeriesThreshold =
                     TimeSeriesThreshold.builder()
                         .accountId(getAccountId())

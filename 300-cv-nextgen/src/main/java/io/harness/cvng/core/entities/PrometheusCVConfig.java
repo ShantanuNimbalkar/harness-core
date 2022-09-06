@@ -8,6 +8,7 @@
 package io.harness.cvng.core.entities;
 
 import static io.harness.cvng.core.utils.ErrorMessageUtils.generateErrorMessageFromParam;
+import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
@@ -201,8 +202,10 @@ public class PrometheusCVConfig extends MetricCVConfig<MetricInfo> {
     if (isEmpty(timeSeriesMetricPacks)) {
       return;
     }
-    Map<String, PrometheusMetricDefinition> mapOfMetricDefinitions = metricDefinitions.stream().collect(
-        Collectors.toMap(PrometheusMetricDefinition::getMetricName, metricDefinition -> metricDefinition));
+    Map<String, PrometheusMetricDefinition> mapOfMetricDefinitions =
+        emptyIfNull(metricDefinitions)
+            .stream()
+            .collect(Collectors.toMap(PrometheusMetricDefinition::getMetricName, metricDefinition -> metricDefinition));
     getMetricPack().getMetrics().forEach(metric -> {
       timeSeriesMetricPacks.stream()
           .filter(timeSeriesMetricPack
@@ -216,8 +219,10 @@ public class PrometheusCVConfig extends MetricCVConfig<MetricInfo> {
                     List<TimeSeriesThreshold> timeSeriesThresholds =
                         metric.getThresholds() != null ? metric.getThresholds() : new ArrayList<>();
                     String metricName = metricPackDTO.getMetricName();
-                    List<TimeSeriesThresholdType> thresholdTypes =
-                        mapOfMetricDefinitions.get(metricName).getRiskProfile().getThresholdTypes();
+                    List<TimeSeriesThresholdType> thresholdTypes = null;
+                    if (mapOfMetricDefinitions.containsKey(metricName)) {
+                      thresholdTypes = mapOfMetricDefinitions.get(metricName).getRiskProfile().getThresholdTypes();
+                    }
                     TimeSeriesThreshold timeSeriesThreshold =
                         TimeSeriesThreshold.builder()
                             .accountId(getAccountId())
