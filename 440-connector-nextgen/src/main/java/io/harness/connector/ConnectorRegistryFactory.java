@@ -14,6 +14,7 @@ import io.harness.connector.heartbeat.ArtifactoryValidationParamsProvider;
 import io.harness.connector.heartbeat.AwsKmsConnectorValidationParamsProvider;
 import io.harness.connector.heartbeat.AwsSecretManagerValidationParamsProvider;
 import io.harness.connector.heartbeat.AwsValidationParamsProvider;
+import io.harness.connector.heartbeat.AzureArtifactsConnectorVaidationParamsProvider;
 import io.harness.connector.heartbeat.AzureKeyVaultConnectorValidationParamsProvider;
 import io.harness.connector.heartbeat.AzureValidationParamsProvider;
 import io.harness.connector.heartbeat.CEK8sConnectorValidationParamsProvider;
@@ -148,7 +149,6 @@ import io.harness.connector.validator.PhysicalDataCenterConnectorValidator;
 import io.harness.connector.validator.SecretManagerConnectorValidator;
 import io.harness.connector.validator.ServiceNowConnectorValidator;
 import io.harness.connector.validator.scmValidators.AwsCodeCommitValidator;
-import io.harness.connector.validator.scmValidators.AzureArtifactsConnectorValidationsParamsProvider;
 import io.harness.connector.validator.scmValidators.AzureRepoConnectorValidator;
 import io.harness.connector.validator.scmValidators.BitbucketConnectorValidator;
 import io.harness.connector.validator.scmValidators.GitConnectorValidator;
@@ -330,7 +330,7 @@ public class ConnectorRegistryFactory {
             CustomSecretManagerEntityToDTO.class, NotSupportedValidationHandler.class));
     registrar.put(ConnectorType.AZURE_ARTIFACTS,
         new ConnectorRegistrar(ConnectorCategory.ARTIFACTORY, AzureArtifactsConnectorValidator.class,
-            AzureArtifactsConnectorValidationsParamsProvider.class, AzureArtifactsDTOToEntity.class,
+            AzureArtifactsConnectorVaidationParamsProvider.class, AzureArtifactsDTOToEntity.class,
             AzureArtifactsEntityToDTO.class, NotSupportedValidationHandler.class));
   }
 
