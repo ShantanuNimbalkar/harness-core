@@ -5,11 +5,6 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.connector.entities.embedded.azureartifacts;
+package io.harness.delegate.beans.connector.azureartifacts;
 
-import io.harness.delegate.beans.connector.scm.GitConfigConstants;
-
-public enum AzureArtifactsConnectionType {
-  @JsonProperty(GitConfigConstants.PROJECT) PROJECT,
-  @JsonProperty(GitConfigConstants.REPO) REPO
-}
+public enum AzureArtifactsApiAccessType {}

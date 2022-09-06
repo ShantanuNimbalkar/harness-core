@@ -7,9 +7,4 @@
 
 package io.harness.connector.entities.embedded.azureartifacts;
 
-import io.harness.delegate.beans.connector.scm.GitConfigConstants;
-
-public enum AzureArtifactsConnectionType {
-  @JsonProperty(GitConfigConstants.PROJECT) PROJECT,
-  @JsonProperty(GitConfigConstants.REPO) REPO
-}
+public class AzureArtifactsUsernameToken {}

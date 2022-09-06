@@ -7,4 +7,4 @@
 
 package io.harness.connector.entities.embedded.azureartifacts;
 
-public class AzureArtifactsApiAccessType {}
+public interface AzureArtifactsAuthentication {}

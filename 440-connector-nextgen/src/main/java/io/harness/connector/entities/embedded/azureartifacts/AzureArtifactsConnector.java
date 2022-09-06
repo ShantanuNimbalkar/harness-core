@@ -8,6 +8,7 @@
 package io.harness.connector.entities.embedded.azureartifacts;
 
 import io.harness.connector.entities.Connector;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 
 import lombok.AccessLevel;
