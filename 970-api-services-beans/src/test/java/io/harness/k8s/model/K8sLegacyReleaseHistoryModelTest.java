@@ -8,7 +8,7 @@
 package io.harness.k8s.model;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.Release.Status.Succeeded;
+import static io.harness.k8s.model.K8sLegacyRelease.Status.Succeeded;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.k8s.model.Release.Status;
+import io.harness.k8s.model.K8sLegacyRelease.Status;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableList;
@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @OwnedBy(CDP)
-public class ReleaseHistoryModelTest extends CategoryTest {
+public class K8sLegacyReleaseHistoryModelTest extends CategoryTest {
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
@@ -82,7 +82,7 @@ public class ReleaseHistoryModelTest extends CategoryTest {
   @Owner(developers = TATHAGAT)
   @Category(UnitTests.class)
   public void testCloneInternal() {
-    Release release = Release.builder().number(1).status(Succeeded).build();
+    K8sLegacyRelease release = K8sLegacyRelease.builder().number(1).status(Succeeded).build();
     ReleaseHistory releaseHistory =
         ReleaseHistory.builder().version("version1").releases(ImmutableList.of(release)).build();
 
@@ -103,7 +103,7 @@ public class ReleaseHistoryModelTest extends CategoryTest {
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
     releaseHistory.createNewReleaseWithResourceMap(singletonList(kubernetesResource));
     assertThat(releaseHistory.getReleases().size()).isEqualTo(1);
-    Release release = releaseHistory.getReleases().get(0);
+    K8sLegacyRelease release = releaseHistory.getReleases().get(0);
     assertThat(release.getResources().get(0).getName()).isEqualTo("resource-name");
     assertThat(release.getResourcesWithSpec().get(0).getSpec()).isEqualTo("spec");
   }

@@ -16,9 +16,9 @@ import static org.assertj.core.api.Assertions.fail;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.WingsException;
+import io.harness.k8s.model.K8sLegacyRelease;
+import io.harness.k8s.model.K8sLegacyRelease.Status;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
-import io.harness.k8s.model.Release.Status;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.rule.Owner;
 
@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-public class ReleaseHistoryTest extends CategoryTest {
+public class K8sLegacyReleaseHistoryTest extends CategoryTest {
   @Test
   @Owner(developers = PUNEET)
   @Category(UnitTests.class)
@@ -69,7 +69,7 @@ public class ReleaseHistoryTest extends CategoryTest {
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
     releaseHistory.createNewRelease(
         ImmutableList.of(KubernetesResourceId.builder().kind("Deployment").name("nginx").namespace("default").build()));
-    Release release = releaseHistory.getLatestRelease();
+    K8sLegacyRelease release = releaseHistory.getLatestRelease();
 
     assertThat(release.getNumber()).isEqualTo(1);
     assertThat(release.getStatus()).isEqualTo(Status.InProgress);
@@ -100,7 +100,7 @@ public class ReleaseHistoryTest extends CategoryTest {
   public void getLastSuccessfulReleaseTest() {
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
 
-    Release release = releaseHistory.getLastSuccessfulRelease();
+    K8sLegacyRelease release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
 
     releaseHistory.createNewRelease(

@@ -10,9 +10,11 @@ package io.harness.k8s.model;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,18 +25,52 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @OwnedBy(CDP)
-public class Release {
-  public enum Status { InProgress, Succeeded, Failed }
+public class K8sLegacyRelease implements IK8sRelease {
+  public enum Status {
+    InProgress,
+    Succeeded,
+    Failed;
+  }
 
   private int number;
   private Status status;
   private List<KubernetesResourceId> resources;
   private KubernetesResourceId managedWorkload;
   private String managedWorkloadRevision;
+  private boolean isPruningEnabled;
 
   @Builder.Default private List<KubernetesResourceIdRevision> managedWorkloads = new ArrayList();
   @Builder.Default private List<KubernetesResource> customWorkloads = new ArrayList<>();
   @Builder.Default private List<KubernetesResource> resourcesWithSpec = new ArrayList<>();
+
+  @Override
+  public Integer getReleaseNumber() {
+    return number;
+  }
+
+  @Override
+  public List<KubernetesResource> getResourcesWithSpecs() {
+    return resourcesWithSpec;
+  }
+
+  @Override
+  public List<KubernetesResourceId> getResourceIds() {
+    return resources;
+  }
+
+  @Override
+  public IK8sRelease setResourcesInRelease(List<KubernetesResource> resources) {
+    if (isPruningEnabled) {
+      List<KubernetesResource> resourcesWithPruningEnabled =
+          resources.stream().filter(resource -> !resource.isSkipPruning()).collect(Collectors.toList());
+      this.setResources(
+          resourcesWithPruningEnabled.stream().map(KubernetesResource::getResourceId).collect(Collectors.toList()));
+      this.setResourcesWithSpec(resourcesWithPruningEnabled);
+    } else {
+      this.setResources(resources.stream().map(KubernetesResource::getResourceId).collect(Collectors.toList()));
+    }
+    return this;
+  }
 
   @Data
   @Builder

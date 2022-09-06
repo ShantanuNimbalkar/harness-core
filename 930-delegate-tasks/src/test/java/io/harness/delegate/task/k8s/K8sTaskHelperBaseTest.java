@@ -169,12 +169,12 @@ import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sContainer;
 import io.harness.k8s.model.K8sDelegateTaskParams;
+import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.K8sPod;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
 import io.harness.logging.CommandExecutionStatus;
@@ -384,8 +384,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
 
     List<KubernetesResourceId> kubernetesResourceIdList = getKubernetesResourceIdList("1");
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.setReleases(
-        asList(Release.builder().status(Release.Status.Succeeded).resources(kubernetesResourceIdList).build()));
+    releaseHistory.setReleases(asList(K8sLegacyRelease.builder()
+                                          .status(K8sLegacyRelease.Status.Succeeded)
+                                          .resources(kubernetesResourceIdList)
+                                          .build()));
 
     String releaseHistoryString = releaseHistory.getAsYaml();
     doReturn(releaseHistoryString)
@@ -455,8 +457,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     doReturn(configMap).when(mockKubernetesContainerService).getConfigMap(any(), eq(releaseName));
 
     ReleaseHistory releaseHistorySecret = ReleaseHistory.createNew();
-    releaseHistorySecret.setReleases(asList(Release.builder()
-                                                .status(Release.Status.Succeeded)
+    releaseHistorySecret.setReleases(asList(K8sLegacyRelease.builder()
+                                                .status(K8sLegacyRelease.Status.Succeeded)
                                                 .resources(getKubernetesResourceIdList("-from-secret"))
                                                 .build()));
 
@@ -465,8 +467,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     secret.getData().put(ReleaseHistoryKeyName, releaseHistoryString.getBytes());
 
     ReleaseHistory releaseHistoryConfigMap = ReleaseHistory.createNew();
-    releaseHistoryConfigMap.setReleases(asList(
-        Release.builder().status(Release.Status.Succeeded).resources(getKubernetesResourceIdList("-from-cm")).build()));
+    releaseHistoryConfigMap.setReleases(asList(K8sLegacyRelease.builder()
+                                                   .status(K8sLegacyRelease.Status.Succeeded)
+                                                   .resources(getKubernetesResourceIdList("-from-cm"))
+                                                   .build()));
 
     configMap.getData().put(ReleaseHistoryKeyName, releaseHistoryConfigMap.getAsYaml());
 
@@ -522,8 +526,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
 
     List<KubernetesResourceId> kubernetesResourceIdList = getKubernetesResourceIdList("1");
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.setReleases(
-        asList(Release.builder().status(Release.Status.Succeeded).resources(kubernetesResourceIdList).build()));
+    releaseHistory.setReleases(asList(K8sLegacyRelease.builder()
+                                          .status(K8sLegacyRelease.Status.Succeeded)
+                                          .resources(kubernetesResourceIdList)
+                                          .build()));
 
     String releaseHistoryString = releaseHistory.getAsYaml();
     doReturn(releaseHistoryString).when(mockKubernetesContainerService).fetchReleaseHistoryValue(any(V1Secret.class));
@@ -985,10 +991,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
 
   private void cleanUpAllOlderReleases() throws Exception {
     final ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 3));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 2));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 1));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 0));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Succeeded, 3));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Succeeded, 2));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Succeeded, 1));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Succeeded, 0));
     ProcessResponse response = ProcessResponse.builder().processResult(K8sTestHelper.buildProcessResult(0)).build();
     doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.cleanup(Kubectl.client("kubectl", "kubeconfig"), K8sDelegateTaskParams.builder().build(),
@@ -1003,10 +1009,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
 
   private void cleanUpIfMultipleFailedReleases() throws Exception {
     final ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Failed, 3));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Failed, 2));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Succeeded, 1));
-    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(Release.Status.Failed, 0));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Failed, 3));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Failed, 2));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Succeeded, 1));
+    releaseHistory.getReleases().add(K8sTestHelper.buildRelease(K8sLegacyRelease.Status.Failed, 0));
     ProcessResponse response = ProcessResponse.builder().processResult(K8sTestHelper.buildProcessResult(0)).build();
     doReturn(response).when(spyK8sTaskHelperBase).runK8sExecutable(any(), any(), any());
     spyK8sTaskHelperBase.cleanup(Kubectl.client("kubectl", "kubeconfig"), K8sDelegateTaskParams.builder().build(),
@@ -1021,10 +1027,10 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
 
   private void cleanUpIfOnly1FailedRelease() throws Exception {
     final ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.getReleases().add(Release.builder()
+    releaseHistory.getReleases().add(K8sLegacyRelease.builder()
                                          .number(0)
                                          .resources(asList(K8sTestHelper.deployment().getResourceId()))
-                                         .status(Release.Status.Failed)
+                                         .status(K8sLegacyRelease.Status.Failed)
                                          .build());
     k8sTaskHelperBase.cleanup(
         mock(Kubectl.class), K8sDelegateTaskParams.builder().build(), releaseHistory, executionLogCallback);

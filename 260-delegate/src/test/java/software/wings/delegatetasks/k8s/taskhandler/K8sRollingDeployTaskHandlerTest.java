@@ -60,10 +60,10 @@ import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.K8sDelegateTaskParams;
+import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
@@ -788,7 +788,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     K8sRollingDeployTaskHandler handler = spy(k8sRollingDeployTaskHandler);
     K8sRollingDeployTaskParameters taskParameters = K8sRollingDeployTaskParameters.builder().build();
     K8sDelegateTaskParams delegateTaskParams = K8sDelegateTaskParams.builder().build();
-    Release previousSuccessfulRelease = Release.builder().build();
+    K8sLegacyRelease previousSuccessfulRelease = K8sLegacyRelease.builder().build();
 
     List<KubernetesResourceId> prunedResource =
         handler.prune(taskParameters, delegateTaskParams, previousSuccessfulRelease);
@@ -808,7 +808,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     K8sRollingDeployTaskHandler handler = spy(k8sRollingDeployTaskHandler);
     K8sRollingDeployTaskParameters taskParameters = K8sRollingDeployTaskParameters.builder().build();
     K8sDelegateTaskParams delegateTaskParams = K8sDelegateTaskParams.builder().build();
-    Release previousSuccessfulRelease = Release.builder().resourcesWithSpec(getResources()).build();
+    K8sLegacyRelease previousSuccessfulRelease = K8sLegacyRelease.builder().resourcesWithSpec(getResources()).build();
 
     doReturn(emptyList()).when(k8sTaskHelperBase).getResourcesToBePrunedInOrder(any(), any());
 
@@ -829,7 +829,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     K8sRollingDeployTaskHandler handler = spy(k8sRollingDeployTaskHandler);
     K8sRollingDeployTaskParameters taskParameters = K8sRollingDeployTaskParameters.builder().build();
     K8sDelegateTaskParams delegateTaskParams = K8sDelegateTaskParams.builder().build();
-    Release previousSuccessfulRelease = Release.builder().resourcesWithSpec(getResources()).build();
+    K8sLegacyRelease previousSuccessfulRelease = K8sLegacyRelease.builder().resourcesWithSpec(getResources()).build();
 
     doReturn(singletonList(KubernetesResourceId.builder().build()))
         .when(k8sTaskHelperBase)
@@ -852,7 +852,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     K8sRollingDeployTaskHandler handler = spy(k8sRollingDeployTaskHandler);
     K8sRollingDeployTaskParameters taskParameters = K8sRollingDeployTaskParameters.builder().build();
     K8sDelegateTaskParams delegateTaskParams = K8sDelegateTaskParams.builder().build();
-    Release previousSuccessfulRelease = Release.builder().resourcesWithSpec(getResources()).build();
+    K8sLegacyRelease previousSuccessfulRelease = K8sLegacyRelease.builder().resourcesWithSpec(getResources()).build();
 
     KubernetesResourceId resources = KubernetesResourceId.builder().name("config-map").build();
     doReturn(singletonList(resources)).when(k8sTaskHelperBase).getResourcesToBePrunedInOrder(any(), any());
@@ -953,7 +953,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     handlerConfig.setResources(Lists.list(K8sTestHelper.deployment(), K8sTestHelper.configMapPruned()));
     handlerConfig.setKubernetesConfig(KubernetesConfig.builder().namespace("default").build());
     ReleaseHistory releaseHist = ReleaseHistory.createNew();
-    releaseHist.setReleases(Lists.list(Release.builder().status(Release.Status.InProgress).build()));
+    releaseHist.setReleases(Lists.list(K8sLegacyRelease.builder().status(K8sLegacyRelease.Status.InProgress).build()));
     handlerConfig.setReleaseHistory(releaseHist);
     on(handler).set("k8sRollingHandlerConfig", handlerConfig);
     doReturn(releaseHist.getAsYaml()).when(k8sTaskHelperBase).getReleaseHistoryData(any(), any());

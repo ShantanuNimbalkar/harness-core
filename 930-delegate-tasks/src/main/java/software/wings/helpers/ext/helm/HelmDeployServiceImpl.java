@@ -59,12 +59,12 @@ import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.HelmVersion;
+import io.harness.k8s.model.K8sLegacyRelease;
+import io.harness.k8s.model.K8sLegacyRelease.Status;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
-import io.harness.k8s.model.Release.Status;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
@@ -659,7 +659,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     KubernetesConfig kubernetesConfig =
         containerDeploymentDelegateHelper.getKubernetesConfig(request.getContainerServiceParams());
     ReleaseHistory releaseHistory = fetchK8sReleaseHistory(request, kubernetesConfig);
-    Release rollbackRelease = releaseHistory.getRelease(request.getPrevReleaseVersion());
+    K8sLegacyRelease rollbackRelease = releaseHistory.getRelease(request.getPrevReleaseVersion());
     notNullCheck("Unable to find release " + request.getPrevReleaseVersion(), rollbackRelease);
 
     if (Status.Succeeded != rollbackRelease.getStatus()) {

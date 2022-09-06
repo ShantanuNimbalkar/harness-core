@@ -13,8 +13,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.k8s.K8sTaskHelperBase.getResourcesInStringFormat;
 import static io.harness.k8s.K8sCommandUnitConstants.Delete;
 import static io.harness.k8s.K8sCommandUnitConstants.Init;
-import static io.harness.k8s.model.Release.Status.Failed;
-import static io.harness.k8s.model.Release.Status.InProgress;
+import static io.harness.k8s.model.K8sLegacyRelease.Status.Failed;
+import static io.harness.k8s.model.K8sLegacyRelease.Status.InProgress;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.INFO;
 import static io.harness.logging.LogLevel.WARN;
@@ -38,9 +38,9 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.k8s.K8sConstants;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.model.K8sDelegateTaskParams;
+import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.Release;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.logging.LogCallback;
 
@@ -137,7 +137,7 @@ public class K8sCanaryDeleteRequestHandler extends K8sRequestHandler {
     // Since we may catch some interrupted exceptions during task abortions it may happen that we will fail the canary
     // release. To ensure that the latest release is actually a canary release we have a more deep logic
     // in K8s Canary Delete Step (we will rely on release history only when we queued K8s Canary Task and step expire)
-    Release release = releaseHistory.getLatestRelease();
+    K8sLegacyRelease release = releaseHistory.getLatestRelease();
     if (InProgress != release.getStatus() && Failed != release.getStatus()) {
       logCallback.saveExecutionLog(
           format("Unable to identify any canary deployments for release %s.", releaseName), WARN);
