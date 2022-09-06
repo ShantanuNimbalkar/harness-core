@@ -169,6 +169,7 @@ import io.harness.migrations.all.SetNamespaceInContainerInstanceInfo;
 import io.harness.migrations.all.SetNamespaceToKubernetesInstanceInfo;
 import io.harness.migrations.all.SetRollbackFlagToWorkflows;
 import io.harness.migrations.all.SettingAttributesCategoryMigration;
+import io.harness.migrations.all.SettingAttributesServiceAccountTokenMigration;
 import io.harness.migrations.all.SshAndWinRmAccountPermissionMigration;
 import io.harness.migrations.all.StackdriverMetricServiceGuardJsonMigration;
 import io.harness.migrations.all.StackdriverServiceGuardMetricsGroupingMigration;
@@ -454,6 +455,7 @@ public class MigrationList {
         .add(Pair.of(372, BaseMigration.class))
         .add(Pair.of(373, AddRingDetailsToDelegateRing.class))
         .add(Pair.of(374, AddIsProductLedToAccount.class))
+        .add(Pair.of(375, SettingAttributesServiceAccountTokenMigration.class))
         .build();
   }
 }
