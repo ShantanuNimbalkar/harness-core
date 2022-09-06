@@ -11,16 +11,16 @@ import static io.harness.delegate.beans.connector.scm.github.GithubConnectorCons
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoTokenSpecDTO;
+import io.harness.beans.DecryptableEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@OwnedBy(HarnessTeam.PL)
+@OwnedBy(HarnessTeam.CDC)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonSubTypes({ @JsonSubTypes.Type(value = AzureRepoTokenSpecDTO.class, name = TOKEN) })
+@JsonSubTypes({ @JsonSubTypes.Type(value = AzureArtifactsTokenSpecDTO.class, name = TOKEN) })
 @Schema(name = "AzureArtifactsApiAccessSpec",
     description =
         "This contains details of the information such as references of username and password needed for Azure Artifacts API access")
-public interface AzureArtifactsApiAccessSpecDTO {}
+public interface AzureArtifactsApiAccessSpecDTO extends DecryptableEntity {}

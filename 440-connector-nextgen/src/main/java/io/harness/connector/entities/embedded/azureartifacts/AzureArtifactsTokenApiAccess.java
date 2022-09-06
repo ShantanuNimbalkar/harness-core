@@ -15,6 +15,6 @@ import org.springframework.data.annotation.TypeAlias;
 @Value
 @Builder
 @TypeAlias("io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsTokenApiAccess")
-public class AzureArtifactsTokenApiAccess {
+public class AzureArtifactsTokenApiAccess implements AzureArtifactsApiAccessDetails {
   @NotEmpty String tokenRef;
 }

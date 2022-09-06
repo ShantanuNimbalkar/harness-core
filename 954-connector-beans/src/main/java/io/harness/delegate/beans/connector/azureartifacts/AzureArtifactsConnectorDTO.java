@@ -65,9 +65,7 @@ public class AzureArtifactsConnectorDTO
   @Schema(description = "Details for authentication mechanism for AzureArtifacts connector")
   AzureArtifactsAuthenticationDTO authentication;
 
-  @Valid
-  @Schema(description = "API access details, to be used in Harness Triggers and Git Experience")
-  AzureArtifactsApiAccessDTO apiAccess;
+  @Valid @Schema(description = "API access details") AzureArtifactsApiAccessDTO apiAccess;
 
   @Schema(description = "Selected Connectivity Modes") Set<String> delegateSelectors;
 
@@ -95,7 +93,7 @@ public class AzureArtifactsConnectorDTO
     List<DecryptableEntity> decryptableEntities = new ArrayList<>();
     if (authentication.getAuthType() == GitAuthType.HTTP) {
       AzureArtifactsHttpCredentialsSpecDTO httpCredentialsSpec =
-          ((AzureArtifactsHttpCredentialsSpecDTO) authentication.getCredentials()).getHttpCredentialsSpec();
+          ((AzureArtifactsHttpCredentialsDTO) authentication.getCredentials()).getHttpCredentialsSpec();
       if (httpCredentialsSpec != null) {
         decryptableEntities.add(httpCredentialsSpec);
       }
