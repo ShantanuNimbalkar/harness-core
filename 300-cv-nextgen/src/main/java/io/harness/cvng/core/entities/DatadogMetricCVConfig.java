@@ -129,7 +129,7 @@ public class DatadogMetricCVConfig extends MetricCVConfig<MetricInfo> {
                             .metricName(metricPackDTO.getMetricName())
                             .action(metricPackDTO.getType().getTimeSeriesThresholdActionType())
                             .criteria(criteria)
-                            .thresholdConfigType(ThresholdConfigType.CUSTOMER)
+                            .thresholdConfigType(ThresholdConfigType.USER_DEFINED)
                             .build();
                     timeSeriesThresholds.add(timeSeriesThreshold);
                     metric.setThresholds(timeSeriesThresholds);

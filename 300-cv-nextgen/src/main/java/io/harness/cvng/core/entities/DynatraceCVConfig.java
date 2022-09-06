@@ -146,7 +146,7 @@ public class DynatraceCVConfig extends MetricCVConfig<DynatraceMetricInfo> {
                             .metricName(metricPackDTO.getMetricName())
                             .action(metricPackDTO.getType().getTimeSeriesThresholdActionType())
                             .criteria(criteria)
-                            .thresholdConfigType(ThresholdConfigType.CUSTOMER)
+                            .thresholdConfigType(ThresholdConfigType.USER_DEFINED)
                             .build();
                     timeSeriesThresholds.add(timeSeriesThreshold);
                     metric.setThresholds(timeSeriesThresholds);
