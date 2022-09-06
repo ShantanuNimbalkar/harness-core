@@ -7,9 +7,28 @@
 
 package io.harness.connector.mappers.azureartifacts;
 
-import io.harness.connector.entities.embedded.azureartifacts.*;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsApiAccessDetails;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsAuthentication;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsConnectionType;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsConnector;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsHttpAuth;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsHttpAuthentication;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsSshAuthentication;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsTokenApiAccess;
+import io.harness.connector.entities.embedded.azureartifacts.AzureArtifactsUsernameToken;
 import io.harness.connector.mappers.ConnectorDTOToEntityMapper;
-import io.harness.delegate.beans.connector.azureartifacts.*;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessSpecDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessType;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsAuthenticationDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectionTypeDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpAuthenticationType;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsSshCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTokenSpecDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsUsernameTokenDTO;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.encryption.SecretRefData;
 import io.harness.encryption.SecretRefHelper;

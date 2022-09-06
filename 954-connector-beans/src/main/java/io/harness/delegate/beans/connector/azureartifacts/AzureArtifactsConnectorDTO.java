@@ -23,6 +23,7 @@ import io.harness.delegate.beans.connector.scm.utils.ScmConnectorHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.git.GitClientHelper;
 import io.harness.gitsync.beans.GitRepositoryDTO;
+import io.harness.gitsync.beans.GitRepositoryDTO.GitRepositoryDTOBuilder;
 import io.harness.utils.FilePathUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,7 +36,11 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
@@ -148,7 +153,7 @@ public class AzureArtifactsConnectorDTO
     } else {
       orgAndProject = GitClientHelper.getAzureRepoOrgAndProjectSSH(url);
     }
-    GitRepositoryDTO.GitRepositoryDTOBuilder gitRepositoryDTOBuilder =
+    GitRepositoryDTOBuilder gitRepositoryDTOBuilder =
         GitRepositoryDTO.builder()
             .org(GitClientHelper.getAzureRepoOrg(orgAndProject))
             .projectName(GitClientHelper.getAzureRepoProject(orgAndProject));
