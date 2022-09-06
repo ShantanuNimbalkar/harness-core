@@ -6,6 +6,7 @@
  */
 package io.harness.resourcegroup.framework.v3.mapper;
 
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.beans.ScopeFilterType;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
@@ -109,6 +110,12 @@ public class ResourceGroupApiUtils {
   }
 
   public static ResourceSelector getFilterRequest(io.harness.spec.server.platform.model.ResourceFilter filter) {
+    if (filter.getAttributeName() == null && filter.getAttributeValues().isEmpty()) {
+      return ResourceSelector.builder()
+          .resourceType(filter.getResourceType())
+          .identifiers(filter.getIdentifiers())
+          .build();
+    }
     return ResourceSelector.builder()
         .resourceType(filter.getResourceType())
         .identifiers(filter.getIdentifiers())
@@ -180,8 +187,10 @@ public class ResourceGroupApiUtils {
         new io.harness.spec.server.platform.model.ResourceFilter();
     resourceFilter.setResourceType(resourceSelector.getResourceType());
     resourceFilter.setIdentifiers(resourceSelector.getIdentifiers());
-    resourceFilter.setAttributeName(resourceSelector.getAttributeFilter().getAttributeName());
-    resourceFilter.setAttributeValues(resourceSelector.getAttributeFilter().getAttributeValues());
+    if (resourceSelector.getAttributeFilter() != null) {
+      resourceFilter.setAttributeName(resourceSelector.getAttributeFilter().getAttributeName());
+      resourceFilter.setAttributeValues(resourceSelector.getAttributeFilter().getAttributeValues());
+    }
     return resourceFilter;
   }
 
@@ -222,7 +231,10 @@ public class ResourceGroupApiUtils {
     if (managedFilter.equals("ONLY_MANAGED")) {
       return ManagedFilter.ONLY_MANAGED;
     }
-    return ManagedFilter.ONLY_CUSTOM;
+    if (managedFilter.equals("ONLY_CUSTOM")) {
+      return ManagedFilter.ONLY_CUSTOM;
+    }
+    throw new InvalidRequestException("Managed Filter type unidentified.");
   }
 
   public static PageRequest getPageRequest(Integer page, Integer limit) {
