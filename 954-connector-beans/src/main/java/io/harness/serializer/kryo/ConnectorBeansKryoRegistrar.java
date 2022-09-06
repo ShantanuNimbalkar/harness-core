@@ -45,6 +45,7 @@ import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCred
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialSpecDTO;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerCredentialType;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerDTO;
+import io.harness.delegate.beans.connector.azureartifacts.*;
 import io.harness.delegate.beans.connector.azureconnector.AzureAuthCredentialDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureAuthDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureClientKeyCertDTO;
@@ -414,5 +415,18 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(TemplateLinkConfigForCustomSecretManager.class, 19877);
     kryo.register(ELKConnectorDTO.class, 10000001);
     kryo.register(ELKAuthType.class, 10000002);
+
+    kryo.register(AzureArtifactsConnectorDTO.class, 10000101);
+    kryo.register(AzureArtifactsHttpCredentialsDTO.class, 10000102);
+    kryo.register(AzureArtifactsHttpAuthenticationType.class, 10000103);
+    kryo.register(AzureArtifactsApiAccessDTO.class, 10000104);
+    kryo.register(AzureArtifactsSshCredentialsDTO.class, 10000105);
+    kryo.register(AzureArtifactsApiAccessSpecDTO.class, 10000106);
+    kryo.register(AzureArtifactsTokenSpecDTO.class, 10000107);
+    kryo.register(AzureArtifactsApiAccessType.class, 10000108);
+    kryo.register(AzureArtifactsAuthenticationDTO.class, 10000109);
+    kryo.register(AzureArtifactsCredentialsDTO.class, 10000110);
+    kryo.register(AzureArtifactsUsernameTokenDTO.class, 10000111);
+    kryo.register(AzureArtifactsHttpCredentialsSpecDTO.class, 10000112);
   }
 }
