@@ -339,9 +339,8 @@ public class GovernanceConfigServiceImplTest extends WingsBaseTest {
     DeploymentFreezeInfo deploymentFreezeInfo = governanceConfigService.getDeploymentFreezeInfo(ACCOUNT_ID);
     assertThat(deploymentFreezeInfo).isNotNull();
     assertThat(deploymentFreezeInfo.isFreezeAll()).isFalse();
-    assertThat(deploymentFreezeInfo.getAppEnvs()).hasSize(1);
+    assertThat(deploymentFreezeInfo.getAppEnvs()).hasSize(0);
     assertThat(deploymentFreezeInfo.getAllEnvFrozenApps()).containsExactlyInAnyOrder(APP_ID + 2, APP_ID + 3);
-    assertThat(deploymentFreezeInfo.getAppEnvs().get(APP_ID)).containsExactlyInAnyOrder(ENV_ID, ENV_ID + 2);
   }
 
   @Test
@@ -439,7 +438,7 @@ public class GovernanceConfigServiceImplTest extends WingsBaseTest {
     assertThat(deploymentFreezeInfo).isNotNull();
     assertThat(deploymentFreezeInfo.isFreezeAll()).isFalse();
     assertThat(deploymentFreezeInfo.getAppEnvs()).hasSize(1);
-    assertThat(deploymentFreezeInfo.getAppEnvs().get(APP_ID)).containsExactlyInAnyOrder(ENV_ID, ENV_ID + 2, ENV_ID + 3);
+    assertThat(deploymentFreezeInfo.getAppEnvs().get(APP_ID)).containsExactlyInAnyOrder(ENV_ID, ENV_ID + 2);
   }
 
   @Test
