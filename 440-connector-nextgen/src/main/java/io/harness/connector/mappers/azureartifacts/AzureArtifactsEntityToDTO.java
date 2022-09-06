@@ -18,6 +18,8 @@ import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnknownEnumTypeException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 @OwnedBy(HarnessTeam.CDC)
 public class AzureArtifactsEntityToDTO
     implements ConnectorEntityToDTOMapper<AzureArtifactsConnectorDTO, AzureArtifactsConnector> {

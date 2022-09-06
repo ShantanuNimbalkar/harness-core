@@ -33,7 +33,7 @@ import lombok.experimental.FieldDefaults;
     description =
         "This contains details of the AzureArtifacts credentials Specs such as references of username and token")
 @OneOfField(fields = {"username", "usernameRef"})
-public class AzureArtifactsUsernameTokenDTO {
+public class AzureArtifactsUsernameTokenDTO implements AzureArtifactsHttpCredentialsSpecDTO {
   String username;
 
   @SecretReference @ApiModelProperty(dataType = "string") SecretRefData usernameRef;

@@ -69,5 +69,5 @@ public class AzureArtifactsConnector extends Connector {
   /**
    * Authentication Details
    */
-  AzureArtifactsApiAccessDetails azureRepoApiAccess;
+  AzureArtifactsApiAccessDetails azureArtifactsApiAccess;
 }

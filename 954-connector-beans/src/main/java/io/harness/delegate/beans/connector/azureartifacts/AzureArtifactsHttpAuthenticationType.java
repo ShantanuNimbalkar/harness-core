@@ -12,7 +12,6 @@ import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-;
 
 @OwnedBy(HarnessTeam.CDC)
 public enum AzureArtifactsHttpAuthenticationType {

@@ -16,6 +16,8 @@ import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnknownEnumTypeException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class AzureArtifactsDTOToEntity
     implements ConnectorDTOToEntityMapper<AzureArtifactsConnectorDTO, AzureArtifactsConnector> {
   @Override
@@ -99,7 +101,7 @@ public class AzureArtifactsDTOToEntity
     return usernameRef;
   }
 
-  private AzureArtifactsApiAccess getApiAcessByType(
+  private AzureArtifactsApiAccessDetails getApiAcessByType(
       AzureArtifactsApiAccessSpecDTO spec, AzureArtifactsApiAccessType apiAccessType) {
     if (apiAccessType == null) {
       throw new InvalidRequestException("AzureArtifacts Api Access Type not found");

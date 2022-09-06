@@ -10,6 +10,7 @@ package io.harness.connector.entities.embedded.azureartifacts;
 import lombok.Builder;
 import lombok.Value;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.data.annotation.TypeAlias;
 
 @Value
 @Builder
