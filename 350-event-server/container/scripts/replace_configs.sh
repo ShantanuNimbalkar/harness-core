@@ -9,8 +9,6 @@ CONFIG_FILE=/opt/harness/event-service-config.yml
 # Remove the TLS connector (as ingress terminates TLS)
 yq delete -i $CONFIG_FILE connectors[0]
 
-replace_key_value logging.level $LOGGING_LEVEL
-
 if [[ "" != "$MONGO_URI" ]]; then
   yq write -i $CONFIG_FILE harness-mongo.uri "$MONGO_URI"
 fi
@@ -38,6 +36,10 @@ fi
 
 if [[ "" != "$EVENTS_MONGO_URI" ]]; then
   yq write -i $CONFIG_FILE events-mongo.uri "$EVENTS_MONGO_URI"
+fi
+
+if [[ "" != "$LOGGING_LEVEL" ]]; then
+  yq write -i $CONFIG_FILE logging.level "$LOGGING_LEVEL"
 fi
 
 if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
