@@ -18,6 +18,7 @@ import io.harness.security.encryption.SecretDecryptionService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,14 +35,19 @@ public class DockerArtifactTaskHandler extends DelegateArtifactTaskHandler<Docke
   @Override
   public ArtifactTaskExecutionResponse getLastSuccessfulBuild(DockerArtifactDelegateRequest attributesRequest) {
     BuildDetailsInternal lastSuccessfulBuild;
+    List<Map<String, String>> labels = new ArrayList<>();
     if (isRegex(attributesRequest)) {
       lastSuccessfulBuild = dockerRegistryService.getLastSuccessfulBuildFromRegex(
           DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest), attributesRequest.getImagePath(),
           attributesRequest.getTagRegex());
+      labels = dockerRegistryService.getLabels(DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest),
+          attributesRequest.getImagePath(), Collections.singletonList(lastSuccessfulBuild.getNumber()));
     } else {
       lastSuccessfulBuild =
           dockerRegistryService.verifyBuildNumber(DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest),
               attributesRequest.getImagePath(), attributesRequest.getTag());
+      labels = dockerRegistryService.getLabels(DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest),
+          attributesRequest.getImagePath(), Collections.singletonList(lastSuccessfulBuild.getNumber()));
     }
     DockerArtifactDelegateResponse dockerArtifactDelegateResponse =
         DockerRequestResponseMapper.toDockerResponse(lastSuccessfulBuild, attributesRequest);

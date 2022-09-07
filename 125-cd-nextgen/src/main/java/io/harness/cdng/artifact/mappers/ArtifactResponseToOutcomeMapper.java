@@ -168,6 +168,7 @@ public class ArtifactResponseToOutcomeMapper {
         .type(ArtifactSourceType.DOCKER_REGISTRY.getDisplayName())
         .primaryArtifact(dockerConfig.isPrimaryArtifact())
         .imagePullSecret(createImagePullSecret(ArtifactUtils.getArtifactKey(dockerConfig)))
+        .label(dockerDelegateResponse.getLabel())
         .build();
   }
 
