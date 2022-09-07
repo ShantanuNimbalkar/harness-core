@@ -953,7 +953,7 @@ public class DelegateModule extends AbstractModule {
   @Singleton
   @Named("logStreamingExecutor")
   public ThreadPoolExecutor logStreamingExecutor() {
-    return ThreadPool.create(2, 10, 2, TimeUnit.SECONDS,
+    return ThreadPool.create(10, 40, 1, TimeUnit.SECONDS,
         new ThreadFactoryBuilder().setNameFormat("log-streaming-client-%d").setPriority(Thread.NORM_PRIORITY).build());
   }
 
