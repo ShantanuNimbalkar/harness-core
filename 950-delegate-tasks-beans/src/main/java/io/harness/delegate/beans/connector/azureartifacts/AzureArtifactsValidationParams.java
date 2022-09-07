@@ -7,4 +7,45 @@
 
 package io.harness.delegate.beans.connector.azureartifacts;
 
-public class AzureArtifactsValidationParams {}
+import io.harness.delegate.beans.connector.ConnectorTaskParams;
+import io.harness.delegate.beans.connector.ConnectorType;
+import io.harness.delegate.beans.connector.ConnectorValidationParams;
+import io.harness.delegate.beans.executioncapability.ExecutionCapability;
+import io.harness.delegate.beans.executioncapability.ExecutionCapabilityDemander;
+import io.harness.expression.ExpressionEvaluator;
+import io.harness.security.encryption.EncryptedDataDetail;
+
+import java.util.List;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+public class AzureArtifactsValidationParams
+    extends ConnectorTaskParams implements ConnectorValidationParams, ExecutionCapabilityDemander {
+  /**
+   * Azure Connector DTO
+   */
+  AzureArtifactsConnectorDTO azureArtifactsConnectorDTO;
+
+  /**
+   * Encryption Details
+   */
+  List<EncryptedDataDetail> encryptionDataDetails;
+
+  /**
+   * Connector Name
+   */
+  String connectorName;
+
+  @Override
+  public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
+    return AzureArtifactsCapabilityHelper.fetchRequiredExecutionCapabilities(
+        azureArtifactsConnectorDTO, maskingEvaluator);
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.AZURE_ARTIFACTS;
+  }
+}
