@@ -9,4 +9,3 @@ java_library(
 )
 
 run_analysis_per_module()
-

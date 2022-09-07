@@ -6,10 +6,9 @@ java_library(
     srcs = glob(["*.java"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//960-ng-core-beans/src/main/java/io/harness/ng/core/account:module",
         "//:lombok",
+        "//960-ng-core-beans/src/main/java/io/harness/ng/core/account:module",
     ],
 )
 
 run_analysis_per_module()
-

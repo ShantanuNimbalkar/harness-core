@@ -6,12 +6,12 @@ java_library(
     srcs = glob(["*.java"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//:lombok",
         "//960-ng-core-beans/src/main/java/io/harness/ng/core/dto:module",
         "//960-ng-core-beans/src/main/java/io/harness/ng/core/filestore:module",
         "//970-ng-commons:module",
         "//980-commons:module",
         "//999-annotations/src/main/java/io/harness/annotations/dev:module",
-        "//:lombok",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:io_swagger_core_v3_swagger_annotations",
         "@maven//:io_swagger_swagger_annotations",
@@ -23,4 +23,3 @@ java_library(
 )
 
 run_analysis_per_module()
-
