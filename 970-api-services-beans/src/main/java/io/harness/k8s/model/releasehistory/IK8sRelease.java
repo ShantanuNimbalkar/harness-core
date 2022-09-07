@@ -7,11 +7,15 @@
 
 package io.harness.k8s.model.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 
 import java.util.List;
 
+@OwnedBy(CDP)
 public interface IK8sRelease {
   Integer getReleaseNumber();
   List<KubernetesResource> getResourcesWithSpecs();

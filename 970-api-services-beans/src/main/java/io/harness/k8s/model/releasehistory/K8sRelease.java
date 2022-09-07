@@ -7,12 +7,14 @@
 
 package io.harness.k8s.model.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.encoding.EncodingUtils.compressString;
 import static io.harness.data.encoding.EncodingUtils.deCompressString;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
 
 import static java.util.Collections.emptyList;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
@@ -30,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Builder
 @Slf4j
+@OwnedBy(CDP)
 public class K8sRelease implements IK8sRelease {
   V1Secret releaseSecret;
   int releaseNumber;

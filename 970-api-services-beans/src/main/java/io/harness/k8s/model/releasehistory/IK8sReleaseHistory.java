@@ -7,6 +7,11 @@
 
 package io.harness.k8s.model.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
+
+@OwnedBy(CDP)
 public interface IK8sReleaseHistory {
   int getCurrentReleaseNumber();
   IK8sRelease getLastSuccessfulRelease(int currentReleaseNumber);

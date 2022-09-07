@@ -7,6 +7,9 @@
 
 package io.harness.k8s.model.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.model.K8sLegacyRelease;
 
 import java.util.Comparator;
@@ -17,6 +20,7 @@ import lombok.Data;
 
 @Data
 @Builder
+@OwnedBy(CDP)
 public class K8sReleaseHistory implements IK8sReleaseHistory {
   List<K8sRelease> releaseHistory;
 

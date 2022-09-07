@@ -7,8 +7,10 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesConfig;
@@ -20,6 +22,7 @@ import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 
 import com.google.inject.Inject;
 
+@OwnedBy(CDP)
 public class K8sLegacyReleaseHandlerImpl implements K8sReleaseHandler {
   @Inject K8sTaskHelperBase k8sTaskHelperBase;
 

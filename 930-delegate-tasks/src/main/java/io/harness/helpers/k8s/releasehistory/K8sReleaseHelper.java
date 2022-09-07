@@ -7,6 +7,7 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_HARNESS_SECRET_LABELS;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_LABEL_QUERY_LIST_FORMAT;
@@ -20,6 +21,8 @@ import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.SECRET_LAB
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import io.harness.annotations.dev.OwnedBy;
+
 import com.google.inject.Singleton;
 import io.kubernetes.client.openapi.models.V1Secret;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Singleton
+@OwnedBy(CDP)
 public class K8sReleaseHelper {
   String createSetBasedArg(String key, Set<String> values) {
     return String.format(RELEASE_LABEL_QUERY_SET_FORMAT, key, String.join(SECRET_LABEL_DELIMITER, values));

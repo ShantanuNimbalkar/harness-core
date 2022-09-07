@@ -7,8 +7,10 @@
 
 package io.harness.k8s.model.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.model.ReleaseHistory;
 
 import lombok.Builder;
@@ -16,6 +18,7 @@ import lombok.Data;
 
 @Data
 @Builder
+@OwnedBy(CDP)
 public class K8SLegacyReleaseHistory implements IK8sReleaseHistory {
   ReleaseHistory releaseHistory;
 

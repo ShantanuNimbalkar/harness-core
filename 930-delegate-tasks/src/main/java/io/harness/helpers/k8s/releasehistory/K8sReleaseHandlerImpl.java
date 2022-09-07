@@ -7,11 +7,13 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_HARNESS_SECRET_TYPE;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_NUMBER_LABEL_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_VALUE;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_STATUS_LABEL_KEY;
 
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.model.K8sLegacyRelease;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@OwnedBy(CDP)
 public class K8sReleaseHandlerImpl implements K8sReleaseHandler {
   @Inject KubernetesContainerService kubernetesContainerService;
   @Inject K8sReleaseHelper releaseHelper;

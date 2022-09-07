@@ -7,6 +7,7 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.rule.OwnerRule.ABHINAV2;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import io.harness.CategoryTest;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.k8s.model.KubernetesConfig;
@@ -35,6 +37,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+@OwnedBy(CDP)
 public class K8sLegacyReleaseHandlerImplTest extends CategoryTest {
   @Mock K8sTaskHelperBase taskHelperBase;
   @InjectMocks K8sLegacyReleaseHandlerImpl releaseHandler;

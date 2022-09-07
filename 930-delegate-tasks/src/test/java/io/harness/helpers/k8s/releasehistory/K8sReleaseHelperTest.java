@@ -7,6 +7,7 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_NUMBER_LABEL_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_OWNER_LABEL_KEY;
@@ -17,6 +18,7 @@ import static io.harness.rule.OwnerRule.ABHINAV2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.CategoryTest;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
@@ -31,6 +33,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
+@OwnedBy(CDP)
 public class K8sReleaseHelperTest extends CategoryTest {
   @InjectMocks K8sReleaseHelper releaseHelper;
 

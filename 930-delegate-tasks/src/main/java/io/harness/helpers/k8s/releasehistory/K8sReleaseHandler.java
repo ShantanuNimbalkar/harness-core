@@ -7,11 +7,15 @@
 
 package io.harness.helpers.k8s.releasehistory;
 
+import static io.harness.annotations.dev.HarnessTeam.CDP;
+
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
 import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 
+@OwnedBy(CDP)
 public interface K8sReleaseHandler {
   IK8sReleaseHistory getReleaseHistory(KubernetesConfig kubernetesConfig, String releaseName) throws Exception;
   IK8sRelease createRelease(String name, int number);
