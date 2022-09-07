@@ -1217,16 +1217,51 @@ public class PipelineServiceImpl implements PipelineService {
           Variable existingVar =
               pipelineVariables.stream().filter(t -> t.getName().equals(finalVariableName)).findFirst().orElse(null);
           if (existingVar != null) {
-            if (existingVar.getRuntimeInput() == null) {
-              existingVar.setRuntimeInput(isRuntime);
-            } else if (existingVar.getRuntimeInput() != isRuntime) {
+            mergeRequired(existingVar, newVar);
+            mergeAllowedValuesAndList(existingVar, newVar);
+            if (checkRuntime(existingVar, isRuntime)) {
               throw new InvalidRequestException(
                   String.format("Variable %s is not marked as runtime in all pipeline stages", variable.getName()));
+            }
+            if (!checkFixed(existingVar, newVar.isFixed())) {
+              throw new InvalidRequestException(
+                  String.format("Variable %s is not marked as fixed in all pipeline stages", variable.getName()));
             }
           }
         }
       }
     }
+  }
+
+  private void mergeAllowedValuesAndList(Variable existingVar, Variable newVar) {
+    if (newVar.getAllowedList() != null) {
+      if (existingVar.getAllowedList() == null) {
+        existingVar.setAllowedList(Collections.emptyList());
+      }
+      existingVar.getAllowedList().retainAll(newVar.getAllowedList());
+      existingVar.setAllowedValues(join(",", existingVar.getAllowedList()));
+    }
+  }
+
+  private boolean checkFixed(Variable existingVar, boolean fixed) {
+    return existingVar.isFixed() == fixed;
+  }
+
+  private boolean checkRuntime(Variable existingVar, boolean isRuntime) {
+    if (existingVar.getRuntimeInput() == null) {
+      existingVar.setRuntimeInput(isRuntime);
+      return false;
+    } else if (existingVar.getRuntimeInput() != isRuntime) {
+      return true;
+    }
+    return false;
+  }
+
+  private void mergeRequired(Variable existingVar, Variable newVar) {
+    if (existingVar.isMandatory()) {
+      return;
+    }
+    existingVar.setMandatory(newVar.isMandatory());
   }
 
   @VisibleForTesting
