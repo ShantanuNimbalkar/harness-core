@@ -817,6 +817,265 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "AzureArtifactsApiAccess": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Token"
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Token"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AzureArtifactsTokenSpec"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AzureArtifactsApiAccessSpecDTO": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsAuthentication": {
+      "type": "object",
+      "required": [
+        "spec",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Http",
+            "Ssh"
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Http"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AzureArtifactsHttpCredentials"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Ssh"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AzureArtifactsSshCredentials"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AzureArtifactsConnector": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ConnectorConfigDTO"
+        },
+        {
+          "type": "object",
+          "required": [
+            "authentication",
+            "type",
+            "url"
+          ],
+          "properties": {
+            "apiAccess": {
+              "$ref": "#/definitions/AzureArtifactsApiAccess"
+            },
+            "authentication": {
+              "$ref": "#/definitions/AzureArtifactsAuthentication"
+            },
+            "delegateSelectors": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "executeOnDelegate": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "Project",
+                "Repo"
+              ]
+            },
+            "url": {
+              "type": "string"
+            },
+            "validationRepo": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsCredentialsDTO": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsHttpCredentials": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/AzureArtifactsCredentialsDTO"
+        },
+        {
+          "type": "object",
+          "required": [
+            "spec",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "UsernameToken"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "UsernameToken"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AzureArtifactsUsernameToken"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsHttpCredentialsSpecDTO": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsSshCredentials": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/AzureArtifactsCredentialsDTO"
+        },
+        {
+          "type": "object",
+          "required": [
+            "sshKeyRef"
+          ],
+          "properties": {
+            "sshKeyRef": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsTokenSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/AzureArtifactsApiAccessSpecDTO"
+        },
+        {
+          "type": "object",
+          "required": [
+            "tokenRef"
+          ],
+          "properties": {
+            "tokenRef": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "AzureArtifactsUsernameToken": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/AzureArtifactsHttpCredentialsSpecDTO"
+        },
+        {
+          "type": "object",
+          "required": [
+            "tokenRef"
+          ],
+          "properties": {
+            "tokenRef": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "usernameRef": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "required": [
+                "usernameRef"
+              ]
+            },
+            {
+              "required": [
+                "username"
+              ]
+            }
+          ]
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "AzureAuthCredentialDTO": {
       "type": "object",
       "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1929,7 +2188,8 @@
             "Jenkins",
             "OciHelmRepo",
             "CustomSecretManager",
-            "ELK"
+            "ELK",
+            "AzureArtifacts"
           ]
         }
       },
@@ -2027,6 +2287,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/AzureConnector"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "AzureArtifacts"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/AzureArtifactsConnector"
               }
             }
           }
