@@ -16,9 +16,6 @@ import java.util.List;
 public interface ELKService extends DataSourceConnectivityChecker {
   List<String> getLogIndexes(ProjectParams projectParams, String connectorIdentifier, String tracingId);
 
-  List<LinkedHashMap> getSampleLogData(
-      ProjectParams projectParams, String connectorIdentifier, String query, String tracingId);
-
-  List<TimeSeriesSampleDTO> getMetricSampleLogData(
+  List<LinkedHashMap> getSampleData(
       ProjectParams projectParams, String connectorIdentifier, String query, String tracingId);
 }
