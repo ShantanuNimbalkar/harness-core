@@ -301,7 +301,10 @@ public enum EntityType {
       IdentifierRef.class, EntityYamlRootNames.AZURE_ROLLBACK_ARM_RESOURCE_STEP),
   @JsonProperty(EntityTypeConstants.BACKGROUND_STEP)
   BACKGROUND_STEP(
-      ModuleType.CI, EntityTypeConstants.BACKGROUND_STEP, IdentifierRef.class, EntityYamlRootNames.BACKGROUND_STEP);
+      ModuleType.CI, EntityTypeConstants.BACKGROUND_STEP, IdentifierRef.class, EntityYamlRootNames.BACKGROUND_STEP),
+  @JsonProperty(EntityTypeConstants.ECS_RUN_TASK)
+  ECS_RUN_TASK_STEP(
+      ModuleType.CD, EntityTypeConstants.ECS_RUN_TASK, IdentifierRef.class, EntityYamlRootNames.ECS_RUN_TASK);
 
   private final ModuleType moduleType;
   String yamlName;

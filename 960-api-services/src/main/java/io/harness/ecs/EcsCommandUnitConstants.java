@@ -30,5 +30,11 @@ public enum EcsCommandUnitConstants {
     public String toString() {
       return "Delete Service";
     }
+  },
+  runTask {
+    @Override
+    public String toString() {
+      return "Run Task";
+    }
   }
 }
