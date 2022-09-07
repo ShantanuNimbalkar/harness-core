@@ -7,16 +7,10 @@
 
 package io.harness.event.app;
 
-import ch.qos.logback.access.spi.IAccessEvent;
-import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.google.common.collect.ImmutableList;
-import io.dropwizard.Configuration;
-import io.dropwizard.logging.FileAppenderFactory;
-import io.dropwizard.request.logging.LogbackAccessRequestLogFactory;
-import io.dropwizard.request.logging.RequestLogFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import static io.harness.annotations.dev.HarnessTeam.CE;
+
+import static java.util.stream.Collectors.toSet;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.event.config.EventDataBatchQueryConfig;
 import io.harness.grpc.server.Connector;
@@ -24,20 +18,22 @@ import io.harness.mongo.MongoConfig;
 import io.harness.secret.ConfigSecret;
 import io.harness.secret.SecretsConfiguration;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.*;
-
+import com.google.common.collect.ImmutableList;
+import io.dropwizard.Configuration;
+import io.dropwizard.server.DefaultServerFactory;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import javax.ws.rs.Path;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
-
-import javax.ws.rs.Path;
-
-import static io.harness.annotations.dev.HarnessTeam.CE;
-import static java.util.stream.Collectors.toSet;
 
 @Getter
 @Slf4j
@@ -87,8 +83,7 @@ public class EventServiceConfig extends Configuration {
   }
 
   public static Collection<Class<?>> getResourceClasses() {
-    final Reflections reflections =
-            new Reflections(RESOURCE_PACKAGES);
+    final Reflections reflections = new Reflections(RESOURCE_PACKAGES);
 
     return reflections.getTypesAnnotatedWith(Path.class);
   }
@@ -96,19 +91,6 @@ public class EventServiceConfig extends Configuration {
   public EventServiceConfig() {
     DefaultServerFactory defaultServerFactory = new DefaultServerFactory();
     defaultServerFactory.setJerseyRootPath(SERVICE_ROOT_PATH);
-    defaultServerFactory.setRequestLogFactory(getDefaultlogbackAccessRequestLogFactory());
     super.setServerFactory(defaultServerFactory);
-  }
-
-  private RequestLogFactory getDefaultlogbackAccessRequestLogFactory() {
-    LogbackAccessRequestLogFactory logbackAccessRequestLogFactory = new LogbackAccessRequestLogFactory();
-    FileAppenderFactory<IAccessEvent> fileAppenderFactory = new FileAppenderFactory<>();
-    fileAppenderFactory.setArchive(true);
-    fileAppenderFactory.setCurrentLogFilename("access.log");
-    fileAppenderFactory.setThreshold(Level.ALL.toString());
-    fileAppenderFactory.setArchivedLogFilenamePattern("access.%d.log.gz");
-    fileAppenderFactory.setArchivedFileCount(14);
-    logbackAccessRequestLogFactory.setAppenders(ImmutableList.of(fileAppenderFactory));
-    return logbackAccessRequestLogFactory;
   }
 }
