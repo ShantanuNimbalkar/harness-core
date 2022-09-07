@@ -74,14 +74,12 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
   @Override
   public void closeStream(String baseLogKeySuffix) {
     String logKey = getLogKey(baseLogKeySuffix);
-
-    // we don't want workflow steps to hang because of any log reasons. Putting a safety net just in case
-    //    if (delegateLogStreamingDispatcher.dispatchAllLogsBeforeClosingStream(logKey)) {
-    //      log.debug("for {} the logs are not drained yet. sleeping for 100ms...", logKey);
-    //      // Question? how to sleep it for 100 ms
-    //    }
-
     try {
+      // we don't want workflow steps to hang because of any log reasons. Putting a safety net just in case
+      if (delegateLogStreamingDispatcher.dispatchLogsBeforeClosingStream(logKey)) {
+        log.debug("for {} the logs are not drained yet. sleeping for 100ms...", logKey);
+        Thread.sleep(100);
+      }
       SafeHttpCall.executeWithExceptions(logStreamingClient.closeLogStream(token, accountId, logKey, true));
     } catch (Exception ex) {
       log.error("Unable to close log stream for account {} and key {}", accountId, logKey, ex);

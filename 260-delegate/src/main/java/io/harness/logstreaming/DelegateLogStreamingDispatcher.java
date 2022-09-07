@@ -42,8 +42,8 @@ public class DelegateLogStreamingDispatcher {
   private final AtomicReference<DelegateLogStreamingDispatcherService> svcHolder = new AtomicReference<>();
 
   private Map<String, List<LogLine>> logCache = new HashMap<>();
-  private Map<String, List<LogLine>> logCacheToBeFlushed;
-  ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  ReadWriteLock readWriteLockForMap = new ReentrantReadWriteLock();
+  ReadWriteLock readWriteLockForToken = new ReentrantReadWriteLock();
 
   private class DelegateLogStreamingDispatcherService extends AbstractScheduledService {
     DelegateLogStreamingDispatcherService() {
@@ -65,12 +65,13 @@ public class DelegateLogStreamingDispatcher {
     if (logCache.isEmpty() || token == null) {
       return;
     }
+    Map<String, List<LogLine>> logCacheToBeFlushed;
     try {
-      readWriteLock.writeLock().lock();
+      readWriteLockForMap.writeLock().lock();
       logCacheToBeFlushed = logCache;
       logCache = new HashMap<>();
     } finally {
-      readWriteLock.writeLock().unlock();
+      readWriteLockForMap.writeLock().unlock();
     }
     dispatchLogs(logCacheToBeFlushed);
   }
@@ -85,21 +86,39 @@ public class DelegateLogStreamingDispatcher {
 
   public void saveLogsInCache(String logKey, LogLine logLine) {
     try {
-      readWriteLock.readLock().lock();
+      readWriteLockForMap.readLock().lock();
       if (!logCache.containsKey(logKey)) {
         logCache.put(logKey, new ArrayList<>());
       }
       logCache.get(logKey).add(logLine);
     } finally {
-      readWriteLock.readLock().unlock();
+      readWriteLockForMap.readLock().unlock();
+    }
+  }
+
+  public boolean dispatchLogsBeforeClosingStream(String logKey) {
+    try {
+      readWriteLockForMap.readLock().lock();
+      if (!logCache.containsKey(logKey)) {
+        return false;
+      }
+      List<LogLine> logLines = logCache.get(logKey);
+      logCache.remove(logKey);
+      logStreamingExecutor.submit(() -> sendLogsOverHttp(logKey, logLines));
+      return true;
+    } finally {
+      readWriteLockForMap.readLock().unlock();
     }
   }
 
   private void sendLogsOverHttp(String logKey, List<LogLine> logLines) {
     try {
+      readWriteLockForToken.readLock().lock();
       SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
     } catch (Exception ex) {
       log.error("Unable to push message to log stream for account {} and key {}", accountId, logKey, ex);
+    } finally {
+      readWriteLockForToken.readLock().unlock();
     }
   }
 
@@ -121,8 +140,15 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
-  public void setToken(String token) {
-    this.token = token;
+  public void setToken(String newToken) {
+    if (!newToken.equals(this.token)) {
+      try {
+        readWriteLockForToken.writeLock().lock();
+        this.token = newToken;
+      } finally {
+        readWriteLockForToken.writeLock().unlock();
+      }
+    }
   }
 
   public void setAccountId(String accountId) {
