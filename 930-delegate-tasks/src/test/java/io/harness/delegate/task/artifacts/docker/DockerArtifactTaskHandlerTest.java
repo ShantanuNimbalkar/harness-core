@@ -13,7 +13,6 @@ import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.SHIVAM;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doReturn;
 
 import io.harness.CategoryTest;
@@ -329,7 +328,7 @@ public class DockerArtifactTaskHandlerTest extends CategoryTest {
         (DockerArtifactDelegateResponse) lastSuccessfulBuild.getArtifactDelegateResponses().get(0);
     assertThat(attributes.getImagePath()).isEqualTo(sourceAttributes.getImagePath());
     assertThat(attributes.getTag()).isEqualTo(sourceAttributes.getTag());
-    assertNull(attributes.getLabel());
+    assertThat(attributes.getLabel()).isNull();
   }
 
   @Test
