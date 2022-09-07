@@ -605,9 +605,10 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
 
   private Set<ViewFieldIdentifier> getDataSourcesFromGroupBys(final List<QLCEViewGroupBy> groupBy) {
     final Set<ViewFieldIdentifier> dataSources = new HashSet<>();
-    for (final QLCEViewGroupBy qlceViewGroupBy : groupBy) {
-      if (Objects.nonNull(qlceViewGroupBy) && Objects.nonNull(qlceViewGroupBy.getEntityGroupBy())) {
-        if (qlceViewGroupBy.getEntityGroupBy().getIdentifier() != ViewFieldIdentifier.BUSINESS_MAPPING) {
+    if (Objects.nonNull(groupBy)) {
+      for (final QLCEViewGroupBy qlceViewGroupBy : groupBy) {
+        if (Objects.nonNull(qlceViewGroupBy) && Objects.nonNull(qlceViewGroupBy.getEntityGroupBy())
+            && qlceViewGroupBy.getEntityGroupBy().getIdentifier() != ViewFieldIdentifier.BUSINESS_MAPPING) {
           dataSources.add(qlceViewGroupBy.getEntityGroupBy().getIdentifier());
         }
       }

@@ -164,7 +164,8 @@ public class BusinessMappingDataSourceHelper {
     final List<String> businessMappingIds = new ArrayList<>();
     if (Objects.nonNull(groupBys)) {
       groupBys.forEach(groupBy -> {
-        if (groupBy.getEntityGroupBy().getIdentifier() == ViewFieldIdentifier.BUSINESS_MAPPING) {
+        if (Objects.nonNull(groupBy) && Objects.nonNull(groupBy.getEntityGroupBy())
+            && groupBy.getEntityGroupBy().getIdentifier() == ViewFieldIdentifier.BUSINESS_MAPPING) {
           businessMappingIds.add(groupBy.getEntityGroupBy().getFieldId());
         }
       });
