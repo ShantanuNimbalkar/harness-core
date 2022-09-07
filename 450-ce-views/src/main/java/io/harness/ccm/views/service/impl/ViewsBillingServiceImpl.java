@@ -550,19 +550,25 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
       final QLCEViewMetadataFilter metadataFilter = viewMetadataFilter.get().getViewMetadataFilter();
       if (!metadataFilter.isPreview()) {
         final CEView ceView = viewService.get(metadataFilter.getViewId());
-        if (Objects.nonNull(ceView) && Objects.nonNull(ceView.getDataSources())) {
-          ceView.getDataSources().forEach(viewFieldIdentifier -> {
-            if (viewFieldIdentifier == ViewFieldIdentifier.BUSINESS_MAPPING) {
-              dataSources.addAll(businessMappingDataSourceHelper.getBusinessMappingViewFieldIdentifiersFromViewRules(
-                  ceView.getViewRules()));
-            } else {
-              dataSources.add(viewFieldIdentifier);
-            }
-          });
-        }
+        dataSources.addAll(getDataSourcesFromCEView(ceView));
       }
     }
     return isClusterDataSources(dataSources);
+  }
+
+  private Set<ViewFieldIdentifier> getDataSourcesFromCEView(final CEView ceView) {
+    final Set<ViewFieldIdentifier> dataSources = new HashSet<>();
+    if (Objects.nonNull(ceView) && Objects.nonNull(ceView.getDataSources())) {
+      ceView.getDataSources().forEach(viewFieldIdentifier -> {
+        if (viewFieldIdentifier == ViewFieldIdentifier.BUSINESS_MAPPING) {
+          dataSources.addAll(businessMappingDataSourceHelper.getBusinessMappingViewFieldIdentifiersFromViewRules(
+              ceView.getViewRules()));
+        } else {
+          dataSources.add(viewFieldIdentifier);
+        }
+      });
+    }
+    return dataSources;
   }
 
   private Set<ViewFieldIdentifier> getDataSources(
