@@ -12,6 +12,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.steps.nodes.ArtifactoryUploadNode;
+import io.harness.beans.steps.nodes.BackgroundStepNode;
 import io.harness.beans.steps.nodes.BuildAndPushACRNode;
 import io.harness.beans.steps.nodes.BuildAndPushDockerNode;
 import io.harness.beans.steps.nodes.BuildAndPushECRNode;
@@ -31,8 +32,6 @@ import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
 import io.harness.beans.steps.stepinfo.RunTestsStepInfo;
 import io.harness.ci.config.CIExecutionServiceConfig;
-import io.harness.ci.integrationstage.InitializeStepInfoBuilder;
-import io.harness.ci.integrationstage.K8InitializeStepInfoBuilder;
 import io.harness.ci.serializer.PluginCompatibleStepSerializer;
 import io.harness.ci.serializer.PluginStepProtobufSerializer;
 import io.harness.ci.serializer.ProtobufStepSerializer;
@@ -60,6 +59,7 @@ public class CIExecutionServiceModule extends AbstractModule {
   public static Set<Class<?>> ciStepsMovedToNewSchema = new HashSet() {
     {
       add(RunStepNode.class);
+      add(BackgroundStepNode.class);
       add(RunTestStepNode.class);
       add(GCSUploadNode.class);
       add(S3UploadNode.class);
@@ -91,7 +91,6 @@ public class CIExecutionServiceModule extends AbstractModule {
         .toInstance(ThreadPool.create(
             20, 300, 5, TimeUnit.SECONDS, new ThreadFactoryBuilder().setNameFormat("Event-Handler-%d").build()));
     this.bind(CIExecutionServiceConfig.class).toInstance(this.ciExecutionServiceConfig);
-    bind(InitializeStepInfoBuilder.class).to(K8InitializeStepInfoBuilder.class);
     bind(new TypeLiteral<ProtobufStepSerializer<RunStepInfo>>() {}).toInstance(new RunStepProtobufSerializer());
     bind(new TypeLiteral<ProtobufStepSerializer<PluginStepInfo>>() {}).toInstance(new PluginStepProtobufSerializer());
     bind(new TypeLiteral<ProtobufStepSerializer<RunTestsStepInfo>>() {
