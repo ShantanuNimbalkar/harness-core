@@ -52,7 +52,7 @@ public class DelegateLogStreamingDispatcher {
 
     @Override
     protected Scheduler scheduler() {
-      return Scheduler.newFixedRateSchedule(0, 3, TimeUnit.SECONDS);
+      return Scheduler.newFixedRateSchedule(0, 2, TimeUnit.SECONDS);
     }
   }
 
