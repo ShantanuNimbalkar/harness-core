@@ -16,7 +16,6 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.servicenow.beans.ImportDataSpecWrapper;
 
 import java.util.List;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -28,8 +27,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServiceNowImportSetSpecParameters implements SpecParameters {
-  @NotNull @NotEmpty ParameterField<String> connectorRef;
-  @NotNull @NotEmpty ParameterField<String> stagingTableName;
+  @NotNull ParameterField<String> connectorRef;
+  @NotNull ParameterField<String> stagingTableName;
   @NotNull ImportDataSpecWrapper importData;
   ParameterField<List<TaskSelectorYaml>> delegateSelectors;
 }

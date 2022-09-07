@@ -39,7 +39,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.TypeAlias;
 
 @OwnedBy(CDC)
@@ -55,11 +54,9 @@ public class ServiceNowImportSetStepInfo implements PMSStepInfo, WithConnectorRe
   private String uuid;
 
   @NotNull
-  @NotEmpty
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   ParameterField<String> connectorRef;
   @NotNull
-  @NotEmpty
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   ParameterField<String> stagingTableName;
 

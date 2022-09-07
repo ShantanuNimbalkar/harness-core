@@ -1514,12 +1514,12 @@
     "ServiceNowField": {
       "type": "object",
       "required": [
+        "name",
         "value"
       ],
       "properties": {
         "name": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "value": {
           "type": "string"
@@ -1541,8 +1541,7 @@
           ],
           "properties": {
             "connectorRef": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             },
             "delegateSelectors": {
               "oneOf": [
@@ -1563,8 +1562,7 @@
               "$ref": "#/definitions/ImportDataSpecWrapper"
             },
             "stagingTableName": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             }
           }
         }
