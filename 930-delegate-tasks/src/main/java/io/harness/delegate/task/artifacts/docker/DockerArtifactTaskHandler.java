@@ -35,7 +35,7 @@ public class DockerArtifactTaskHandler extends DelegateArtifactTaskHandler<Docke
   @Override
   public ArtifactTaskExecutionResponse getLastSuccessfulBuild(DockerArtifactDelegateRequest attributesRequest) {
     BuildDetailsInternal lastSuccessfulBuild;
-    List<Map<String, String>> labels = new ArrayList<>();
+    List<Map<String, String>> labels;
     if (isRegex(attributesRequest)) {
       lastSuccessfulBuild = dockerRegistryService.getLastSuccessfulBuildFromRegex(
           DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest), attributesRequest.getImagePath(),
@@ -47,10 +47,16 @@ public class DockerArtifactTaskHandler extends DelegateArtifactTaskHandler<Docke
           dockerRegistryService.verifyBuildNumber(DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest),
               attributesRequest.getImagePath(), attributesRequest.getTag());
       labels = dockerRegistryService.getLabels(DockerRequestResponseMapper.toDockerInternalConfig(attributesRequest),
-          attributesRequest.getImagePath(), Collections.singletonList(lastSuccessfulBuild.getNumber()));
+          attributesRequest.getImagePath(), Collections.singletonList(attributesRequest.getTag()));
     }
-    DockerArtifactDelegateResponse dockerArtifactDelegateResponse =
-        DockerRequestResponseMapper.toDockerResponse(lastSuccessfulBuild, attributesRequest);
+    DockerArtifactDelegateResponse dockerArtifactDelegateResponse;
+    if (EmptyPredicate.isNotEmpty(labels)) {
+      dockerArtifactDelegateResponse =
+          DockerRequestResponseMapper.toDockerResponse(lastSuccessfulBuild, attributesRequest, labels.get(0));
+    } else {
+      dockerArtifactDelegateResponse =
+          DockerRequestResponseMapper.toDockerResponse(lastSuccessfulBuild, attributesRequest);
+    }
     return getSuccessTaskExecutionResponse(Collections.singletonList(dockerArtifactDelegateResponse));
   }
 
