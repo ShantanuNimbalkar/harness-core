@@ -26,7 +26,6 @@ import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.ReleaseHistory;
 import io.harness.k8s.model.releasehistory.K8SLegacyReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sRelease;
 import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 import io.harness.rule.Owner;
 
@@ -80,7 +79,7 @@ public class K8sLegacyReleaseHandlerImplTest extends CategoryTest {
 
     releaseHandler.saveRelease(KubernetesConfig.builder().build(),
         K8sReleasePersistDTO.builder()
-            .release(K8sRelease.builder().releaseName(SOME_RELEASE).build())
+            .releaseName(SOME_RELEASE)
             .releaseHistoryYaml(SOME_RELEASE_HISTORY_YAML)
             .storeInSecrets(false)
             .build());

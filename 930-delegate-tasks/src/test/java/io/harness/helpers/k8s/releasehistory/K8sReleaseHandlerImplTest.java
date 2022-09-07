@@ -61,6 +61,7 @@ public class K8sReleaseHandlerImplTest extends CategoryTest {
     Map<String, String> labels = new HashMap<>(RELEASE_HARNESS_SECRET_LABELS);
     labels.put(RELEASE_KEY, RELEASE_NAME);
 
+    doReturn(labels).when(releaseHelper).createLabelsMap(RELEASE_NAME);
     doReturn("labelArg").when(releaseHelper).createCommaSeparatedKeyValueList(labels);
     doReturn("fieldArg").when(releaseHelper).createCommaSeparatedKeyValueList(RELEASE_HARNESS_SECRET_TYPE);
 
