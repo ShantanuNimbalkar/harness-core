@@ -8,11 +8,9 @@
 // rename package
 package io.harness.logstreaming;
 
-import io.harness.logging.LoggingListener;
 import io.harness.network.SafeHttpCall;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -46,18 +44,15 @@ public class DelegateLogStreamingDispatcher {
   ReadWriteLock readWriteLockForToken = new ReentrantReadWriteLock();
 
   private class DelegateLogStreamingDispatcherService extends AbstractScheduledService {
-    DelegateLogStreamingDispatcherService() {
-      addListener(new LoggingListener(this), MoreExecutors.directExecutor());
-    }
-
     @Override
     protected void runOneIteration() throws Exception {
+      log.info("Current pool size of logStreamingExecutor is {}", logStreamingExecutor.getActiveCount());
       swapMapsAndDispatchLogs();
     }
 
     @Override
     protected Scheduler scheduler() {
-      return Scheduler.newFixedRateSchedule(0, 2, TimeUnit.SECONDS);
+      return Scheduler.newFixedRateSchedule(0, 3, TimeUnit.SECONDS);
     }
   }
 
