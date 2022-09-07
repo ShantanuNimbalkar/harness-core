@@ -54,6 +54,7 @@ import io.harness.pms.yaml.ParameterField;
 import software.wings.utils.RepositoryFormat;
 
 import java.nio.file.Paths;
+import java.util.Map;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -168,7 +169,7 @@ public class ArtifactResponseToOutcomeMapper {
         .type(ArtifactSourceType.DOCKER_REGISTRY.getDisplayName())
         .primaryArtifact(dockerConfig.isPrimaryArtifact())
         .imagePullSecret(createImagePullSecret(ArtifactUtils.getArtifactKey(dockerConfig)))
-        .label(dockerDelegateResponse.getLabel())
+        .label(getLabels(dockerDelegateResponse))
         .build();
   }
 
@@ -363,6 +364,13 @@ public class ArtifactResponseToOutcomeMapper {
     return EmptyPredicate.isNotEmpty(artifactDelegateResponse.getBuildDetails().getMetadata())
         ? artifactDelegateResponse.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE)
         : null;
+  }
+
+  private Map<String, String> getLabels(DockerArtifactDelegateResponse artifactDelegateResponse) {
+    if (artifactDelegateResponse == null || artifactDelegateResponse.getLabel() == null) {
+      return null;
+    }
+    return EmptyPredicate.isNotEmpty(artifactDelegateResponse.getLabel()) ? artifactDelegateResponse.getLabel() : null;
   }
 
   private String getRegistryHostnameValue(ArtifactDelegateResponse artifactDelegateResponse) {
