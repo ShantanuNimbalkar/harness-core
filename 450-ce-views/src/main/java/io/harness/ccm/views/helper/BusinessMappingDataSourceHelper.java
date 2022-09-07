@@ -17,6 +17,9 @@ import io.harness.ccm.views.businessMapping.service.intf.BusinessMappingService;
 import io.harness.ccm.views.entities.ViewFieldIdentifier;
 import io.harness.ccm.views.entities.ViewIdCondition;
 import io.harness.ccm.views.entities.ViewRule;
+import io.harness.ccm.views.graphql.QLCEViewFilter;
+import io.harness.ccm.views.graphql.QLCEViewGroupBy;
+import io.harness.ccm.views.graphql.QLCEViewRule;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -32,18 +35,64 @@ import java.util.Set;
 public class BusinessMappingDataSourceHelper {
   @Inject private BusinessMappingService businessMappingService;
 
-  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiers(
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiersFromIdFilters(
+      final List<QLCEViewFilter> idFilters) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    for (final String businessMappingId : getBusinessMappingIdsFromIdFilters(idFilters)) {
+      final BusinessMapping businessMapping = businessMappingService.get(businessMappingId);
+      viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiers(businessMapping));
+    }
+    return viewFieldIdentifiers;
+  }
+
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiersFromRuleFilters(
+      final List<QLCEViewRule> ruleFilters) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    ruleFilters.forEach(ruleFilter -> {
+      if (Objects.nonNull(ruleFilter) && !Lists.isNullOrEmpty(ruleFilter.getConditions())) {
+        viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiersFromIdFilters(ruleFilter.getConditions()));
+      }
+    });
+    return viewFieldIdentifiers;
+  }
+
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiersFromGroupBys(
+      final List<QLCEViewGroupBy> groupBys) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    for (final String businessMappingId : getBusinessMappingIdsFromGroupBys(groupBys)) {
+      final BusinessMapping businessMapping = businessMappingService.get(businessMappingId);
+      viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiers(businessMapping));
+    }
+    return viewFieldIdentifiers;
+  }
+
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiersFromViewRules(final List<ViewRule> viewRules) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    for (final String businessMappingId : getBusinessMappingIdsFromViewRules(viewRules)) {
+      final BusinessMapping businessMapping = businessMappingService.get(businessMappingId);
+      viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiers(businessMapping));
+    }
+    return viewFieldIdentifiers;
+  }
+
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiersFromViewRules(
       final String accountId, final List<ViewRule> viewRules) {
     final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
-    for (final String businessMappingId : getBusinessMappingIds(viewRules)) {
+    for (final String businessMappingId : getBusinessMappingIdsFromViewRules(viewRules)) {
       final BusinessMapping businessMapping = businessMappingService.get(businessMappingId, accountId);
-      if (Objects.nonNull(businessMapping)) {
-        if (!Lists.isNullOrEmpty(businessMapping.getCostTargets())) {
-          viewFieldIdentifiers.addAll(getCostTargetViewFieldIdentifiers(businessMapping.getCostTargets()));
-        }
-        if (!Lists.isNullOrEmpty(businessMapping.getSharedCosts())) {
-          viewFieldIdentifiers.addAll(getSharedCostViewFieldIdentifiers(businessMapping.getSharedCosts()));
-        }
+      viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiers(businessMapping));
+    }
+    return viewFieldIdentifiers;
+  }
+
+  private Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiers(final BusinessMapping businessMapping) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    if (Objects.nonNull(businessMapping)) {
+      if (!Lists.isNullOrEmpty(businessMapping.getCostTargets())) {
+        viewFieldIdentifiers.addAll(getCostTargetViewFieldIdentifiers(businessMapping.getCostTargets()));
+      }
+      if (!Lists.isNullOrEmpty(businessMapping.getSharedCosts())) {
+        viewFieldIdentifiers.addAll(getSharedCostViewFieldIdentifiers(businessMapping.getSharedCosts()));
       }
     }
     return viewFieldIdentifiers;
@@ -82,7 +131,7 @@ public class BusinessMappingDataSourceHelper {
     return viewFieldIdentifiers;
   }
 
-  private List<String> getBusinessMappingIds(final List<ViewRule> viewRules) {
+  private List<String> getBusinessMappingIdsFromViewRules(final List<ViewRule> viewRules) {
     final List<String> businessMappingIds = new ArrayList<>();
     if (Objects.nonNull(viewRules)) {
       viewRules.forEach(viewRule -> {
@@ -93,6 +142,30 @@ public class BusinessMappingDataSourceHelper {
               businessMappingIds.add(viewIdCondition.getViewField().getFieldId());
             }
           });
+        }
+      });
+    }
+    return businessMappingIds;
+  }
+
+  private List<String> getBusinessMappingIdsFromIdFilters(final List<QLCEViewFilter> idFilters) {
+    final List<String> businessMappingIds = new ArrayList<>();
+    if (Objects.nonNull(idFilters)) {
+      idFilters.forEach(idFilter -> {
+        if (idFilter.getField().getIdentifier() == ViewFieldIdentifier.BUSINESS_MAPPING) {
+          businessMappingIds.add(idFilter.getField().getFieldId());
+        }
+      });
+    }
+    return businessMappingIds;
+  }
+
+  private List<String> getBusinessMappingIdsFromGroupBys(final List<QLCEViewGroupBy> groupBys) {
+    final List<String> businessMappingIds = new ArrayList<>();
+    if (Objects.nonNull(groupBys)) {
+      groupBys.forEach(groupBy -> {
+        if (groupBy.getEntityGroupBy().getIdentifier() == ViewFieldIdentifier.BUSINESS_MAPPING) {
+          businessMappingIds.add(groupBy.getEntityGroupBy().getFieldId());
         }
       });
     }
