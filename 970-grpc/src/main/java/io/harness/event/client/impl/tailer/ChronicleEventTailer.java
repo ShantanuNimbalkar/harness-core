@@ -23,6 +23,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -166,8 +168,8 @@ public class ChronicleEventTailer extends AbstractScheduledService {
         try {
           try {
             publishMessagesOverRest(publishRequest);
-          } catch (Exception e) {
-            log.info("Something wrong with publishing over rest");
+          } catch (IOException e) {
+            log.error("Something wrong with publishing over rest ", e);
           }
           blockingStub.withDeadlineAfter(30, TimeUnit.SECONDS).publish(publishRequest);
           log.info("Published {} messages successfully", batchToSend.size());
@@ -193,12 +195,13 @@ public class ChronicleEventTailer extends AbstractScheduledService {
     }
   }
 
-  private void publishMessagesOverRest(PublishRequest publishRequest) {
+  private void publishMessagesOverRest(PublishRequest publishRequest) throws IOException {
     try {
       Call<PublishResponse> call = eventPublisherClient.publish(accountId, publishRequest);
       EventServiceRestUtils.executeRestCall(call);
     } catch (Exception e) {
       log.error("Error while publishing messages over rest ", e);
+      throw e;
     }
   }
 
