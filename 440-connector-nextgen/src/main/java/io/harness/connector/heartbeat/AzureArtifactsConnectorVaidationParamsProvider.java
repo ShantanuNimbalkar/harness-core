@@ -14,6 +14,8 @@ import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.helper.EncryptionHelper;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.ConnectorValidationParams;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsValidationParams;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import com.google.inject.Inject;
@@ -28,13 +30,22 @@ public class AzureArtifactsConnectorVaidationParamsProvider implements Connector
   public ConnectorValidationParams getConnectorValidationParams(ConnectorInfoDTO connectorInfoDTO, String connectorName,
       String accountIdentifier, String orgIdentifier, String projectIdentifier) {
     ConnectorConfigDTO connectorConfigDTO = connectorInfoDTO.getConnectorConfig();
+
     List<DecryptableEntity> decryptableEntities = connectorConfigDTO.getDecryptableEntities();
+
     DecryptableEntity decryptableEntity = null;
+
     if (isNotEmpty(decryptableEntities)) {
       decryptableEntity = decryptableEntities.get(0);
     }
+
     final List<EncryptedDataDetail> encryptionDetail =
         encryptionHelper.getEncryptionDetail(decryptableEntity, accountIdentifier, orgIdentifier, projectIdentifier);
-    return null;
+
+    return AzureArtifactsValidationParams.builder()
+        .azureArtifactsConnectorDTO((AzureArtifactsConnectorDTO) connectorConfigDTO)
+        .encryptionDataDetails(encryptionDetail)
+        .connectorName(connectorName)
+        .build();
   }
 }

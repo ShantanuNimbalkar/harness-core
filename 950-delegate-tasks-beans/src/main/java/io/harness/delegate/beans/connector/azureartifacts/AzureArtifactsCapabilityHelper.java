@@ -27,9 +27,10 @@ public class AzureArtifactsCapabilityHelper extends ConnectorCapabilityBaseHelpe
 
     String registryUrl = azureArtifactsConnectorDTO.getUrl();
 
-    /*capabilityList.add(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
-            registryUrl.endsWith("/") ? registryUrl : registryUrl.concat("/"), maskingEvaluator));
-    populateDelegateSelectorCapability(capabilityList, azureArtifactsConnectorDTO.getDelegateSelectors());*/
+    capabilityList.add(HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(
+        registryUrl, maskingEvaluator));
+
+    populateDelegateSelectorCapability(capabilityList, azureArtifactsConnectorDTO.getDelegateSelectors());
 
     return capabilityList;
   }
