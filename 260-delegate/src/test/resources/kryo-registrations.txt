@@ -2312,3 +2312,17 @@
 9800005:io.harness.delegate.task.ssh.artifact.ArtifactoryDockerArtifactDelegateConfig
 10000001:io.harness.delegate.beans.connector.elkconnector.ELKConnectorDTO
 10000002:io.harness.delegate.beans.connector.elkconnector.ELKAuthType
+10000101:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO
+10000102:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpCredentialsDTO
+10000103:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpAuthenticationType
+10000104:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessDTO
+10000105:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsSshCredentialsDTO
+10000106:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessSpecDTO
+10000107:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTokenSpecDTO
+10000108:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsApiAccessType
+10000109:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsAuthenticationDTO
+10000110:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsCredentialsDTO
+10000111:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsUsernameTokenDTO
+10000112:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsHttpCredentialsSpecDTO
+10000113:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectionTypeDTO
+
