@@ -27,11 +27,11 @@ import java.util.List;
 public class EcsRunTaskStepParameters extends EcsRunTaskBaseStepInfo implements EcsSpecParameters {
   @Builder(builderMethodName = "infoBuilder")
   public EcsRunTaskStepParameters(
-      ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
-    super(delegateSelectors);
+      ParameterField<List<TaskSelectorYaml>> delegateSelectors,
+      ParameterField<StoreConfigWrapper> taskDefinition,
+      ParameterField<Boolean> waitForSteadyState) {
+    super(delegateSelectors, taskDefinition, waitForSteadyState);
   }
-
-  ParameterField<StoreConfigWrapper> taskDefinition;
 
   public List<String> getCommandUnits() {
     return Arrays.asList(EcsCommandUnitConstants.runTask.toString());

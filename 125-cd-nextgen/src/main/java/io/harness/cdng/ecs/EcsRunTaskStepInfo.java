@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.cdng.pipeline.CDStepInfo;
 import io.harness.cdng.visitor.helpers.cdstepinfo.EcsRollingRollbackStepInfoVisitorHelper;
 import io.harness.cdng.visitor.helpers.cdstepinfo.EcsRunTaskStepInfoVisitorHelper;
@@ -45,8 +46,10 @@ public class EcsRunTaskStepInfo extends EcsRunTaskBaseStepInfo implements CDStep
 
   @Builder(builderMethodName = "infoBuilder")
   public EcsRunTaskStepInfo(
-      ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
-    super(delegateSelectors);
+      ParameterField<List<TaskSelectorYaml>> delegateSelectors,
+      ParameterField<StoreConfigWrapper> taskDefinition,
+      ParameterField<Boolean> waitForSteadyState) {
+    super(delegateSelectors, taskDefinition, waitForSteadyState);
   }
   @Override
   public StepType getStepType() {
