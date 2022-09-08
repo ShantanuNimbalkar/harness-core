@@ -44,6 +44,7 @@ import io.harness.cdng.creator.plan.steps.CloudformationCreateStackStepPlanCreat
 import io.harness.cdng.creator.plan.steps.CloudformationDeleteStackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.CloudformationRollbackStackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.CommandStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.FetchInstanceScriptStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.GitOpsCreatePRStepPlanCreatorV2;
 import io.harness.cdng.creator.plan.steps.GitOpsMergePRStepPlanCreatorV2;
 import io.harness.cdng.creator.plan.steps.HelmDeployStepPlanCreatorV2;
@@ -92,6 +93,7 @@ import io.harness.cdng.creator.variables.K8sRollingStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sScaleStepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaRollbackStepVariableCreator;
+import io.harness.cdng.customDeployment.variablecreator.FetchInstanceScriptStepVariableCreator;
 import io.harness.cdng.jenkins.jenkinsstep.JenkinsBuildStepVariableCreator;
 import io.harness.cdng.jenkins.jenkinsstep.JenkinsCreateStepPlanCreator;
 import io.harness.cdng.provision.azure.variablecreator.AzureARMRollbackStepVariableCreator;
@@ -163,6 +165,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new K8sBGSwapServicesStepPlanCreator());
     planCreators.add(new K8sCanaryDeleteStepPlanCreator());
     planCreators.add(new TerraformApplyStepPlanCreator());
+    planCreators.add(new FetchInstanceScriptStepPlanCreator());
     planCreators.add(new TerraformPlanStepPlanCreator());
     planCreators.add(new TerraformDestroyStepPlanCreator());
     planCreators.add(new TerraformRollbackStepPlanCreator());
@@ -261,6 +264,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new AzureWebAppTrafficShiftStepVariableCreator());
     variableCreators.add(new AzureWebAppSwapSlotStepVariableCreator());
     variableCreators.add(new AzureWebAppRollbackStepVariableCreator());
+    variableCreators.add(new FetchInstanceScriptStepVariableCreator());
     variableCreators.add(new JenkinsBuildStepVariableCreator());
     variableCreators.add(new StrategyVariableCreator());
     // ECS
@@ -526,6 +530,15 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
             .setFeatureFlag(FeatureName.AZURE_WEBAPP_NG.name())
             .build();
 
+    StepInfo fetchInstanceScript =
+        StepInfo.newBuilder()
+            .setName("Fetch Instance Script")
+            .setType(StepSpecTypeConstants.CUSTOM_DEPLOYMENT_FETCH_INSTANCE_SCRIPT)
+            .setStepMetaData(
+                StepMetaData.newBuilder().addCategory("CustomDeployment").addFolderPaths("CustomDeployment").build())
+            .setFeatureFlag(FeatureName.NG_DEPLOYMENT_TEMPLATE.name())
+            .build();
+
     StepInfo azureWebAppSwapSlot =
         StepInfo.newBuilder()
             .setName("Azure Swap Slot")
@@ -618,6 +631,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(azureWebAppTrafficShift);
     stepInfos.add(azureWebAppSwapSlot);
     stepInfos.add(azureWebAppRollback);
+    stepInfos.add(fetchInstanceScript);
     stepInfos.add(jenkinsBuildStepInfo);
     stepInfos.add(ecsRollingDeploy);
     stepInfos.add(ecsRollingRollack);

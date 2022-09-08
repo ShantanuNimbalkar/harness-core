@@ -578,7 +578,7 @@ public class ServiceResourceV2 {
         if (!isNull(serviceSpec)) {
           JsonNode customDeploymentRef = serviceSpec.get("customDeploymentRef");
           if (!isNull(customDeploymentRef)) {
-            JsonNode ref = customDeploymentRef.get("ref");
+            JsonNode ref = customDeploymentRef.get("templateRef");
             JsonNode versionLabelNode = customDeploymentRef.get("versionLabel");
             return ref.asText().equals(deploymentTemplateIdentifier) && versionLabelNode.asText().equals(versionLabel);
           }
