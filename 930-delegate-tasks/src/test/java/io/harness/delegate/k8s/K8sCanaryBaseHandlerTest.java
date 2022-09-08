@@ -11,9 +11,9 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.delegate.k8s.K8sTestConstants.CONFIG_MAP_YAML;
 import static io.harness.delegate.k8s.K8sTestConstants.DAEMON_SET_YAML;
 import static io.harness.delegate.k8s.K8sTestConstants.DEPLOYMENT_YAML;
-import static io.harness.k8s.model.K8sLegacyRelease.Status.Failed;
-import static io.harness.k8s.model.K8sLegacyRelease.Status.InProgress;
 import static io.harness.k8s.model.ReleaseHistory.defaultVersion;
+import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Failed;
+import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.InProgress;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.LogLevel.ERROR;
 import static io.harness.rule.OwnerRule.ABOSII;
@@ -56,6 +56,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
@@ -177,7 +178,7 @@ public class K8sCanaryBaseHandlerTest extends CategoryTest {
   public void testDeploymentWorkloadsForCanaryCleanupCanaryTrue() throws Exception {
     K8sCanaryHandlerConfig k8sCanaryHandlerConfig = prepareValidWorkloads();
     List<K8sLegacyRelease> releaseList = new ArrayList<>();
-    releaseList.add(K8sLegacyRelease.builder().number(1).status(K8sLegacyRelease.Status.InProgress).build());
+    releaseList.add(K8sLegacyRelease.builder().number(1).status(IK8sRelease.Status.InProgress).build());
     k8sCanaryHandlerConfig.setReleaseHistory(
         ReleaseHistory.builder().version(defaultVersion).releases(releaseList).build());
     ArgumentCaptor<ReleaseHistory> captor = ArgumentCaptor.forClass(ReleaseHistory.class);

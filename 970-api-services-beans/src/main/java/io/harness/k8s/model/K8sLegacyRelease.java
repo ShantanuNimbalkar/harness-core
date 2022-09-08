@@ -26,18 +26,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @OwnedBy(CDP)
 public class K8sLegacyRelease implements IK8sRelease {
-  public enum Status {
-    InProgress,
-    Succeeded,
-    Failed;
-  }
-
   private int number;
   private Status status;
   private List<KubernetesResourceId> resources;
   private KubernetesResourceId managedWorkload;
   private String managedWorkloadRevision;
-  private boolean isPruningEnabled;
 
   @Builder.Default private List<KubernetesResourceIdRevision> managedWorkloads = new ArrayList();
   @Builder.Default private List<KubernetesResource> customWorkloads = new ArrayList<>();
@@ -59,7 +52,7 @@ public class K8sLegacyRelease implements IK8sRelease {
   }
 
   @Override
-  public IK8sRelease setResourcesInRelease(List<KubernetesResource> resources) {
+  public IK8sRelease setReleaseData(List<KubernetesResource> resources, boolean isPruningEnabled) {
     if (isPruningEnabled) {
       List<KubernetesResource> resourcesWithPruningEnabled =
           resources.stream().filter(resource -> !resource.isSkipPruning()).collect(Collectors.toList());
@@ -69,6 +62,12 @@ public class K8sLegacyRelease implements IK8sRelease {
     } else {
       this.setResources(resources.stream().map(KubernetesResource::getResourceId).collect(Collectors.toList()));
     }
+    return this;
+  }
+
+  @Override
+  public IK8sRelease updateReleaseStatus(Status status) {
+    this.status = status;
     return this;
   }
 

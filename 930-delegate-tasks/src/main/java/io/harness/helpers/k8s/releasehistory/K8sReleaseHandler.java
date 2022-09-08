@@ -15,9 +15,13 @@ import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
 import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 
+import org.codehaus.commons.nullanalysis.NotNull;
+
 @OwnedBy(CDP)
 public interface K8sReleaseHandler {
-  IK8sReleaseHistory getReleaseHistory(KubernetesConfig kubernetesConfig, String releaseName) throws Exception;
-  IK8sRelease createRelease(String name, int number);
-  void saveRelease(KubernetesConfig kubernetesConfig, K8sReleasePersistDTO releasePersistDTO) throws Exception;
+  IK8sReleaseHistory getReleaseHistory(@NotNull KubernetesConfig kubernetesConfig, @NotNull String releaseName)
+      throws Exception;
+  IK8sRelease createRelease(@NotNull String name, @NotNull int number);
+  void saveRelease(@NotNull KubernetesConfig kubernetesConfig, @NotNull K8sReleasePersistDTO releasePersistDTO)
+      throws Exception;
 }

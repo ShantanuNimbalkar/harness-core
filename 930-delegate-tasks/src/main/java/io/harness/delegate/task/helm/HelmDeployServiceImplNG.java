@@ -92,6 +92,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
@@ -441,8 +442,8 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
   private void saveReleaseHistory(HelmCommandRequestNG commandRequest, ReleaseHistory releaseHistory,
       CommandExecutionStatus commandExecutionStatus) throws IOException {
     K8sLegacyRelease.Status releaseStatus = CommandExecutionStatus.SUCCESS == commandExecutionStatus
-        ? K8sLegacyRelease.Status.Succeeded
-        : K8sLegacyRelease.Status.Failed;
+        ? IK8sRelease.Status.Succeeded
+        : IK8sRelease.Status.Failed;
     releaseHistory.setReleaseStatus(releaseStatus);
     k8sTaskHelperBase.saveReleaseHistory(
         kubernetesConfig, commandRequest.getReleaseName(), releaseHistory.getAsYaml(), true);
@@ -557,7 +558,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
     K8sLegacyRelease rollbackRelease = releaseHistory.getRelease(prevReleaseVersion);
     notNullCheck("Unable to find release " + prevReleaseVersion, rollbackRelease);
 
-    if (K8sLegacyRelease.Status.Succeeded != rollbackRelease.getStatus()) {
+    if (IK8sRelease.Status.Succeeded != rollbackRelease.getStatus()) {
       throw new InvalidRequestException("Invalid status for release with number " + prevReleaseVersion
           + ". Expected 'Succeeded' status, actual status is '" + rollbackRelease.getStatus() + "'");
     }

@@ -8,7 +8,6 @@
 package io.harness.helpers.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_HARNESS_SECRET_LABELS;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_LABEL_QUERY_LIST_FORMAT;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_LABEL_QUERY_SET_FORMAT;
@@ -16,6 +15,7 @@ import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_NA
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_NUMBER_LABEL_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_OWNER_LABEL_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_OWNER_LABEL_VALUE;
+import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_LABELS_MAP;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_STATUS_LABEL_KEY;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.SECRET_LABEL_DELIMITER;
 
@@ -49,7 +49,8 @@ public class K8sReleaseHelper {
   }
 
   String generateName(String releaseName, int releaseNumber) {
-    return RELEASE_KEY + RELEASE_NAME_DELIMITER + releaseName + RELEASE_NAME_DELIMITER + releaseNumber;
+    return String.join(
+        RELEASE_KEY, RELEASE_NAME_DELIMITER, releaseName, RELEASE_NAME_DELIMITER, String.valueOf(releaseNumber));
   }
 
   Map<String, String> generateLabels(String releaseName, int releaseNumber, String status) {
@@ -58,7 +59,7 @@ public class K8sReleaseHelper {
   }
 
   Map<String, String> createLabelsMap(String releaseName) {
-    Map<String, String> labels = new HashMap<>(RELEASE_HARNESS_SECRET_LABELS);
+    Map<String, String> labels = new HashMap<>(RELEASE_SECRET_LABELS_MAP);
     labels.put(RELEASE_KEY, releaseName);
     return labels;
   }

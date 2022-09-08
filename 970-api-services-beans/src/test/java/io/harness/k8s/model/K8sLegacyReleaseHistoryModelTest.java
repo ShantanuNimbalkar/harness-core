@@ -8,7 +8,7 @@
 package io.harness.k8s.model;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.K8sLegacyRelease.Status.Succeeded;
+import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Succeeded;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.TATHAGAT;
 
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.k8s.model.K8sLegacyRelease.Status;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableList;
@@ -56,7 +56,7 @@ public class K8sLegacyReleaseHistoryModelTest extends CategoryTest {
     // should delete failed release
     releaseHistory.createNewRelease(emptyList());
     releaseHistory.setReleaseNumber(0);
-    releaseHistory.setReleaseStatus(Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
     releaseHistory.cleanup();
     assertThat(releaseHistory.getReleases()).isEmpty();
 
@@ -66,10 +66,10 @@ public class K8sLegacyReleaseHistoryModelTest extends CategoryTest {
     releaseHistory.setReleaseStatus(Succeeded);
     releaseHistory.createNewRelease(emptyList());
     releaseHistory.setReleaseNumber(2);
-    releaseHistory.setReleaseStatus(Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
     releaseHistory.createNewRelease(emptyList());
     releaseHistory.setReleaseNumber(3);
-    releaseHistory.setReleaseStatus(Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
     releaseHistory.createNewRelease(emptyList());
     releaseHistory.setReleaseNumber(4);
     releaseHistory.setReleaseStatus(Succeeded);

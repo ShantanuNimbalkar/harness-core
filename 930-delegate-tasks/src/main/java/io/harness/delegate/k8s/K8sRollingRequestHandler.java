@@ -53,13 +53,14 @@ import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.K8sLegacyRelease;
-import io.harness.k8s.model.K8sLegacyRelease.Status;
 import io.harness.k8s.model.K8sPod;
 import io.harness.k8s.model.K8sSteadyStateDTO;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
+import io.harness.k8s.model.releasehistory.IK8sRelease.Status;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 
@@ -190,7 +191,7 @@ public class K8sRollingRequestHandler extends K8sRequestHandler {
             .loadBalancer(loadBalancer)
             .build();
 
-    saveRelease(k8sRollingDeployRequest, Status.Succeeded);
+    saveRelease(k8sRollingDeployRequest, IK8sRelease.Status.Succeeded);
     executionLogCallback.saveExecutionLog("\nDone.", INFO, CommandExecutionStatus.SUCCESS);
 
     if (k8sRollingDeployRequest.isPruningEnabled()) {
@@ -239,7 +240,7 @@ public class K8sRollingRequestHandler extends K8sRequestHandler {
   protected void handleTaskFailure(K8sDeployRequest request, Exception exception) throws Exception {
     if (shouldSaveReleaseHistory) {
       K8sRollingDeployRequest k8sRollingDeployRequest = (K8sRollingDeployRequest) request;
-      saveRelease(k8sRollingDeployRequest, Status.Failed);
+      saveRelease(k8sRollingDeployRequest, IK8sRelease.Status.Failed);
     }
   }
 

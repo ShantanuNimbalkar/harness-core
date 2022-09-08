@@ -17,8 +17,15 @@ import java.util.List;
 
 @OwnedBy(CDP)
 public interface IK8sRelease {
+  enum Status {
+    InProgress,
+    Succeeded,
+    Failed;
+  }
+
   Integer getReleaseNumber();
   List<KubernetesResource> getResourcesWithSpecs();
   List<KubernetesResourceId> getResourceIds();
-  IK8sRelease setResourcesInRelease(List<KubernetesResource> resources);
+  IK8sRelease setReleaseData(List<KubernetesResource> resources, boolean isPruningEnabled);
+  IK8sRelease updateReleaseStatus(Status status);
 }

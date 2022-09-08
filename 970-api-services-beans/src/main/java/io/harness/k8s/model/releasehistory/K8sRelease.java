@@ -11,6 +11,8 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.data.encoding.EncodingUtils.compressString;
 import static io.harness.data.encoding.EncodingUtils.deCompressString;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
+import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_PRUNING_ENABLED_KEY;
+import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_STATUS_LABEL_KEY;
 
 import static java.util.Collections.emptyList;
 
@@ -19,6 +21,7 @@ import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Secret;
 import java.io.IOException;
 import java.util.List;
@@ -70,13 +73,32 @@ public class K8sRelease implements IK8sRelease {
   }
 
   @Override
-  public IK8sRelease setResourcesInRelease(List<KubernetesResource> resources) {
+  public IK8sRelease setReleaseData(List<KubernetesResource> resources, boolean isPruningEnabled) {
     try {
       String manifestsYaml = ManifestHelper.toYaml(resources);
       byte[] compressedYaml = compressString(manifestsYaml, Deflater.BEST_COMPRESSION);
       this.releaseSecret.setData(Map.of(RELEASE_KEY, compressedYaml));
+
+      V1ObjectMeta objectMeta = this.releaseSecret.getMetadata();
+      if (objectMeta != null) {
+        objectMeta.putLabelsItem(RELEASE_PRUNING_ENABLED_KEY, String.valueOf(isPruningEnabled));
+        this.releaseSecret.setMetadata(objectMeta);
+      }
     } catch (IOException e) {
       log.error("Failed to set resources in release", e);
+    }
+    return this;
+  }
+
+  @Override
+  public IK8sRelease updateReleaseStatus(Status status) {
+    V1ObjectMeta releaseMeta = releaseSecret.getMetadata();
+    if (releaseMeta != null && releaseMeta.getLabels() != null) {
+      Map<String, String> labels = releaseMeta.getLabels();
+      labels.put(RELEASE_STATUS_LABEL_KEY, status.name());
+      releaseMeta.setLabels(labels);
+      releaseSecret.setMetadata(releaseMeta);
+      return this;
     }
     return this;
   }

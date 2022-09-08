@@ -85,11 +85,11 @@ import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.K8sDelegateTaskParams;
 import io.harness.k8s.model.K8sLegacyRelease;
-import io.harness.k8s.model.K8sLegacyRelease.Status;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LoggingInitializer;
@@ -212,8 +212,8 @@ public class K8sTaskHelperTest extends CategoryTest {
     doReturn(configMap).when(mockKubernetesContainerService).getConfigMap(any(), anyString());
     List<KubernetesResourceId> kubernetesResourceIdList = getKubernetesResourceIdList("1");
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
-    releaseHistory.setReleases(
-        asList(K8sLegacyRelease.builder().status(Status.Succeeded).resources(kubernetesResourceIdList).build()));
+    releaseHistory.setReleases(asList(
+        K8sLegacyRelease.builder().status(IK8sRelease.Status.Succeeded).resources(kubernetesResourceIdList).build()));
 
     String releaseHistoryString = releaseHistory.getAsYaml();
     Map<String, String> data = new HashMap<>();

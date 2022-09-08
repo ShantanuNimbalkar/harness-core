@@ -10,7 +10,6 @@ package io.harness.k8s.model.releasehistory;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.k8s.model.K8sLegacyRelease;
 
 import java.util.Comparator;
 import java.util.List;
@@ -43,7 +42,7 @@ public class K8sReleaseHistory implements IK8sReleaseHistory {
     Optional<K8sRelease> lastSuccessfulReleaseOptional =
         releaseHistory.stream()
             .filter(release -> release.getReleaseNumber() != currentReleaseNumber)
-            .filter(release -> release.getStatus().equals(K8sLegacyRelease.Status.Succeeded.name()))
+            .filter(release -> release.getStatus().equals(IK8sRelease.Status.Succeeded.name()))
             .max(Comparator.comparing(K8sRelease::getReleaseNumber));
 
     return lastSuccessfulReleaseOptional.orElse(null);

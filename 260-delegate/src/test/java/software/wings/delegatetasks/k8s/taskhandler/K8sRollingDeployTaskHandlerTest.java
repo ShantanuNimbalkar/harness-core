@@ -65,6 +65,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
@@ -953,7 +954,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     handlerConfig.setResources(Lists.list(K8sTestHelper.deployment(), K8sTestHelper.configMapPruned()));
     handlerConfig.setKubernetesConfig(KubernetesConfig.builder().namespace("default").build());
     ReleaseHistory releaseHist = ReleaseHistory.createNew();
-    releaseHist.setReleases(Lists.list(K8sLegacyRelease.builder().status(K8sLegacyRelease.Status.InProgress).build()));
+    releaseHist.setReleases(Lists.list(K8sLegacyRelease.builder().status(IK8sRelease.Status.InProgress).build()));
     handlerConfig.setReleaseHistory(releaseHist);
     on(handler).set("k8sRollingHandlerConfig", handlerConfig);
     doReturn(releaseHist.getAsYaml()).when(k8sTaskHelperBase).getReleaseHistoryData(any(), any());

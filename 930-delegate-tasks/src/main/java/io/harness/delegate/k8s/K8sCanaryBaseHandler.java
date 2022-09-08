@@ -10,8 +10,8 @@ package io.harness.delegate.k8s;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.k8s.manifest.ManifestHelper.getWorkloadsForCanaryAndBG;
 import static io.harness.k8s.manifest.VersionUtils.markVersionedResources;
-import static io.harness.k8s.model.K8sLegacyRelease.Status.Failed;
-import static io.harness.k8s.model.K8sLegacyRelease.Status.InProgress;
+import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Failed;
+import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.InProgress;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.LogLevel.ERROR;
 
@@ -42,6 +42,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.LogCallback;
 
 import software.wings.beans.LogColor;
@@ -202,7 +203,7 @@ public class K8sCanaryBaseHandler {
   public void failAndSaveKubernetesRelease(K8sCanaryHandlerConfig canaryHandlerConfig, String releaseName)
       throws IOException {
     ReleaseHistory releaseHistory = canaryHandlerConfig.getReleaseHistory();
-    releaseHistory.setReleaseStatus(K8sLegacyRelease.Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
     k8sTaskHelperBase.saveReleaseHistoryInConfigMap(
         canaryHandlerConfig.getKubernetesConfig(), releaseName, releaseHistory.getAsYaml());
   }

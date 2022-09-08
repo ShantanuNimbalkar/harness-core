@@ -21,8 +21,10 @@ import io.harness.k8s.model.releasehistory.K8SLegacyReleaseHistory;
 import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @OwnedBy(CDP)
+@Singleton
 public class K8sLegacyReleaseHandlerImpl implements K8sReleaseHandler {
   @Inject K8sTaskHelperBase k8sTaskHelperBase;
 
@@ -36,7 +38,7 @@ public class K8sLegacyReleaseHandlerImpl implements K8sReleaseHandler {
 
   @Override
   public IK8sRelease createRelease(String name, int number) {
-    return K8sLegacyRelease.builder().number(number).status(K8sLegacyRelease.Status.InProgress).build();
+    return K8sLegacyRelease.builder().number(number).status(IK8sRelease.Status.InProgress).build();
   }
 
   @Override

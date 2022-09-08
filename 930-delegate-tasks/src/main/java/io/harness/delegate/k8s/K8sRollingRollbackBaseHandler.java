@@ -53,6 +53,7 @@ import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 
@@ -125,7 +126,7 @@ public class K8sRollingRollbackBaseHandler {
         k8sTaskHelperBase.doStatusCheckForAllCustomResources(client, previousCustomManagedWorkloads,
             k8sDelegateTaskParams, logCallback, false, steadyStateTimeoutInMillis);
       }
-      release.setStatus(K8sLegacyRelease.Status.Failed);
+      release.setStatus(IK8sRelease.Status.Failed);
       // update the revision on the previous release.
       updateManagedWorkloadRevisionsInRelease(rollbackHandlerConfig, k8sDelegateTaskParams);
     }
@@ -163,7 +164,7 @@ public class K8sRollingRollbackBaseHandler {
 
     int rollbackReleaseNumber = releaseNumber != null ? releaseNumber : 0;
     if (rollbackReleaseNumber == 0) { // RollingDeploy was aborted
-      if (release.getStatus() == K8sLegacyRelease.Status.Succeeded) {
+      if (release.getStatus() == IK8sRelease.Status.Succeeded) {
         logCallback.saveExecutionLog("No failed release found. Skipping rollback.");
         logCallback.saveExecutionLog("\nDone.", INFO, CommandExecutionStatus.SUCCESS);
         return true;
@@ -449,7 +450,7 @@ public class K8sRollingRollbackBaseHandler {
     int rollbackReleaseNumber = releaseNumber != null ? releaseNumber : 0;
     // check if its even possible case?
     if (rollbackReleaseNumber == 0) { // RollingDeploy was aborted
-      if (rollbackHandlerConfig.getRelease().getStatus() == K8sLegacyRelease.Status.Succeeded) {
+      if (rollbackHandlerConfig.getRelease().getStatus() == IK8sRelease.Status.Succeeded) {
         pruneLogCallback.saveExecutionLog(
             "No failed release found. No need to recreate pruned resources.", INFO, RUNNING);
         pruneLogCallback.saveExecutionLog("\nDone.", INFO, SUCCESS);
@@ -502,7 +503,7 @@ public class K8sRollingRollbackBaseHandler {
 
       int rollbackReleaseNumber = releaseNumber != null ? releaseNumber : 0;
       if (rollbackReleaseNumber == 0) { // RollingDeploy was aborted
-        if (rollbackHandlerConfig.getRelease().getStatus() == K8sLegacyRelease.Status.Succeeded) {
+        if (rollbackHandlerConfig.getRelease().getStatus() == IK8sRelease.Status.Succeeded) {
           deleteLogCallback.saveExecutionLog("No failed release found. No need to delete resources.", INFO, RUNNING);
           deleteLogCallback.saveExecutionLog("\nDone.", INFO, SUCCESS);
           return;

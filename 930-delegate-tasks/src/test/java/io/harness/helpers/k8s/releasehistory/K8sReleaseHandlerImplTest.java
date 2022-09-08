@@ -8,9 +8,9 @@
 package io.harness.helpers.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_HARNESS_SECRET_LABELS;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_HARNESS_SECRET_TYPE;
 import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
+import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_LABELS_MAP;
+import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_MAP;
 import static io.harness.rule.OwnerRule.ABHINAV2;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,12 +58,12 @@ public class K8sReleaseHandlerImplTest extends CategoryTest {
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
   public void testGetReleaseHistory() {
-    Map<String, String> labels = new HashMap<>(RELEASE_HARNESS_SECRET_LABELS);
+    Map<String, String> labels = new HashMap<>(RELEASE_SECRET_LABELS_MAP);
     labels.put(RELEASE_KEY, RELEASE_NAME);
 
     doReturn(labels).when(releaseHelper).createLabelsMap(RELEASE_NAME);
     doReturn("labelArg").when(releaseHelper).createCommaSeparatedKeyValueList(labels);
-    doReturn("fieldArg").when(releaseHelper).createCommaSeparatedKeyValueList(RELEASE_HARNESS_SECRET_TYPE);
+    doReturn("fieldArg").when(releaseHelper).createCommaSeparatedKeyValueList(RELEASE_SECRET_TYPE_MAP);
 
     releaseHandler.getReleaseHistory(KubernetesConfig.builder().build(), RELEASE_NAME);
     verify(kubernetesContainerService).getSecretsWithLabelsAndFields(any(), eq("labelArg"), eq("fieldArg"));
