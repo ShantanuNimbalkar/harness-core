@@ -32,6 +32,7 @@ import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.platform.OrganizationResourceGroupsApi;
 import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
 import io.harness.spec.server.platform.model.ResourceGroupsResponse;
+import io.harness.spec.server.platform.model.ResourceSelectorFilter;
 
 import com.google.inject.Inject;
 import java.util.List;
@@ -53,10 +54,7 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   @FeatureRestrictionCheck(FeatureRestrictionName.CUSTOM_RESOURCE_GROUPS)
   public Response createResourceGroupOrg(
-      String org, CreateResourceGroupRequest body, @AccountIdentifier String account) {
-    if (body == null) {
-      return Response.status(400).entity("Request body empty.").build();
-    }
+      CreateResourceGroupRequest body, String org, @AccountIdentifier String account) {
     ResourceGroupRequest resourceGroupRequest = ResourceGroupApiUtils.getResourceGroupRequestOrg(org, body, account);
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
@@ -89,18 +87,9 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = VIEW_RESOURCEGROUP_PERMISSION)
   public Response listResourceGroupsOrg(String org, String account, Integer page, Integer limit, String searchTerm,
-      List<String> identifierFilter, String managedFilter, List<String> resourceTypeFilter,
-      List<String> resourceSlugFilter) {
-    if ((resourceTypeFilter != null && resourceSlugFilter != null
-            && resourceSlugFilter.size() != resourceTypeFilter.size())
-        || (resourceSlugFilter != null && resourceTypeFilter == null)
-        || (resourceSlugFilter == null && resourceTypeFilter != null)) {
-      return Response.status(400)
-          .entity("Resource Type and Resource String should have same number of entries for one-to-one mapping.")
-          .build();
-    }
+      List<String> identifierFilter, String managedFilter, List<ResourceSelectorFilter> resourceSelectorFilter) {
     ResourceGroupFilterDTO resourceGroupFilterDTO = ResourceGroupApiUtils.getResourceFilterDTO(
-        account, org, null, searchTerm, identifierFilter, managedFilter, resourceTypeFilter, resourceSlugFilter);
+        account, org, null, searchTerm, identifierFilter, managedFilter, resourceSelectorFilter);
     PageRequest pageRequest = ResourceGroupApiUtils.getPageRequest(page, limit);
     Page<ResourceGroupResponse> pageResponse = resourceGroupService.list(resourceGroupFilterDTO, pageRequest);
     ResponseBuilder responseBuilder = Response.ok();
@@ -117,10 +106,7 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
   @Override
   @NGAccessControlCheck(resourceType = RESOURCE_GROUP, permission = EDIT_RESOURCEGROUP_PERMISSION)
   public Response updateResourceGroupOrg(
-      String org, String resourceGroup, CreateResourceGroupRequest body, String account) {
-    if (body == null) {
-      return Response.status(400).entity("Request body empty.").build();
-    }
+      CreateResourceGroupRequest body, String org, String resourceGroup, String account) {
     if (!resourceGroup.equals(body.getSlug())) {
       return Response.status(400)
           .entity("Resource Group identifier in the request body and the URL do not match.")

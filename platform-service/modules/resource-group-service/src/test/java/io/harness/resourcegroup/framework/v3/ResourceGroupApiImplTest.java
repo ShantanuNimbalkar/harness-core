@@ -254,7 +254,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
         .thenReturn(Optional.ofNullable(resourceGroupResponseAcc));
 
-    Response response = accountResourceGroupApi.updateResourceGroupAcc(slug, request, account);
+    Response response = accountResourceGroupApi.updateResourceGroupAcc(request, slug, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
     assertEquals(slug, newResourceGroupResponse.getSlug());
     assertEquals(name, newResourceGroupResponse.getName());
@@ -292,7 +292,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
         .thenReturn(resourceGroupResponseOrg);
 
-    Response response = orgResourceGroupsApi.createResourceGroupOrg(org, request, account);
+    Response response = orgResourceGroupsApi.createResourceGroupOrg(request, org, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
     assertEquals(slug, newResourceGroupResponse.getSlug());
     assertEquals(name, newResourceGroupResponse.getName());
@@ -355,7 +355,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
         .thenReturn(Optional.ofNullable(resourceGroupResponseOrg));
 
-    Response response = orgResourceGroupsApi.updateResourceGroupOrg(org, slug, request, account);
+    Response response = orgResourceGroupsApi.updateResourceGroupOrg(request, org, slug, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
     assertEquals(slug, newResourceGroupResponse.getSlug());
     assertEquals(name, newResourceGroupResponse.getName());
@@ -456,7 +456,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     when(resourceGroupService.update(any(ResourceGroupDTO.class), any(Boolean.class)))
         .thenReturn(Optional.ofNullable(resourceGroupResponseProject));
 
-    Response response = projectResourceGroupsApi.updateResourceGroupProject(org, project, slug, request, account);
+    Response response = projectResourceGroupsApi.updateResourceGroupProject(request, org, project, slug, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
     assertEquals(slug, newResourceGroupResponse.getSlug());
     assertEquals(name, newResourceGroupResponse.getName());
