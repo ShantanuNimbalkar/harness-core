@@ -9,6 +9,7 @@ package io.harness.resourcegroup.framework.v3;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.MANKRIT;
+import static io.harness.utils.PageTestUtils.getPage;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -27,6 +28,7 @@ import io.harness.resourcegroup.framework.v2.service.impl.ResourceGroupValidator
 import io.harness.resourcegroup.framework.v3.api.AccountResourceGroupApiImpl;
 import io.harness.resourcegroup.framework.v3.api.OrgResourceGroupsApiImpl;
 import io.harness.resourcegroup.framework.v3.api.ProjectResourceGroupsApiImpl;
+import io.harness.resourcegroup.framework.v3.mapper.ResourceGroupApiUtils;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v2.model.AttributeFilter;
 import io.harness.resourcegroup.v2.model.ResourceSelector;
@@ -38,6 +40,7 @@ import io.harness.spec.server.platform.model.CreateResourceGroupRequest;
 import io.harness.spec.server.platform.model.ResourceFilter;
 import io.harness.spec.server.platform.model.ResourceGroupScope;
 import io.harness.spec.server.platform.model.ResourceGroupsResponse;
+import io.harness.spec.server.platform.model.ResourceSelectorFilter;
 
 import java.util.Collections;
 import java.util.List;
@@ -267,6 +270,42 @@ public class ResourceGroupApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = MANKRIT)
   @Category(UnitTests.class)
+  public void testAccountScopedRGList() {
+    String searchTerm = randomAlphabetic(10);
+    String managed = "NO_FILTER";
+    ResourceSelectorFilter selectorFilter = new ResourceSelectorFilter();
+    selectorFilter.setResourceType("RESOURCE");
+    selectorFilter.setResourceSlug(randomAlphabetic(10));
+    List<ResourceSelectorFilter> selector = Collections.singletonList(selectorFilter);
+
+    ResourceGroupResponse resourceGroupResponse =
+        ResourceGroupResponse.builder()
+            .resourceGroup(ResourceGroupDTO.builder()
+                               .accountIdentifier(account)
+                               .identifier(slug)
+                               .name(name)
+                               .allowedScopeLevels(Collections.singleton("account"))
+                               .build())
+            .build();
+
+    when(resourceGroupService.list(
+             ResourceGroupApiUtils.getResourceFilterDTO(account, null, null, searchTerm, null, managed, selector),
+             ResourceGroupApiUtils.getPageRequest(page, limit)))
+        .thenReturn(getPage(Collections.singletonList(resourceGroupResponse), 1));
+
+    Response response =
+        accountResourceGroupApi.listResourceGroupsAcc(account, page, limit, searchTerm, null, managed, selector);
+    List<ResourceGroupsResponse> entity = (List<ResourceGroupsResponse>) response.getEntity();
+
+    assertEquals(2, response.getLinks().size());
+    assertEquals(1, entity.size());
+    assertEquals(slug, entity.get(0).getSlug());
+    assertEquals(name, entity.get(0).getName());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
   public void testOrgScopedRGCreate() {
     ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
     resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
@@ -368,6 +407,43 @@ public class ResourceGroupApiImplTest extends CategoryTest {
   @Test
   @Owner(developers = MANKRIT)
   @Category(UnitTests.class)
+  public void testOrgScopedRGList() {
+    String searchTerm = randomAlphabetic(10);
+    String managed = "NO_FILTER";
+    ResourceSelectorFilter selectorFilter = new ResourceSelectorFilter();
+    selectorFilter.setResourceType("RESOURCE");
+    selectorFilter.setResourceSlug(randomAlphabetic(10));
+    List<ResourceSelectorFilter> selector = Collections.singletonList(selectorFilter);
+
+    ResourceGroupResponse resourceGroupResponse =
+        ResourceGroupResponse.builder()
+            .resourceGroup(ResourceGroupDTO.builder()
+                               .accountIdentifier(account)
+                               .orgIdentifier(org)
+                               .identifier(slug)
+                               .name(name)
+                               .allowedScopeLevels(Collections.singleton("organization"))
+                               .build())
+            .build();
+
+    when(resourceGroupService.list(
+             ResourceGroupApiUtils.getResourceFilterDTO(account, org, null, searchTerm, null, managed, selector),
+             ResourceGroupApiUtils.getPageRequest(page, limit)))
+        .thenReturn(getPage(Collections.singletonList(resourceGroupResponse), 1));
+
+    Response response =
+        orgResourceGroupsApi.listResourceGroupsOrg(org, account, page, limit, searchTerm, null, managed, selector);
+    List<ResourceGroupsResponse> entity = (List<ResourceGroupsResponse>) response.getEntity();
+
+    assertEquals(2, response.getLinks().size());
+    assertEquals(1, entity.size());
+    assertEquals(slug, entity.get(0).getSlug());
+    assertEquals(name, entity.get(0).getName());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
   public void testProjectScopedRGCreate() {
     ResourceGroupScope resourceGroupScope = new ResourceGroupScope();
     resourceGroupScope.setFilter(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES);
@@ -464,5 +540,43 @@ public class ResourceGroupApiImplTest extends CategoryTest {
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
     assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
+  }
+
+  @Test
+  @Owner(developers = MANKRIT)
+  @Category(UnitTests.class)
+  public void testProjectScopedRGList() {
+    String searchTerm = randomAlphabetic(10);
+    String managed = "NO_FILTER";
+    ResourceSelectorFilter selectorFilter = new ResourceSelectorFilter();
+    selectorFilter.setResourceType("RESOURCE");
+    selectorFilter.setResourceSlug(randomAlphabetic(10));
+    List<ResourceSelectorFilter> selector = Collections.singletonList(selectorFilter);
+
+    ResourceGroupResponse resourceGroupResponse =
+        ResourceGroupResponse.builder()
+            .resourceGroup(ResourceGroupDTO.builder()
+                               .accountIdentifier(account)
+                               .orgIdentifier(org)
+                               .projectIdentifier(project)
+                               .identifier(slug)
+                               .name(name)
+                               .allowedScopeLevels(Collections.singleton("project"))
+                               .build())
+            .build();
+
+    when(resourceGroupService.list(
+             ResourceGroupApiUtils.getResourceFilterDTO(account, org, project, searchTerm, null, managed, selector),
+             ResourceGroupApiUtils.getPageRequest(page, limit)))
+        .thenReturn(getPage(Collections.singletonList(resourceGroupResponse), 1));
+
+    Response response = projectResourceGroupsApi.listResourceGroupsProject(
+        org, project, account, page, limit, searchTerm, null, managed, selector);
+    List<ResourceGroupsResponse> entity = (List<ResourceGroupsResponse>) response.getEntity();
+
+    assertEquals(2, response.getLinks().size());
+    assertEquals(1, entity.size());
+    assertEquals(slug, entity.get(0).getSlug());
+    assertEquals(name, entity.get(0).getName());
   }
 }

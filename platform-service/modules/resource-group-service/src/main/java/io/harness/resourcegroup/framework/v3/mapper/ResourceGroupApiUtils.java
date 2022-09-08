@@ -141,13 +141,17 @@ public class ResourceGroupApiUtils {
                                                      .stream()
                                                      .map(ResourceGroupApiUtils::getAllowedScopeEnum)
                                                      .collect(Collectors.toList()));
-    resourceGroupsResponse.setIncludedScope(response.getResourceGroup()
-                                                .getIncludedScopes()
-                                                .stream()
-                                                .map(ResourceGroupApiUtils::getIncludedScopeResponse)
-                                                .collect(Collectors.toList()));
+    if (response.getResourceGroup().getIncludedScopes() != null) {
+      resourceGroupsResponse.setIncludedScope(response.getResourceGroup()
+                                                  .getIncludedScopes()
+                                                  .stream()
+                                                  .map(ResourceGroupApiUtils::getIncludedScopeResponse)
+                                                  .collect(Collectors.toList()));
+    }
     resourceGroupsResponse.setResourceFilter(getResourceFilters(response));
-    resourceGroupsResponse.setIncludeAll(response.getResourceGroup().getResourceFilter().isIncludeAllResources());
+    if (response.getResourceGroup().getResourceFilter() != null) {
+      resourceGroupsResponse.setIncludeAll(response.getResourceGroup().getResourceFilter().isIncludeAllResources());
+    }
     resourceGroupsResponse.setCreated(response.getCreatedAt());
     resourceGroupsResponse.setUpdated(response.getLastModifiedAt());
     resourceGroupsResponse.setHarnessManaged(response.isHarnessManaged());
@@ -205,6 +209,18 @@ public class ResourceGroupApiUtils {
   public static ResourceGroupFilterDTO getResourceFilterDTO(String account, String org, String project,
       String searchTerm, List<String> identifierFilter, String managedFilter,
       List<io.harness.spec.server.platform.model.ResourceSelectorFilter> resourceSelectorFilter) {
+    if (identifierFilter == null) {
+      return ResourceGroupFilterDTO.builder()
+          .accountIdentifier(account)
+          .orgIdentifier(org)
+          .projectIdentifier(project)
+          .searchTerm(searchTerm)
+          .resourceSelectorFilterList(resourceSelectorFilter.stream()
+                                          .map(ResourceGroupApiUtils::getResourceSelectorFilter)
+                                          .collect(Collectors.toSet()))
+          .managedFilter(getManagedFilter(managedFilter))
+          .build();
+    }
     return ResourceGroupFilterDTO.builder()
         .accountIdentifier(account)
         .orgIdentifier(org)
