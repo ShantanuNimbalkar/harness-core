@@ -1043,6 +1043,8 @@ public class PipelineServiceImpl implements PipelineService {
             Variable cloned = variable.cloneInternal();
             cloned.setRuntimeInput(false);
             pipelineVariables.add(cloned);
+          } else {
+            handleNonEntityVariables(pipelineVariables, variable, variable.getValue(), false);
           }
         });
       }
