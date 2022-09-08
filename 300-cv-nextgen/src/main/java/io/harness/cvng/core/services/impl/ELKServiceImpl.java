@@ -52,18 +52,17 @@ public class ELKServiceImpl implements ELKService {
 
   @Override
   public List<LinkedHashMap> getSampleData(
-      ProjectParams projectParams, String connectorIdentifier, String query, String tracingId) {
-    DataCollectionRequest request = ELKSampleDataCollectionRequest.builder().
+      ProjectParams projectParams, String connectorIdentifier, String query, String index, String tracingId) {
+    DataCollectionRequest request = ELKSampleDataCollectionRequest.builder().query(query).index(index).build();
 
-                                    OnboardingRequestDTO onboardingRequestDTO =
-        OnboardingRequestDTO.builder()
-            .dataCollectionRequest(request)
-            .connectorIdentifier(connectorIdentifier)
-            .accountId(projectParams.getAccountIdentifier())
-            .tracingId(tracingId)
-            .orgIdentifier(projectParams.getOrgIdentifier())
-            .projectIdentifier(projectParams.getProjectIdentifier())
-            .build();
+    OnboardingRequestDTO onboardingRequestDTO = OnboardingRequestDTO.builder()
+                                                    .dataCollectionRequest(request)
+                                                    .connectorIdentifier(connectorIdentifier)
+                                                    .accountId(projectParams.getAccountIdentifier())
+                                                    .tracingId(tracingId)
+                                                    .orgIdentifier(projectParams.getOrgIdentifier())
+                                                    .projectIdentifier(projectParams.getProjectIdentifier())
+                                                    .build();
 
     OnboardingResponseDTO response =
         onboardingService.getOnboardingResponse(projectParams.getAccountIdentifier(), onboardingRequestDTO);

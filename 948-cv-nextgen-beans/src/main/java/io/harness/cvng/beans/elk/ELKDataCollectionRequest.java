@@ -15,6 +15,7 @@ import io.harness.delegate.beans.connector.elkconnector.ELKConnectorDTO;
 import io.harness.delegate.beans.cvng.elk.elkUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -24,6 +25,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @OwnedBy(CV)
 public abstract class ELKDataCollectionRequest extends DataCollectionRequest<ELKConnectorDTO> {
+  @Override
+  public Map<String, Object> fetchDslEnvVariables() {
+    return new HashMap<>();
+  }
   @Override
   public Map<String, String> collectionHeaders() {
     return elkUtils.collectionHeaders(getConnectorConfigDTO());

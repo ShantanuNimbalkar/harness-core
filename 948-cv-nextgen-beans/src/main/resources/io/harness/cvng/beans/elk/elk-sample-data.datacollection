@@ -1,16 +1,8 @@
-Var logsSearchUrl = concat(Env:baseUrl, userindex ,"/_search") //add user index here.
+Var searchIndex = concat(Env:index ,"/_search")
+Var logsSearchUrl = concat(Env:baseUrl, Var:searchIndex)
 
 Var body = {}
-Var filter = {}
-Var:filter.put("from", Env:from)
-Var:filter.put("to", Env:to)
-Var:filter.put("query", Env:query)
-Var:body.put("filter", Var:filter)
+Var:body.put("query", Env:query)
 
-Var page = {}
-Var:page.put("limit", Env:limit)
-Var:body.put("page", Var:page)
-
-Var logsResponse = sync-call(url=Var:logsSearchUrl, header=Env:commonHeaders, body=Var:body)
-Var logsData = extract(Var:logsResponse, $.data)
-return Var:logsData
+Var logsResponse = sync-call(url=Var:logsSearchUrl, header=Env:commonHeaders)
+return Var:logsResponse

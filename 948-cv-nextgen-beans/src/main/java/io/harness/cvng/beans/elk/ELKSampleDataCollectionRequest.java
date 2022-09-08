@@ -27,13 +27,8 @@ import lombok.experimental.SuperBuilder;
 @FieldNameConstants(innerTypeName = "ELKSampleDataCollectionRequestKeys")
 @OwnedBy(CV)
 public class ELKSampleDataCollectionRequest extends ELKDataCollectionRequest {
-  Long from;
-  Long to;
-  String timestampTag;
-  String timestampFormat;
   String index;
   String query;
-  Long limit;
   @Override
   public String getDSL() {
     return ELKSampleDataCollectionRequest.readDSL(
@@ -44,12 +39,7 @@ public class ELKSampleDataCollectionRequest extends ELKDataCollectionRequest {
   public Map<String, Object> fetchDslEnvVariables() {
     Map<String, Object> dslEnvVariables = super.fetchDslEnvVariables();
     dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.query, query);
-    dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.from, from);
-    dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.to, to);
-    dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.limit, limit);
     dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.index, index);
-    dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.timestampTag, timestampTag);
-    dslEnvVariables.put(ELKSampleDataCollectionRequestKeys.timestampFormat, timestampFormat);
     return dslEnvVariables;
   }
 

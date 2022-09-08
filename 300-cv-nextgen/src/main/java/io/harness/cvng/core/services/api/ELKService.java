@@ -17,5 +17,5 @@ public interface ELKService extends DataSourceConnectivityChecker {
   List<String> getLogIndexes(ProjectParams projectParams, String connectorIdentifier, String tracingId);
 
   List<LinkedHashMap> getSampleData(
-      ProjectParams projectParams, String connectorIdentifier, String query, String tracingId);
+      ProjectParams projectParams, String connectorIdentifier, String query, String index, String tracingId);
 }

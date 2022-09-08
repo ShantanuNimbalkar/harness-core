@@ -7,6 +7,7 @@
 
 package io.harness.cvng.core.resources;
 
+import io.harness.cvng.core.beans.LogSampleRequestDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.services.api.ELKService;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -17,13 +18,16 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import retrofit2.http.Body;
 
 @Api("elk/")
 @Path("elk")
@@ -39,7 +43,20 @@ public class ELKResource {
   @ApiOperation(value = "gets indices in ELK", nickname = "getELKIndices")
   public ResponseDTO<List<String>> getIndices(@NotNull @BeanParam ProjectParams projectParams,
       @QueryParam("connectorIdentifier") String connectorIdentifier,
-      @QueryParam("requestGuid") @NotNull String requestGuid) {
-    return ResponseDTO.newResponse(elkService.getLogIndexes(projectParams, connectorIdentifier, requestGuid));
+      @QueryParam("tracingId") @NotNull String tracingId) {
+    return ResponseDTO.newResponse(elkService.getLogIndexes(projectParams, connectorIdentifier, tracingId));
+  }
+
+  @GET
+  @Path("/sample-data")
+  @Timed
+  @ExceptionMetered
+  @ApiOperation(value = "get sample data for a query", nickname = "getELKLogSampleData")
+  public ResponseDTO<List<LinkedHashMap>> getDatadogSampleData(@BeanParam ProjectParams projectParams,
+      @NotNull @QueryParam("connectorIdentifier") final String connectorIdentifier,
+      @NotNull @QueryParam("tracingId") String tracingId, @NotNull @QueryParam("index") String index,
+      @Body LogSampleRequestDTO logSampleRequestDTO) {
+    return ResponseDTO.newResponse(
+        elkService.getSampleData(projectParams, connectorIdentifier, logSampleRequestDTO.getQuery(), index, tracingId));
   }
 }
