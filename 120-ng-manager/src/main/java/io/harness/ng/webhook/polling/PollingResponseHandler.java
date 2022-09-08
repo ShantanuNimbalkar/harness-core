@@ -17,6 +17,7 @@ import static io.harness.polling.contracts.Type.DOCKER_HUB;
 import static io.harness.polling.contracts.Type.ECR;
 import static io.harness.polling.contracts.Type.GCR;
 import static io.harness.polling.contracts.Type.GCS_HELM;
+import static io.harness.polling.contracts.Type.GITHUB_PACKAGES;
 import static io.harness.polling.contracts.Type.HTTP_HELM;
 import static io.harness.polling.contracts.Type.JENKINS;
 import static io.harness.polling.contracts.Type.NEXUS3;
@@ -52,6 +53,7 @@ import io.harness.polling.bean.artifact.ArtifactoryRegistryArtifactInfo;
 import io.harness.polling.bean.artifact.DockerHubArtifactInfo;
 import io.harness.polling.bean.artifact.EcrArtifactInfo;
 import io.harness.polling.bean.artifact.GcrArtifactInfo;
+import io.harness.polling.bean.artifact.GithubPackagesArtifactInfo;
 import io.harness.polling.bean.artifact.JenkinsArtifactInfo;
 import io.harness.polling.bean.artifact.NexusRegistryArtifactInfo;
 import io.harness.polling.bean.artifact.S3ArtifactInfo;
@@ -370,6 +372,9 @@ public class PollingResponseHandler {
         polledResponseResultBuilder.name(((JenkinsArtifactInfo) artifactInfo).getJobName());
         polledResponseResultBuilder.type(JENKINS);
         break;
+      case GITHUB_PACKAGES:
+        polledResponseResultBuilder.name(((GithubPackagesArtifactInfo) artifactInfo).getPackageName());
+        polledResponseResultBuilder.type(GITHUB_PACKAGES);
       default:
         throw new InvalidRequestException("Unsupported Artifact Type " + artifactInfo.getType().getDisplayName());
     }
