@@ -24,7 +24,6 @@ import io.harness.ccm.views.graphql.QLCEViewRule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.fabric8.utils.Lists;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -131,8 +130,8 @@ public class BusinessMappingDataSourceHelper {
     return viewFieldIdentifiers;
   }
 
-  private List<String> getBusinessMappingIdsFromViewRules(final List<ViewRule> viewRules) {
-    final List<String> businessMappingIds = new ArrayList<>();
+  private Set<String> getBusinessMappingIdsFromViewRules(final List<ViewRule> viewRules) {
+    final Set<String> businessMappingIds = new HashSet<>();
     if (Objects.nonNull(viewRules)) {
       viewRules.forEach(viewRule -> {
         if (Objects.nonNull(viewRule.getViewConditions())) {
@@ -148,8 +147,8 @@ public class BusinessMappingDataSourceHelper {
     return businessMappingIds;
   }
 
-  private List<String> getBusinessMappingIdsFromIdFilters(final List<QLCEViewFilter> idFilters) {
-    final List<String> businessMappingIds = new ArrayList<>();
+  private Set<String> getBusinessMappingIdsFromIdFilters(final List<QLCEViewFilter> idFilters) {
+    final Set<String> businessMappingIds = new HashSet<>();
     if (Objects.nonNull(idFilters)) {
       idFilters.forEach(idFilter -> {
         if (idFilter.getField().getIdentifier() == ViewFieldIdentifier.BUSINESS_MAPPING) {
@@ -160,8 +159,8 @@ public class BusinessMappingDataSourceHelper {
     return businessMappingIds;
   }
 
-  private List<String> getBusinessMappingIdsFromGroupBys(final List<QLCEViewGroupBy> groupBys) {
-    final List<String> businessMappingIds = new ArrayList<>();
+  private Set<String> getBusinessMappingIdsFromGroupBys(final List<QLCEViewGroupBy> groupBys) {
+    final Set<String> businessMappingIds = new HashSet<>();
     if (Objects.nonNull(groupBys)) {
       groupBys.forEach(groupBy -> {
         if (Objects.nonNull(groupBy) && Objects.nonNull(groupBy.getEntityGroupBy())
