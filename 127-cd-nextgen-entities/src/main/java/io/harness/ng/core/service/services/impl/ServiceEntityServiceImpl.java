@@ -245,7 +245,9 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
           }
           return result;
         }));
-    entitySetupUsageHelper.updateSetupUsages(upsertedService);
+    if (upsertOptions.isPublishSetupUsages()) {
+      entitySetupUsageHelper.updateSetupUsages(upsertedService);
+    }
     publishEvent(requestService.getAccountId(), requestService.getOrgIdentifier(),
         requestService.getProjectIdentifier(), requestService.getIdentifier(),
         EventsFrameworkMetadataConstants.UPSERT_ACTION);
@@ -429,8 +431,6 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
     if (isEmpty(serviceIdentifiers)) {
       return emptyList();
     }
-    List<ServiceEntity> serviceEntityList = new ArrayList<>();
-
     Criteria criteria = Criteria.where(ServiceEntityKeys.accountId)
                             .is(accountIdentifier)
                             .and(ServiceEntityKeys.orgIdentifier)
@@ -438,7 +438,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
                             .and(ServiceEntityKeys.projectIdentifier)
                             .is(projectIdentifier)
                             .and(ServiceEntityKeys.identifier)
-                            .in(serviceEntityList);
+                            .in(serviceIdentifiers);
 
     return serviceRepository.findAll(criteria);
   }
