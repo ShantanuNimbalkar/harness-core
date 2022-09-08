@@ -9,11 +9,19 @@ package io.harness.pms.sdk.core;
 
 import io.harness.pms.sdk.core.waiter.AsyncWaitEngine;
 import io.harness.waiter.NotifyCallback;
+import io.harness.waiter.OldNotifyCallback;
 import io.harness.waiter.ProgressCallback;
+
+import java.util.List;
 
 public class TestAsyncWaitEngineImpl implements AsyncWaitEngine {
   @Override
   public void waitForAllOn(NotifyCallback notifyCallback, ProgressCallback progressCallback, String... correlationIds) {
+    // Do nothing
+  }
+
+  @Override
+  public void waitForAllOnWithTimeout(OldNotifyCallback notifyCallback, List<String> correlationIds, int timeout) {
     // Do nothing
   }
 }
