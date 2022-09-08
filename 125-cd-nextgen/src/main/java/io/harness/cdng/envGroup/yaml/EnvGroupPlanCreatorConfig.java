@@ -38,7 +38,7 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("envGroupPlanCreatorConfig")
 @SimpleVisitorHelper(helperClass = EnvGroupPlanCreatorConfigVisitorHelper.class)
 @OwnedBy(CDC)
-@RecasterAlias("io.harness.cdng.envGroup.yaml.EnvGroupPlanCreatorConfig")
+@RecasterAlias("io.harness.cdng.envGroup.yaml.EnvGroupPlanCreatorConfigs")
 public class EnvGroupPlanCreatorConfig implements Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
