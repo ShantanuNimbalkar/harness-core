@@ -343,13 +343,13 @@ public class InstanceRepositoryCustomImpl implements InstanceRepositoryCustom {
   }
 
   @Override
-  public UpdateResult updateInfrastructureMapping(List<String> instanceIds, String infrastructureMappingId) {
-    Criteria criteria = Criteria.where(InstanceKeys.id).in(instanceIds);
+  public void updateInfrastructureMapping(String instanceId, String infrastructureMappingId) {
+    Criteria criteria = Criteria.where(InstanceKeys.id).is(instanceId);
     Query query = new Query();
     query.addCriteria(criteria);
 
     Update update = new Update();
     update.set(InstanceKeys.infrastructureMappingId, infrastructureMappingId);
-    return mongoTemplate.updateMulti(query, update, Instance.class);
+    mongoTemplate.findAndModify(query, update, Instance.class);
   }
 }

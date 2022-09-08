@@ -67,5 +67,5 @@ public interface InstanceRepositoryCustom {
 
   Instance findFirstInstance(Criteria criteria);
 
-  UpdateResult updateInfrastructureMapping(List<String> instanceIds, String infrastructureMappingId);
+  void updateInfrastructureMapping(String instanceId, String infrastructureMappingId);
 }

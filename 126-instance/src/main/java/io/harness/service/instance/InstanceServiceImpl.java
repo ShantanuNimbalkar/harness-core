@@ -86,6 +86,14 @@ public class InstanceServiceImpl implements InstanceService {
   }
 
   @Override
+  public void softDeleteById(String id) {
+    Criteria criteria = Criteria.where(InstanceKeys.id).is(id);
+    Update update =
+        new Update().set(InstanceKeys.isDeleted, true).set(InstanceKeys.deletedAt, System.currentTimeMillis());
+    instanceRepository.findAndModify(criteria, update);
+  }
+
+  @Override
   public void deleteAll(List<InstanceDTO> instanceDTOList) {
     instanceDTOList.forEach(instanceDTO -> instanceRepository.deleteByInstanceKey(instanceDTO.getInstanceKey()));
   }
@@ -242,8 +250,16 @@ public class InstanceServiceImpl implements InstanceService {
 
   @Override
   public void updateInfrastructureMapping(List<String> instanceIds, String infrastructureMappingId) {
-    UpdateResult updateResult = instanceRepository.updateInfrastructureMapping(instanceIds, infrastructureMappingId);
-    log.info("Updated infrastructure mapping for {} instances", updateResult.getModifiedCount());
+    for (String instanceId : instanceIds) {
+      try {
+        instanceRepository.updateInfrastructureMapping(instanceId, infrastructureMappingId);
+        log.info("Updated infrastructure mapping for instance {}", instanceId);
+      } catch (DuplicateKeyException ex) {
+        log.warn("Error while update instance {}. Instance already exists with infrastructure mapping {}", instanceId,
+            infrastructureMappingId, ex);
+        softDeleteById(instanceId);
+      }
+    }
   }
 
   // ----------------------------------- PRIVATE METHODS -------------------------------------
