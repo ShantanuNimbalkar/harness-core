@@ -586,8 +586,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       DelegateAgentCommonVariables.setDelegateId(delegateId);
       log.info("[New] Delegate registered in {} ms", clock.millis() - start);
       DelegateStackdriverLogAppender.setDelegateId(delegateId);
-      delegateLogStreamingDispatcher.setAccountId(accountId);
-      delegateLogStreamingDispatcher.start();
+      delegateLogStreamingDispatcher.start(accountId);
       if (delegateConfiguration.isDynamicHandlingOfRequestEnabled()
           && DeployMode.KUBERNETES.name().equals(System.getenv().get(DeployMode.DEPLOY_MODE))) {
         // Enable dynamic throttling of requests only for kubernetes pod(s)

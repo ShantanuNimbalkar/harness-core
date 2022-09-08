@@ -16,9 +16,9 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,6 +40,7 @@ public class DelegateLogStreamingDispatcher {
   private final AtomicReference<DelegateLogStreamingDispatcherService> svcHolder = new AtomicReference<>();
 
   private Map<String, List<LogLine>> logCache = new HashMap<>();
+  private Map<String, Boolean> shouldCloseStream = new ConcurrentHashMap<>();
   ReadWriteLock readWriteLockForMap = new ReentrantReadWriteLock();
   ReadWriteLock readWriteLockForToken = new ReentrantReadWriteLock();
 
@@ -57,7 +58,7 @@ public class DelegateLogStreamingDispatcher {
   }
 
   public void swapMapsAndDispatchLogs() {
-    if (logCache.isEmpty() || token == null) {
+    if (logCache.isEmpty()) {
       return;
     }
     Map<String, List<LogLine>> logCacheToBeFlushed;
@@ -68,15 +69,8 @@ public class DelegateLogStreamingDispatcher {
     } finally {
       readWriteLockForMap.writeLock().unlock();
     }
-    dispatchLogs(logCacheToBeFlushed);
-  }
-
-  private void dispatchLogs(Map<String, List<LogLine>> logCache) {
-    for (Iterator<Map.Entry<String, List<LogLine>>> iterator = logCache.entrySet().iterator(); iterator.hasNext();) {
-      Map.Entry<String, List<LogLine>> next = iterator.next();
-      logStreamingExecutor.submit(() -> sendLogsOverHttp(next.getKey(), next.getValue()));
-      iterator.remove();
-    }
+    logCacheToBeFlushed.forEach(
+        (logKey, logLines) -> logStreamingExecutor.submit(() -> sendLogsOverHttpAndCloseStream(logKey, logLines)));
   }
 
   public void saveLogsInCache(String logKey, LogLine logLine) {
@@ -91,34 +85,49 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
-  public boolean dispatchLogsBeforeClosingStream(String logKey) {
+  // this is just a enforcement to dispatch logs quickly, otherwise logs will anyhow be dispatched in next iteration.
+  public void forceDispatchLogsBeforeClosingStream(String logKey) {
     try {
       readWriteLockForMap.readLock().lock();
       if (!logCache.containsKey(logKey)) {
-        return false;
+        logCache.put(logKey, new ArrayList<>());
       }
       List<LogLine> logLines = logCache.get(logKey);
       logCache.remove(logKey);
-      logStreamingExecutor.submit(() -> sendLogsOverHttp(logKey, logLines));
-      return true;
+      shouldCloseStream.put(logKey, true);
+      logStreamingExecutor.submit(() -> sendLogsOverHttpAndCloseStream(logKey, logLines));
     } finally {
       readWriteLockForMap.readLock().unlock();
     }
   }
 
-  private void sendLogsOverHttp(String logKey, List<LogLine> logLines) {
+  private void sendLogsOverHttpAndCloseStream(String logKey, List<LogLine> logLines) {
     try {
       readWriteLockForToken.readLock().lock();
       SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
     } catch (Exception ex) {
       log.error("Unable to push message to log stream for account {} and key {}", accountId, logKey, ex);
     } finally {
+      if (shouldCloseStream.containsKey(logKey)) {
+        closeStream(logKey);
+      }
       readWriteLockForToken.readLock().unlock();
     }
   }
 
-  public void start() {
+  private void closeStream(String logKey) {
+    try {
+      SafeHttpCall.executeWithExceptions(logStreamingClient.closeLogStream(token, accountId, logKey, true));
+    } catch (Exception ex) {
+      log.error("Unable to close log stream for account {} and key {}", accountId, logKey, ex);
+    } finally {
+      shouldCloseStream.remove(logKey);
+    }
+  }
+
+  public void start(String accountId) {
     if (running.compareAndSet(false, true)) {
+      this.accountId = accountId;
       log.info("Starting log streaming dispatcher.");
       DelegateLogStreamingDispatcherService delegateLogStreamingDispatcherService =
           new DelegateLogStreamingDispatcherService();
@@ -144,9 +153,5 @@ public class DelegateLogStreamingDispatcher {
         readWriteLockForToken.writeLock().unlock();
       }
     }
-  }
-
-  public void setAccountId(String accountId) {
-    this.accountId = accountId;
   }
 }
