@@ -776,7 +776,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     String RANDOM = "RANDOM";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder().workingDirectory(RANDOM).build();
     GetJobCommand jobStatusCommand = spy(new GetJobCommand(null, null, null));
-    doReturn(null).when(jobStatusCommand).execute(RANDOM, null, null, false);
+    doReturn(null).when(jobStatusCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
 
     shouldFailWhenCompletedJobCommandFailed(RANDOM, k8sDelegateTaskParams, jobStatusCommand, false);
     shouldFailWhenCompletedTimeCommandFailed(RANDOM, k8sDelegateTaskParams, jobStatusCommand, false);
@@ -792,7 +792,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     String RANDOM = "RANDOM";
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder().workingDirectory(RANDOM).build();
     GetJobCommand jobStatusCommand = spy(new GetJobCommand(null, null, null));
-    doReturn(null).when(jobStatusCommand).execute(RANDOM, null, null, false);
+    doReturn(null).when(jobStatusCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
 
     shouldFailWhenCompletedJobCommandFailed(RANDOM, k8sDelegateTaskParams, jobStatusCommand, true);
     shouldFailWhenCompletedTimeCommandFailed(RANDOM, k8sDelegateTaskParams, jobStatusCommand, true);
@@ -808,8 +808,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     GetJobCommand jobFailedCommand = spy(new GetJobCommand(null, null, null));
     ProcessResult jobFailedResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
 
-    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false);
-    doReturn(jobFailedResult).when(jobFailedCommand).execute(RANDOM, null, null, false);
+    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobFailedResult).when(jobFailedCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
     doReturn("kubectl --kubeconfig=file get").when(jobFailedCommand).command();
 
     if (isErrorFrameworkEnabled) {
@@ -839,8 +839,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     GetJobCommand jobCompletionCommand = spy(new GetJobCommand(null, null, null));
     ProcessResult jobCompletionTimeResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
 
-    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false);
-    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false);
+    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
     doReturn("kubectl --kubeconfig=file get").when(jobCompletionCommand).command();
 
     if (isErrorFrameworkEnabled) {
@@ -870,8 +870,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     GetJobCommand jobFailedCommand = spy(new GetJobCommand(null, null, null));
     ProcessResult jobFailedResult = new ProcessResult(0, new ProcessOutput("True".getBytes()));
 
-    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false);
-    doReturn(jobFailedResult).when(jobFailedCommand).execute(RANDOM, null, null, false);
+    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobFailedResult).when(jobFailedCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
 
     if (isErrorFrameworkEnabled) {
       assertThatThrownBy(()
@@ -901,8 +901,8 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     GetJobCommand jobCompletionCommand = spy(new GetJobCommand(null, null, null));
     ProcessResult jobCompletionTimeResult = new ProcessResult(0, new ProcessOutput("time".getBytes()));
 
-    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false);
-    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false);
+    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
 
     assertThat(k8sTaskHelperBase.getJobStatus(k8sDelegateTaskParams, null, null, jobCompletionStatus, null,
                    jobStatusCommand, jobCompletionCommand, isErrorFrameworkEnabled))
@@ -914,7 +914,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     GetJobCommand jobCompletionStatus = spy(new GetJobCommand(null, null, null));
     ProcessResult jobStatusResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
 
-    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false);
+    doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
     doReturn("kubectl --kubeconfig=file get").when(jobCompletionStatus).command();
 
     if (isErrorFrameworkEnabled) {
@@ -2046,7 +2046,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     K8sDelegateTaskParams k8sDelegateTaskParams = K8sDelegateTaskParams.builder().workingDirectory("pwd").build();
     doReturn(getResources).when(client).get();
     doReturn("kubectl --kubeconfig=test").when(client).command();
-    doReturn(executeResult).when(getResources).execute("pwd", null, null, false);
+    doReturn(executeResult).when(getResources).execute("pwd", null, null, false, Collections.emptyMap());
     doReturn(getResources).when(getResources).resources("foo/test1");
     doReturn(getResources).when(getResources).resources("bar/test2");
     doReturn(getResources).when(getResources).resources("boo/test3");

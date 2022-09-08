@@ -12,7 +12,9 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.delegate.task.helm.HelmTaskHelperBase.getChartDirectory;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
+import static io.harness.filesystem.FileIo.deleteDirectoryAndItsContentIfExists;
 import static io.harness.govern.Switch.unhandled;
+import static io.harness.helm.HelmConstants.REPO_NAME;
 import static io.harness.k8s.manifest.ManifestHelper.values_filename;
 import static io.harness.k8s.model.Kind.Namespace;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
@@ -29,6 +31,7 @@ import static software.wings.delegatetasks.helm.HelmTaskHelper.handleIncorrectCo
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -40,12 +43,14 @@ import io.harness.delegate.k8s.openshift.OpenShiftDelegateService;
 import io.harness.delegate.task.helm.CustomManifestFetchTaskHelper;
 import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.helm.HelmCommandFlag;
+import io.harness.delegate.task.helm.HelmTaskHelperBase;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
+import io.harness.helm.HelmConstants;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.K8sDelegateTaskParams;
@@ -82,12 +87,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -108,6 +116,7 @@ public class K8sTaskHelper {
   @Inject private ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
   @Inject private ScmFetchFilesHelper scmFetchFilesHelper;
   @Inject private CustomManifestFetchTaskHelper customManifestFetchTaskHelper;
+  @Inject private HelmTaskHelperBase helmTaskHelperBase;
 
   public boolean doStatusCheckAllResourcesForHelm(Kubectl client, List<KubernetesResourceId> resourceIds, String ocPath,
       String workingDir, String namespace, String kubeconfigPath, ExecutionLogCallback executionLogCallback)
@@ -488,10 +497,36 @@ public class K8sTaskHelper {
     try {
       executionLogCallback.saveExecutionLog(color(format("%nFetching files from helm chart repo"), White, Bold));
       helmTaskHelper.printHelmChartInfoInExecutionLogs(helmChartConfigParams, executionLogCallback);
-
-      helmTaskHelper.downloadChartFiles(
-          helmChartConfigParams, destinationDirectory, timeoutInMillis, delegateManifestConfig.getHelmCommandFlag());
-
+      helmTaskHelper.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
+      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+      boolean isChartPresent = false;
+      if (isEnvVarSet) {
+        String localChartDirectory = helmTaskHelperBase.newGetWorkingDirectory(
+            HelmConstants.WORKING_DIR_BASE, helmChartConfigParams.getRepoName());
+        localChartDirectory = Paths.get(localChartDirectory).toAbsolutePath().toString();
+        if (helmTaskHelperBase.newDoesChartExist(localChartDirectory, helmChartConfigParams.getChartName())) {
+          isChartPresent = true;
+          localChartDirectory =
+              helmTaskHelperBase.getChartDirectory(localChartDirectory, helmChartConfigParams.getChartName());
+        }
+        if (!isChartPresent) {
+          throw new InvalidRequestException(
+              "Env Variable $HELM_WORKING_DIR set, expecting chart directory to exist locally after helm fetch but did not find it \n");
+        }
+        // Log saying copying from ... to ...
+        String workingDirectory = helmTaskHelper.createDirectory(
+            Paths.get(destinationDirectory, helmChartConfigParams.getChartName()).toString());
+        log.info("Copying locally present chart from directory: %s to current working directory: %s \n",
+            localChartDirectory, workingDirectory);
+        File dest = new File(workingDirectory);
+        File src = new File(localChartDirectory);
+        deleteDirectoryAndItsContentIfExists(dest.getAbsolutePath());
+        FileUtils.copyDirectory(src, dest);
+        FileIo.waitForDirectoryToBeAccessibleOutOfProcess(dest.getPath(), 10);
+      } else {
+        helmTaskHelper.downloadChartFiles(
+            helmChartConfigParams, destinationDirectory, timeoutInMillis, delegateManifestConfig.getHelmCommandFlag());
+      }
       executionLogCallback.saveExecutionLog(color("Successfully fetched following files:", White, Bold));
       executionLogCallback.saveExecutionLog(k8sTaskHelperBase.getManifestFileNamesInLogFormat(destinationDirectory));
       executionLogCallback.saveExecutionLog("Done.", INFO, CommandExecutionStatus.SUCCESS);

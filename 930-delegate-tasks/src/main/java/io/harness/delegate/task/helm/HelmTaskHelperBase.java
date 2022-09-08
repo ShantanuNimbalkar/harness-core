@@ -18,6 +18,7 @@ import static io.harness.delegate.beans.storeconfig.StoreDelegateConfigType.HTTP
 import static io.harness.delegate.beans.storeconfig.StoreDelegateConfigType.OCI_HELM;
 import static io.harness.delegate.beans.storeconfig.StoreDelegateConfigType.S3_HELM;
 import static io.harness.exception.WingsException.USER;
+import static io.harness.filesystem.FileIo.checkIfFileExist;
 import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.filesystem.FileIo.deleteDirectoryAndItsContentIfExists;
 import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfProcess;
@@ -87,6 +88,10 @@ import io.harness.logging.LogCallback;
 import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.utils.FieldWithPlainTextOrSecretValueHelper;
 
+import software.wings.beans.settings.helm.AmazonS3HelmRepoConfig;
+import software.wings.beans.settings.helm.GCSHelmRepoConfig;
+import software.wings.beans.settings.helm.HelmRepoConfig;
+import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
 import software.wings.helpers.ext.helm.response.ReleaseInfo;
 
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -127,6 +132,10 @@ import org.zeroturnaround.exec.ProcessResult;
 @OwnedBy(CDP)
 public class HelmTaskHelperBase {
   public static final String RESOURCE_DIR_BASE = "./repository/helm/resources/";
+
+  protected static final String WORKING_DIR = "./repository/helm/source/${"
+      + "ACTIVITY_ID"
+      + "}";
   public static final String VERSION_KEY = "version:";
   public static final String NAME_KEY = "name:";
   public static final String REGISTRY_URL = "${REGISTRY_URL}";
@@ -135,11 +144,50 @@ public class HelmTaskHelperBase {
   @Inject private K8sGlobalConfigService k8sGlobalConfigService;
   @Inject private NgChartmuseumClientFactory ngChartmuseumClientFactory;
   @Inject private SecretDecryptionService decryptionService;
-  private String randPrefix;
+
+  /*
+  TODO: Achyuth -- check the entire flow once for chartMuseum, need to make some changes
+   */
+  public void newModifyRepoNameToIncludeBucket(HelmChartConfigParams helmChartConfigParams) {
+    HelmRepoConfig helmRepoConfig = helmChartConfigParams.getHelmRepoConfig();
+    /*
+     repoName will be a combination of the connectorId and bucket name;
+     this way, parallel deployments with charts in different buckets will work fine
+     */
+    if (helmRepoConfig instanceof AmazonS3HelmRepoConfig || helmRepoConfig instanceof GCSHelmRepoConfig) {
+      String modifiedRepoName =
+          helmChartConfigParams.getRepoName() + "-" + helmChartConfigParams.getHelmRepoConfig().getBucketName();
+      helmChartConfigParams.setRepoName(modifiedRepoName);
+    }
+  }
+
+  public String newGetWorkingDirFromEnv() {
+    return System.getenv("HELM_WORKING_DIR");
+  }
+  public String newGetWorkingDirectory(String workingDir, String repoName) {
+    return Paths.get(workingDir.replace(REPO_NAME, repoName)).toAbsolutePath().normalize().toString();
+  }
+
+  public boolean newDoesChartExist(String workingDir, String chartName) {
+    String chartDir = getChartDirectory(workingDir, chartName);
+
+    try {
+      if (checkIfFileExist(chartDir + "/"
+              + "Chart.yaml")) {
+        return true;
+      }
+    } catch (IOException e) {
+      log.error("Unable to check if Chart.yaml file exists in " + chartDir, e);
+    }
+
+    return false;
+  }
 
   public void initHelm(String workingDirectory, HelmVersion helmVersion, long timeoutInMillis) throws IOException {
     String helmHomePath = getHelmHomePath(workingDirectory);
-    createNewDirectoryAtPath(helmHomePath);
+    if (HelmVersion.V2.equals(helmVersion)) {
+      createNewDirectoryAtPath(helmHomePath);
+    }
 
     // Helm init command would be blank for helmV3
     String helmInitCommand = HelmCommandTemplateFactory.getHelmCommandTemplate(HelmCliCommandType.INIT, helmVersion)

@@ -184,6 +184,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -484,7 +485,7 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
         result = client.get()
                      .resources(workloadType)
                      .namespace(kubernetesConfig.getNamespace())
-                     .execute(kubeConfigDir.getPath(), null, errStream, false);
+                     .execute(kubeConfigDir.getPath(), null, errStream, false, Collections.emptyMap());
         if (0 == result.getExitValue()) {
           return;
         }

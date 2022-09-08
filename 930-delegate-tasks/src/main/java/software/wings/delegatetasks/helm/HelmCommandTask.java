@@ -13,6 +13,8 @@ import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfPr
 import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.replace;
 
 import io.harness.annotations.dev.HarnessModule;
@@ -24,8 +26,10 @@ import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
 import io.harness.delegate.task.AbstractDelegateRunnableTask;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.helm.HelmCommandResponse;
+import io.harness.delegate.task.helm.HelmTaskHelperBase;
 import io.harness.exception.HarnessException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
+import io.harness.helm.HelmConstants;
 import io.harness.k8s.K8sConstants;
 import io.harness.k8s.K8sGlobalConfigService;
 import io.harness.k8s.model.KubernetesConfig;
@@ -37,10 +41,12 @@ import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.command.HelmDummyCommandUnitConstants;
+import software.wings.beans.settings.helm.HelmRepoConfig;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.helpers.ext.container.ContainerDeploymentDelegateHelper;
 import software.wings.helpers.ext.helm.HelmCommandExecutionResponse;
 import software.wings.helpers.ext.helm.HelmDeployService;
+import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
 import software.wings.helpers.ext.helm.request.HelmCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmInstallCommandRequest;
 import software.wings.helpers.ext.helm.request.HelmReleaseHistoryCommandRequest;
@@ -66,6 +72,7 @@ public class HelmCommandTask extends AbstractDelegateRunnableTask {
   @Inject private ContainerDeploymentDelegateHelper containerDeploymentDelegateHelper;
   @Inject private HelmCommandHelper helmCommandHelper;
   @Inject private K8sGlobalConfigService k8sGlobalConfigService;
+  @Inject private HelmTaskHelperBase helmTaskHelperBase;
   protected static final String WORKING_DIR = "./repository/helm/source/${"
       + "ACTIVITY_ID"
       + "}";
@@ -147,25 +154,47 @@ public class HelmCommandTask extends AbstractDelegateRunnableTask {
     executionLogCallback.saveExecutionLog(
         "Setting KubeConfig\nKUBECONFIG_PATH=" + configLocation, LogLevel.INFO, CommandExecutionStatus.RUNNING);
 
-    String workingDir = Paths
-                            .get(replace(WORKING_DIR,
-                                "${"
-                                    + "ACTIVITY_ID"
-                                    + "}",
-                                helmCommandRequest.getActivityId()))
-                            .normalize()
-                            .toAbsolutePath()
-                            .toString();
+    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+    String workingDir = EMPTY;
+    boolean isNotReleaseHistCmd = helmCommandRequest instanceof HelmReleaseHistoryCommandRequest ? false : true;
 
-    createDirectoryIfDoesNotExist(workingDir);
-    waitForDirectoryToBeAccessibleOutOfProcess(workingDir, 10);
+    if (isNotReleaseHistCmd) {
+      if (isEnvVarSet) {
+        HelmChartConfigParams helmChartConfigParams = null;
+        if (helmCommandRequest.getRepoConfig() != null) {
+          helmChartConfigParams = helmCommandRequest.getRepoConfig().getHelmChartConfigParams();
+        }
+        if (helmChartConfigParams == null) {
+          // TODO: Achyuth -- throw error
+        } else {
+          workingDir = helmTaskHelperBase.newGetWorkingDirectory(
+              helmTaskHelperBase.newGetWorkingDirFromEnv(), helmChartConfigParams.getRepoName());
+        }
+      } else {
+        workingDir = Paths
+                         .get(replace(WORKING_DIR,
+                             "${"
+                                 + "ACTIVITY_ID"
+                                 + "}",
+                             helmCommandRequest.getActivityId()))
+                         .normalize()
+                         .toAbsolutePath()
+                         .toString();
+        createDirectoryIfDoesNotExist(workingDir);
+        waitForDirectoryToBeAccessibleOutOfProcess(workingDir, 10);
+      }
+    }
 
     if (kubernetesConfig.getGcpAccountKeyFileContent().isPresent()) {
-      Path gcpKeyFilePath = Paths.get(workingDir, K8sConstants.GCP_JSON_KEY_FILE_NAME);
+      String gcpCredsDirPath =
+          HelmConstants.HELM_GCP_CREDS_PATH.replace("${ACTIVITY_ID}", helmCommandRequest.getActivityId());
+      createDirectoryIfDoesNotExist(gcpCredsDirPath);
+      waitForDirectoryToBeAccessibleOutOfProcess(gcpCredsDirPath, 10);
+      Path gcpKeyFilePath = Paths.get(gcpCredsDirPath, K8sConstants.GCP_JSON_KEY_FILE_NAME).toAbsolutePath();
       writeUtf8StringToFile(gcpKeyFilePath.toString(), kubernetesConfig.getGcpAccountKeyFileContent().get());
-      helmCommandRequest.setGcpKeyPath(gcpKeyFilePath.toAbsolutePath().toString());
       executionLogCallback.saveExecutionLog("Created and Setting gcpFileKeyPath at: " + gcpKeyFilePath.toAbsolutePath(),
           LogLevel.INFO, CommandExecutionStatus.RUNNING);
+      helmCommandRequest.setGcpKeyPath(gcpKeyFilePath.toString());
     }
 
     ensureHelmInstalled(helmCommandRequest);

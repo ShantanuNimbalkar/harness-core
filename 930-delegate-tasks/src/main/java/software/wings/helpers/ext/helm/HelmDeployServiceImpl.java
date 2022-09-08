@@ -53,7 +53,6 @@ import io.harness.helm.HelmClient;
 import io.harness.helm.HelmClientImpl.HelmCliResponse;
 import io.harness.helm.HelmCommandResponseMapper;
 import io.harness.helm.HelmCommandType;
-import io.harness.k8s.K8sConstants;
 import io.harness.k8s.K8sGlobalConfigService;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.kubectl.Kubectl;
@@ -112,8 +111,6 @@ import com.google.inject.Singleton;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -268,6 +265,9 @@ public class HelmDeployServiceImpl implements HelmDeployService {
         deleteAndPurgeHelmRelease(commandRequest, executionLogCallback);
       }
       deleteDirectoryAndItsContentIfExists(getWorkingDirectory(commandRequest));
+      if (isNotEmpty(commandRequest.getGcpKeyPath())) {
+        deleteDirectoryAndItsContentIfExists(Paths.get(commandRequest.getGcpKeyPath()).getParent().toString());
+      }
     }
   }
 
@@ -304,16 +304,10 @@ public class HelmDeployServiceImpl implements HelmDeployService {
         if (ocPath.isPresent()) {
           commandRequest.setOcPath(ocPath.get());
         }
-        if (isNotEmpty(commandRequest.getGcpKeyPath())) {
-          Path oldPath = Paths.get(commandRequest.getGcpKeyPath());
-          Path newPath = Paths.get(commandRequest.getWorkingDir(), K8sConstants.GCP_JSON_KEY_FILE_NAME);
-          Files.move(oldPath, newPath);
-          commandRequest.setGcpKeyPath(newPath.toAbsolutePath().toString());
-        }
         success = success
             && k8sTaskHelperBase.doStatusCheckAllResourcesForHelm(client, entry.getValue(), commandRequest.getOcPath(),
                 commandRequest.getWorkingDir(), namespace, commandRequest.getKubeConfigLocation(),
-                (ExecutionLogCallback) executionLogCallback);
+                (ExecutionLogCallback) executionLogCallback, commandRequest.getGcpKeyPath());
         executionLogCallback.saveExecutionLog(
             format("Status check done with success [%s] for resources in namespace: [%s]", success, namespace));
         KubernetesConfig kubernetesConfig =
@@ -440,10 +434,23 @@ public class HelmDeployServiceImpl implements HelmDeployService {
   @VisibleForTesting
   void fetchChartRepo(HelmCommandRequest commandRequest, long timeoutInMillis) throws Exception {
     HelmChartConfigParams helmChartConfigParams = commandRequest.getRepoConfig().getHelmChartConfigParams();
-    String workingDirectory = Paths.get(getWorkingDirectory(commandRequest)).toString();
-
-    helmTaskHelper.downloadChartFiles(
-        helmChartConfigParams, workingDirectory, timeoutInMillis, commandRequest.getHelmCommandFlag());
+    helmTaskHelperBase.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
+    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+    boolean isChartPresent = false;
+    String workingDirectory;
+    if (isEnvVarSet) {
+      workingDirectory = helmTaskHelperBase.newGetWorkingDirectory(
+          helmTaskHelperBase.newGetWorkingDirFromEnv(), helmChartConfigParams.getRepoName());
+      if (helmTaskHelperBase.newDoesChartExist(workingDirectory, helmChartConfigParams.getChartName())) {
+        isChartPresent = true;
+      }
+    } else {
+      workingDirectory = Paths.get(getWorkingDirectory(commandRequest)).toString();
+    }
+    if (!isChartPresent) {
+      helmTaskHelper.downloadChartFiles(
+          helmChartConfigParams, workingDirectory, timeoutInMillis, commandRequest.getHelmCommandFlag());
+    }
     commandRequest.setWorkingDir(getChartDirectory(workingDirectory, helmChartConfigParams.getChartName()));
 
     commandRequest.getExecutionLogCallback().saveExecutionLog("Helm Chart Repo checked-out locally");
@@ -588,7 +595,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
   }
 
   @Override
-  public HelmCommandResponse rollback(HelmRollbackCommandRequest commandRequest) {
+  public HelmCommandResponse rollback(HelmRollbackCommandRequest commandRequest) throws IOException {
     LogCallback executionLogCallback = getExecutionLogCallback(commandRequest, HelmDummyCommandUnitConstants.Rollback);
     commandRequest.setExecutionLogCallback(executionLogCallback);
 
@@ -634,6 +641,9 @@ public class HelmDeployServiceImpl implements HelmDeployService {
       return new HelmCommandResponse(CommandExecutionStatus.FAILURE, ExceptionUtils.getMessage(sanitizedException));
     } finally {
       cleanupWorkingDirectory(commandRequest);
+      if (isNotEmpty(commandRequest.getGcpKeyPath())) {
+        deleteDirectoryAndItsContentIfExists(Paths.get(commandRequest.getGcpKeyPath()).getParent().toString());
+      }
     }
   }
 

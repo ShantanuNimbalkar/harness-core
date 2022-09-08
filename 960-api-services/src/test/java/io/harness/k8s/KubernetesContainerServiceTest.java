@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
@@ -158,7 +159,7 @@ public class KubernetesContainerServiceTest extends CategoryTest {
     doReturn(mockGetCommand).when(mockClient).get();
     doReturn(new ProcessResult(1, null))
         .when(mockGetCommand)
-        .execute(anyString(), any(OutputStream.class), any(OutputStream.class), anyBoolean());
+        .execute(anyString(), any(OutputStream.class), any(OutputStream.class), anyBoolean(), any());
     KubernetesConfig kubernetesConfig = KubernetesConfig.builder().namespace("harness").build();
 
     assertThatExceptionOfType(InvalidRequestException.class)
@@ -224,7 +225,7 @@ public class KubernetesContainerServiceTest extends CategoryTest {
     doReturn(mockGetCommand).when(mockClient).get();
     List<String> executeCommands = new ArrayList<>();
     setupGetCommand(mockGetCommand, executeCommands, Kind.ReplicaSet);
-    doReturn(new ProcessResult(0, null)).when(mockGetCommand).execute(anyString(), any(), any(), anyBoolean());
+    doReturn(new ProcessResult(0, null)).when(mockGetCommand).execute(anyString(), any(), any(), anyBoolean(), any());
     KubernetesConfig kubernetesConfig = KubernetesConfig.builder().namespace("harness").build();
 
     kubernetesContainerService.validate(kubernetesConfig, true);
@@ -243,6 +244,6 @@ public class KubernetesContainerServiceTest extends CategoryTest {
       return new ProcessResult(1, null);
     })
         .when(mockGetCommand)
-        .execute(any(), any(), any(), anyBoolean());
+        .execute(any(), any(), any(), anyBoolean(), any());
   }
 }
