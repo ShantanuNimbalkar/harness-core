@@ -36,6 +36,7 @@ public class CatalogueHelper {
             .filter(enumFilter.filter(accountIdentifier, FeatureName.SSH_NG))
             .filter(enumFilter.filter(accountIdentifier, FeatureName.AZURE_REPO_CONNECTOR))
             .filter(enumFilter.filter(accountIdentifier, FeatureName.JENKINS_ARTIFACT))
+            .filter(enumFilter.filter(accountIdentifier, FeatureName.NG_AZURE_ARTIFACTS))
             .collect(Collectors.groupingBy(ConnectorRegistryFactory::getConnectorCategory));
     return connectorCategoryListMap.entrySet()
         .stream()

@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Harness Inc. All rights reserved.
+ * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+ * that can be found in the licenses directory at the root of this repository, also available at
+ * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+ */
+
 package io.harness.serializer.kryo;
 
 import static io.harness.annotations.dev.HarnessTeam.DEL;
@@ -165,6 +172,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsValidateTaskResponse;
 import io.harness.delegate.beans.connector.awsconnector.AwsValidationParams;
 import io.harness.delegate.beans.connector.awskmsconnector.AwsKmsValidationParams;
 import io.harness.delegate.beans.connector.awssecretmanager.AwsSecretManagerValidationParams;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsValidationParams;
 import io.harness.delegate.beans.connector.azureconnector.AzureAdditionalParams;
 import io.harness.delegate.beans.connector.azureconnector.AzureContainerRegistryConnectorDTO;
 import io.harness.delegate.beans.connector.azureconnector.AzureTaskParams;
@@ -1205,6 +1213,7 @@ public class DelegateTasksBeansKryoRegister implements KryoRegistrar {
     kryo.register(HelmChartManifestDelegateConfig.class, 19548);
     kryo.register(HttpHelmValidationParams.class, 19549);
     kryo.register(ConnectorValidationParameterResponse.class, 19551);
+    kryo.register(AzureArtifactsValidationParams.class, 19554);
 
     kryo.register(OciHelmValidationParams.class, 19630);
     kryo.register(HttpHelmConnectivityTaskParams.class, 19640);

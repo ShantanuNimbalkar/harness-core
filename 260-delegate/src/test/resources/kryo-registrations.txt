@@ -1490,6 +1490,7 @@
 19551:io.harness.delegate.beans.connector.ConnectorValidationParameterResponse
 19552:io.harness.delegate.beans.connector.scm.github.GithubOauthDTO
 19553:io.harness.delegate.beans.connector.scm.gitlab.GitlabOauthDTO
+19554:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsValidationParams
 19630:io.harness.delegate.beans.connector.helm.OciHelmValidationParams
 19640:io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskParams
 19641:io.harness.delegate.beans.connector.helm.HttpHelmConnectivityTaskResponse

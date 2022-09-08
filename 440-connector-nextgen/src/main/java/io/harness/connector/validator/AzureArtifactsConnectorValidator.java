@@ -7,27 +7,52 @@
 
 package io.harness.connector.validator;
 
+import static software.wings.beans.TaskType.AZURE_ARTIFACTS_CONNECTIVITY_TEST_TASK;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
-import io.harness.connector.validator.scmValidators.AbstractGitConnectorValidator;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
-import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsToGitMapper;
-import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsCredentialsDTO;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTestConnectionTaskParams;
+import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTestConnectionTaskResponse;
+import io.harness.delegate.task.TaskParameters;
+
+import com.google.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.CDC)
-public class AzureArtifactsConnectorValidator extends AbstractGitConnectorValidator {
+@Slf4j
+@Singleton
+public class AzureArtifactsConnectorValidator extends AbstractConnectorValidator {
   @Override
-  public GitConfigDTO getGitConfigFromConnectorConfig(ConnectorConfigDTO connectorConfig) {
-    return AzureArtifactsToGitMapper.mapToGitConfigDTO((AzureArtifactsConnectorDTO) connectorConfig);
+  public <T extends ConnectorConfigDTO> TaskParameters getTaskParameters(
+      T connectorConfig, String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+    AzureArtifactsConnectorDTO azureArtifactsConnectorDTO = (AzureArtifactsConnectorDTO) connectorConfig;
+    AzureArtifactsCredentialsDTO azureArtifactsCredentialsDTO = azureArtifactsConnectorDTO.getAuthentication() != null
+        ? azureArtifactsConnectorDTO.getAuthentication().getCredentials()
+        : null;
+    return AzureArtifactsTestConnectionTaskParams.builder()
+        .azureArtifactsConnector(azureArtifactsConnectorDTO)
+        .encryptionDetails(super.getEncryptionDetail(
+            azureArtifactsCredentialsDTO, accountIdentifier, orgIdentifier, projectIdentifier))
+        .build();
   }
 
   @Override
-  public ConnectorValidationResult validate(ConnectorConfigDTO connectorConfigDTO, String accountIdentifier,
+  public String getTaskType() {
+    return AZURE_ARTIFACTS_CONNECTIVITY_TEST_TASK.name();
+  }
+
+  @Override
+  public ConnectorValidationResult validate(ConnectorConfigDTO azureArtifactsConnector, String accountIdentifier,
       String orgIdentifier, String projectIdentifier, String identifier) {
-    return super.validate(connectorConfigDTO, accountIdentifier, orgIdentifier, projectIdentifier, identifier);
+    AzureArtifactsTestConnectionTaskResponse responseData =
+        (AzureArtifactsTestConnectionTaskResponse) super.validateConnector(
+            azureArtifactsConnector, accountIdentifier, orgIdentifier, projectIdentifier, identifier);
+    return responseData.getConnectorValidationResult();
   }
 
   @Override

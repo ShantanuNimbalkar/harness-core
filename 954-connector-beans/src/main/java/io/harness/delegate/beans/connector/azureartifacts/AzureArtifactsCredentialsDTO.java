@@ -9,6 +9,7 @@ package io.harness.delegate.beans.connector.azureartifacts;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.DecryptableEntity;
 import io.harness.delegate.beans.connector.scm.GitConfigConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,4 +24,4 @@ import io.swagger.v3.oas.annotations.media.Schema;
 })
 @Schema(
     name = "AzureArtifactsCredentials", description = "This is a interface for details of the Azure DevOps credentials")
-public interface AzureArtifactsCredentialsDTO {}
+public interface AzureArtifactsCredentialsDTO extends DecryptableEntity {}
