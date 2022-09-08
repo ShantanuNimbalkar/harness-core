@@ -19,6 +19,7 @@ import static software.wings.api.EnvStateExecutionData.Builder.anEnvStateExecuti
 import static software.wings.sm.ExecutionEventAdvice.ExecutionEventAdviceBuilder.anExecutionEventAdvice;
 import static software.wings.sm.StateType.ENV_LOOP_STATE;
 import static software.wings.sm.StateType.ENV_STATE;
+import static software.wings.sm.StateType.FORK;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -38,11 +39,14 @@ import software.wings.sm.ExecutionResponse;
 import software.wings.sm.State;
 import software.wings.sm.StateExecutionInstance;
 import software.wings.sm.StateMachine;
+import software.wings.sm.Transition;
 import software.wings.sm.WorkflowStandardParams;
+import software.wings.sm.states.ForkState;
 import software.wings.sm.states.WorkflowState;
 
 import com.google.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(CDC)
@@ -83,9 +87,28 @@ public class PipelineStageExecutionAdvisor implements ExecutionEventAdvisor {
             context.getAppId(), workflowExecution.getPipelineSummary().getPipelineId(), stateExecutionInstance)) {
       StateMachine sm = context.getStateMachine();
       State prevState = sm.getStates().get(sm.getStates().indexOf(state) - 1);
+      List<Transition> transitions =
+          sm.getTransitions()
+              .stream()
+              .filter(transition -> transition.getFromState().getName().equals(ROLLBACK_PREFIX + prevState.getName()))
+              .collect(Collectors.toList());
+      State rollbackState = prevState;
+      if (transitions.isEmpty()) {
+        Transition rollbackTransition = sm.getTransitions()
+                                            .stream()
+                                            .filter(transition
+                                                -> transition.getFromState().getName().startsWith("rollback-")
+                                                    && FORK.getType().equals(transition.getFromState().getStateType())
+                                                    && ((ForkState) transition.getFromState())
+                                                           .getForkStateNames()
+                                                           .contains(ROLLBACK_PREFIX + prevState.getName()))
+                                            .findAny()
+                                            .get();
+        rollbackState = rollbackTransition.getFromState();
+      }
       return anExecutionEventAdvice()
           .withExecutionInterruptType(ROLLBACK_PREVIOUS_STAGES_ON_PIPELINE)
-          .withNextStateName(ROLLBACK_PREFIX + prevState.getName())
+          .withNextStateName(rollbackState.getStateType().equals(FORK.getType()) ? rollbackState.getName() : ROLLBACK_PREFIX + rollbackState.getName())
           .build();
     }
 

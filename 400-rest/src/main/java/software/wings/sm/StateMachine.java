@@ -256,12 +256,35 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
 
       prevState = null;
       int stage = pipeline.getPipelineStages().size();
-
       for (int i = pipeline.getPipelineStages().size() - 2; i >= 0; i--) {
         stage += 1;
         PipelineStage pipelineStage = pipeline.getPipelineStages().get(i);
-        if (pipelineStage.getPipelineStageElements().size() == 1) {
-          State state = convertToRollbackState(pipelineStage.getPipelineStageElements().get(0), pipeline, stencilMap, "Stage " + stage);
+        State state = convertToRollbackState(pipelineStage.getPipelineStageElements().get(0), pipeline, stencilMap, "Stage " + stage);
+
+        if (pipelineStage.isParallel()) {
+          if (!(prevState instanceof ForkState)) {
+
+            String forkName = getRollbackForkStateName(pipelineStage);
+            forkName += "-" + i;
+            ForkState forkState = new ForkState(forkName);
+            forkState.addForkState(state);
+            addState(forkState);
+            if (prevState != null) {
+              addTransition(aTransition()
+                  .withTransitionType(TransitionType.SUCCESS)
+                  .withFromState(prevState)
+                  .withToState(forkState)
+                  .build());
+            }
+            prevState = forkState;
+          } else {
+            ((ForkState) prevState).addForkState(state);
+          }
+        }
+        else if (!pipelineStage.isParallel() && pipeline.getPipelineStages().get(i+1).isParallel()) {
+          ((ForkState) prevState).addForkState(state);
+        }
+        else  {
           if (prevState != null) {
             addTransition(aTransition()
                 .withTransitionType(TransitionType.SUCCESS)
@@ -305,6 +328,16 @@ public class StateMachine implements PersistentEntity, UuidAware, CreatedAtAware
       forkName = "fork-pipeline-stage-" + System.currentTimeMillis();
     } else {
       forkName = pipelineStage.getName() + "-fork";
+    }
+    return forkName;
+  }
+
+  private String getRollbackForkStateName(PipelineStage pipelineStage) {
+    String forkName;
+    if (pipelineStage.getName() == null) {
+      forkName = "rollback-fork-pipeline-stage-" + System.currentTimeMillis();
+    } else {
+      forkName = "rollback-" + pipelineStage.getName() + "-fork";
     }
     return forkName;
   }

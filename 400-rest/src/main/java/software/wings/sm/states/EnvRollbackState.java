@@ -6,6 +6,7 @@ import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUT
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static java.util.Arrays.asList;
 import static software.wings.api.EnvStateExecutionData.Builder.anEnvStateExecutionData;
+import static software.wings.sm.StateType.FORK;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -53,6 +54,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +111,16 @@ public class EnvRollbackState extends State implements WorkflowState {
     EnvStateExecutionData envStateExecutionData = anEnvStateExecutionData().withWorkflowId(workflowId).build();
 
     EnvStateExecutionData stateExecutionData = (EnvStateExecutionData) executionContext.getStateExecutionInstance().getStateExecutionMap().get(this.getName().replace(ROLLBACK_PREFIX, ""));
+    if (stateExecutionData == null) {
+      executionContext.getStateExecutionInstance().getStateExecutionMap().entrySet().stream().filter(entry -> {
+        if (entry.getValue().getStateType() == FORK.getType()) {
+          ForkState.ForkStateExecutionData forkState = (ForkState.ForkStateExecutionData) entry.getValue();
+          forkState.get
+          return forkState.getForkStateNames().contains(this.getName().replace(ROLLBACK_PREFIX, ""));
+        }
+        return false;
+      }).map(it -> it.getValue()).findFirst();
+    }
     WorkflowExecution workflowExecution = executionService.getWorkflowExecution(executionContext.getAppId(), stateExecutionData.getWorkflowExecutionId());
     WorkflowExecution rollbackExecution = executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution, true);
 
