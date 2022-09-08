@@ -14,11 +14,8 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,8 +36,7 @@ public class DelegateLogStreamingDispatcher {
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicReference<DelegateLogStreamingDispatcherService> svcHolder = new AtomicReference<>();
 
-  private Map<String, List<LogLine>> logCache = new HashMap<>();
-  private Map<String, Boolean> shouldCloseStream = new ConcurrentHashMap<>();
+  private Map<String, DelegateLogStreamingCacheValue> logCache = new HashMap<>();
   ReadWriteLock readWriteLockForMap = new ReentrantReadWriteLock();
   ReadWriteLock readWriteLockForToken = new ReentrantReadWriteLock();
 
@@ -61,7 +57,7 @@ public class DelegateLogStreamingDispatcher {
     if (logCache.isEmpty()) {
       return;
     }
-    Map<String, List<LogLine>> logCacheToBeFlushed;
+    Map<String, DelegateLogStreamingCacheValue> logCacheToBeFlushed;
     try {
       readWriteLockForMap.writeLock().lock();
       logCacheToBeFlushed = logCache;
@@ -69,17 +65,18 @@ public class DelegateLogStreamingDispatcher {
     } finally {
       readWriteLockForMap.writeLock().unlock();
     }
-    logCacheToBeFlushed.forEach(
-        (logKey, logLines) -> logStreamingExecutor.submit(() -> sendLogsOverHttpAndCloseStream(logKey, logLines)));
+    logCacheToBeFlushed.forEach((logKey, delegateLogStreamingCacheValue)
+                                    -> logStreamingExecutor.submit(
+                                        () -> sendLogsOverHttpAndCloseStream(logKey, delegateLogStreamingCacheValue)));
   }
 
   public void saveLogsInCache(String logKey, LogLine logLine) {
     try {
       readWriteLockForMap.readLock().lock();
       if (!logCache.containsKey(logKey)) {
-        logCache.put(logKey, new ArrayList<>());
+        logCache.put(logKey, new DelegateLogStreamingCacheValue());
       }
-      logCache.get(logKey).add(logLine);
+      logCache.get(logKey).getLogLines().add(logLine);
     } finally {
       readWriteLockForMap.readLock().unlock();
     }
@@ -89,23 +86,25 @@ public class DelegateLogStreamingDispatcher {
     try {
       readWriteLockForMap.readLock().lock();
       if (!logCache.containsKey(logKey)) {
-        logCache.put(logKey, new ArrayList<>());
+        logCache.put(logKey, new DelegateLogStreamingCacheValue());
       }
+      logCache.get(logKey).setShouldCloseStream(true);
     } finally {
-      shouldCloseStream.put(logKey, true);
       readWriteLockForMap.readLock().unlock();
     }
   }
 
-  private void sendLogsOverHttpAndCloseStream(String logKey, List<LogLine> logLines) {
+  private void sendLogsOverHttpAndCloseStream(
+      String logKey, DelegateLogStreamingCacheValue delegateLogStreamingCacheValue) {
     try {
       readWriteLockForToken.readLock().lock();
-      log.info("Sending logs for logKey {} and logLines {}", logKey, logLines);
-      SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
+      log.info("Sending logs for logKey {} and cache value {}", logKey, delegateLogStreamingCacheValue);
+      SafeHttpCall.executeWithExceptions(
+          logStreamingClient.pushMessage(token, accountId, logKey, delegateLogStreamingCacheValue.getLogLines()));
     } catch (Exception ex) {
       log.error("Unable to push message to log stream for account {} and key {}", accountId, logKey, ex);
     } finally {
-      if (shouldCloseStream.containsKey(logKey)) {
+      if (delegateLogStreamingCacheValue.isShouldCloseStream()) {
         closeStream(logKey);
       }
       readWriteLockForToken.readLock().unlock();
@@ -117,8 +116,6 @@ public class DelegateLogStreamingDispatcher {
       SafeHttpCall.executeWithExceptions(logStreamingClient.closeLogStream(token, accountId, logKey, true));
     } catch (Exception ex) {
       log.error("Unable to close log stream for account {} and key {}", accountId, logKey, ex);
-    } finally {
-      shouldCloseStream.remove(logKey);
     }
   }
 
