@@ -18,6 +18,7 @@ import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.validation.Validator;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
@@ -54,6 +55,14 @@ public class AzureARMRollbackStepInfo extends AzureARMRollbackBaseStepInfo imple
 
   @Override
   public SpecParameters getSpecParameters() {
-    return AzureARMRollbackStepParameters.infoBuilder().delegateSelectors(getDelegateSelectors()).build();
+    validateSpecParameters();
+    return AzureARMRollbackStepParameters.infoBuilder()
+        .provisionerIdentifier(provisionerIdentifier)
+        .delegateSelectors(getDelegateSelectors())
+        .build();
+  }
+
+  void validateSpecParameters() {
+    Validator.notNullCheck("The provisioner Identifier can't be empty", provisionerIdentifier);
   }
 }

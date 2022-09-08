@@ -11,15 +11,19 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.SwaggerConstants;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
 import io.harness.pms.yaml.ParameterField;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @OwnedBy(CDP)
 @Data
@@ -27,8 +31,11 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @RecasterAlias("io.harness.cdng.provision.azure.AzureARMRollbackStepParameters")
 public class AzureARMRollbackStepParameters extends AzureARMRollbackBaseStepInfo implements SpecParameters {
+  @NotNull @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> provisionerIdentifier;
   @Builder(builderMethodName = "infoBuilder")
-  public AzureARMRollbackStepParameters(ParameterField<List<TaskSelectorYaml>> delegateSelectors) {
+  public AzureARMRollbackStepParameters(
+      ParameterField<List<TaskSelectorYaml>> delegateSelectors, @NonNull ParameterField<String> provisionerIdentifier) {
     super(delegateSelectors);
+    this.provisionerIdentifier = provisionerIdentifier;
   }
 }

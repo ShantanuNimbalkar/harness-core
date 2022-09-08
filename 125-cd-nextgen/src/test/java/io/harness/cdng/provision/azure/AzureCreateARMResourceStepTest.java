@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +37,7 @@ import io.harness.cdng.manifest.yaml.harness.HarnessStore;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.cdng.provision.azure.AzureCreateARMResourceStepScope.AzureCreateARMResourceStepScopeBuilder;
 import io.harness.cdng.provision.azure.AzureResourceGroupSpec.AzureResourceGroupSpecBuilder;
+import io.harness.cdng.provision.azure.beans.AzureARMConfig;
 import io.harness.cdng.provision.azure.beans.AzureARMTemplateDataOutput;
 import io.harness.cdng.provision.azure.beans.AzureCreateARMResourcePassThroughData;
 import io.harness.connector.ConnectorInfoDTO;
@@ -114,6 +116,7 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
 
   @Mock private AzureCommonHelper azureCommonHelper;
   @Mock private CDExpressionResolver cdExpressionResolver;
+  @Mock AzureARMConfigDAL azureARMConfigDAL;
   @Captor ArgumentCaptor<List<EntityDetail>> captor;
 
   @InjectMocks private AzureCreateARMResourceStep azureCreateStep;
@@ -796,6 +799,7 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
     azureCreateStep.finalizeExecutionWithSecurityContext(azureHelperTest.getAmbiance(),
         createStep("RG", templateStore, fileStoreConfigWrapper), passThroughData,
         () -> getTaskNGResponse(CommandExecutionStatus.FAILURE, UnitStatus.SUCCESS, "foobar"));
+    verify(azureARMConfigDAL, times(1)).saveAzureARMConfig(any());
     verify(azureCommonHelper, times(1)).getFailureResponse(any(), any());
   }
 
@@ -808,7 +812,7 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
     ArgumentCaptor<AzureARMTemplateDataOutput> taskDataArgumentCaptor =
         ArgumentCaptor.forClass(AzureARMTemplateDataOutput.class);
     when(executionSweepingOutputService.consume(any(), any(), taskDataArgumentCaptor.capture(), any())).thenReturn("");
-    StoreConfigWrapper fileStoreConfigWrapper =
+StoreConfigWrapper fileStoreConfigWrapper =
         StoreConfigWrapper.builder()
             .spec(GithubStore.builder()
                       .paths(ParameterField.createValueField(new ArrayList<>(Collections.singletonList("foobar"))))
@@ -823,9 +827,8 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
                       .build())
             .build();
     StepResponse response = azureCreateStep.finalizeExecutionWithSecurityContext(azureHelperTest.getAmbiance(),
-        createStep("RG", templateStore, fileStoreConfigWrapper), passThroughData,
-        () -> getTaskNGResponse(CommandExecutionStatus.SUCCESS, UnitStatus.SUCCESS, ""));
-
+        createStep("RG", templateStore, fileStoreConfigWrapper), passThroughData, () -> getTaskNGResponse(CommandExecutionStatus.SUCCESS, UnitStatus.SUCCESS, ""));
+    verify(azureARMConfigDAL, times(1)).saveAzureARMConfig(any());
     assertThat(taskDataArgumentCaptor.getValue().getResourceGroup()).isEqualTo("123");
     assertThat(taskDataArgumentCaptor.getValue().getSubscriptionId()).isEqualTo("234");
     assertThat(taskDataArgumentCaptor.getValue().getResourceGroupTemplateJson()).isEqualTo("345");
