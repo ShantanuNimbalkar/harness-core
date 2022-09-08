@@ -74,7 +74,7 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
   @Override
   public void closeStream(String baseLogKeySuffix) {
     String logKey = getLogKey(baseLogKeySuffix);
-    delegateLogStreamingDispatcher.forceDispatchLogsBeforeClosingStream(logKey);
+    delegateLogStreamingDispatcher.updateCloseStreamMap(logKey);
   }
 
   @Override
@@ -93,7 +93,8 @@ public class LogStreamingTaskClient implements ILogStreamingTaskClient {
 
   @Override
   public void dispatchLogs() {
-    delegateLogStreamingDispatcher.swapMapsAndDispatchLogs();
+    // talk to Deepak Puthraya first
+    // delegateLogStreamingDispatcher.swapMapsAndDispatchLogs();
   }
 
   @NotNull

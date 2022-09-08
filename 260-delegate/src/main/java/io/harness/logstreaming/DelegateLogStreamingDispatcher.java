@@ -85,23 +85,22 @@ public class DelegateLogStreamingDispatcher {
     }
   }
 
-  // this is just a enforcement to dispatch logs quickly, otherwise logs will anyhow be dispatched in next iteration.
-  public void forceDispatchLogsBeforeClosingStream(String logKey) {
+  public void updateCloseStreamMap(String logKey) {
     try {
       readWriteLockForMap.readLock().lock();
       if (!logCache.containsKey(logKey)) {
         logCache.put(logKey, new ArrayList<>());
       }
     } finally {
+      shouldCloseStream.put(logKey, true);
       readWriteLockForMap.readLock().unlock();
     }
-    shouldCloseStream.put(logKey, true);
-    swapMapsAndDispatchLogs();
   }
 
   private void sendLogsOverHttpAndCloseStream(String logKey, List<LogLine> logLines) {
     try {
       readWriteLockForToken.readLock().lock();
+      log.info("Sending logs for logKey {} and logLines {}", logKey, logLines);
       SafeHttpCall.executeWithExceptions(logStreamingClient.pushMessage(token, accountId, logKey, logLines));
     } catch (Exception ex) {
       log.error("Unable to push message to log stream for account {} and key {}", accountId, logKey, ex);
