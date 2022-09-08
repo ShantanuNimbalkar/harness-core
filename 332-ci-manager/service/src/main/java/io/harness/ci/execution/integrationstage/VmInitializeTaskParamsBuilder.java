@@ -159,7 +159,7 @@ public class VmInitializeTaskParamsBuilder {
     IntegrationStageConfig integrationStageConfig = initializeStepInfo.getStageElementConfig();
     vmInitializeUtils.validateStageConfig(integrationStageConfig, accountID);
 
-    OSType os = vmInitializeUtils.getOS(infrastructure);
+    OSType os = VmInitializeUtils.getOS(infrastructure);
     Map<String, String> volToMountPath =
         vmInitializeUtils.getVolumeToMountPath(integrationStageConfig.getSharedPaths(), os);
     String workDir = vmInitializeUtils.getWorkDir(os);
@@ -220,6 +220,7 @@ public class VmInitializeTaskParamsBuilder {
         .secrets(new ArrayList<>(secrets))
         .volToMountPath(volToMountPath)
         .serviceDependencies(getServiceDependencies(ambiance, integrationStageConfig))
+        .tags(vmInitializeUtils.getBuildTags(ambiance, stageDetails))
         .build();
   }
 
@@ -476,6 +477,7 @@ public class VmInitializeTaskParamsBuilder {
                                        .build();
     return SetupVmRequest.builder()
         .id(params.getStageRuntimeId())
+        .tags(params.getTags())
         //            .correlationID(taskId)
         .poolID(params.getPoolID())
         .config(config)

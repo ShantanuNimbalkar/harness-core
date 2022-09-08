@@ -32,14 +32,13 @@ import io.harness.secretmanagerclient.dto.SecretManagerConfigDTO;
 import io.harness.security.encryption.EncryptedDataParams;
 
 import software.wings.beans.CustomSecretNGManagerConfig;
+import software.wings.beans.NameValuePairWithDefault;
 import software.wings.service.impl.security.NGEncryptorService;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import io.serializer.HObjectMapper;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +54,6 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
   private final HarnessManagedConnectorHelper harnessManagedConnectorHelper;
   private final CustomSecretManagerHelper customSecretManagerHelper;
   private final CustomEncryptorsRegistry customEncryptorsRegistry;
-  private final ObjectMapper objectMapper;
 
   @Inject
   public NGConnectorSecretManagerServiceImpl(@Named(CONNECTOR_DECORATOR_SERVICE) ConnectorService connectorService,
@@ -66,7 +64,6 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
     this.harnessManagedConnectorHelper = harnessManagedConnectorHelper;
     this.customSecretManagerHelper = customSecretManagerHelper;
     this.customEncryptorsRegistry = customEncryptorsRegistry;
-    this.objectMapper = HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
   }
 
   @Override
@@ -125,14 +122,9 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
       CustomSecretNGManagerConfig encryptionConfig, SecretManagerConfigDTO secretManagerConfigDTO) {
     // use this path to replace secret var input
     CustomSecretManagerConfigDTO customNGSecretManagerConfigDTO = (CustomSecretManagerConfigDTO) secretManagerConfigDTO;
-    try {
-      customNGSecretManagerConfigDTO.getTemplate().setTemplateInputs(objectMapper.readValue(path, Map.class));
-    } catch (JsonProcessingException exception) {
-      log.error("Exception when converting user input to template input.", exception);
-      throw new RuntimeException(String.format("Can not parse the passed string to map. "
-              + "Invalid input: %s \n exception: %s",
-          path, exception.getMessage()));
-    }
+    Map<String, List<NameValuePairWithDefault>> inputValues = customSecretManagerHelper.mergeStringInInputValues(
+        path, customNGSecretManagerConfigDTO.getTemplate().getTemplateInputs());
+    customNGSecretManagerConfigDTO.getTemplate().setTemplateInputs(inputValues);
     // Preparing encrypted data for custom secret manager.
     Set<EncryptedDataParams> encryptedDataParamsSet =
         customSecretManagerHelper.prepareEncryptedDataParamsSet(customNGSecretManagerConfigDTO);
@@ -141,5 +133,15 @@ public class NGConnectorSecretManagerServiceImpl implements NGConnectorSecretMan
     String script =
         customEncryptor.resolveSecretManagerConfig(accountIdentifier, encryptedDataParamsSet, encryptionConfig);
     encryptionConfig.setScript(script);
+  }
+
+  public String getPerpetualTaskId(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, String identifier) {
+    return connectorService.getHeartbeatPerpetualTaskId(
+        accountIdentifier, orgIdentifier, projectIdentifier, identifier);
+  }
+
+  public void resetHeartBeatTask(String accountId, String taskId) {
+    connectorService.resetHeartBeatTask(accountId, taskId);
   }
 }

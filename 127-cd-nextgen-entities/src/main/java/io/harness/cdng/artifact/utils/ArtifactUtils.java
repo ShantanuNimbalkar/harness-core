@@ -23,6 +23,7 @@ import io.harness.cdng.artifact.bean.yaml.CustomArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.DockerHubArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.EcrArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.GcrArtifactConfig;
+import io.harness.cdng.artifact.bean.yaml.GoogleArtifactRegistryConfig;
 import io.harness.cdng.artifact.bean.yaml.JenkinsArtifactConfig;
 import io.harness.cdng.artifact.bean.yaml.NexusRegistryArtifactConfig;
 import io.harness.data.structure.EmptyPredicate;
@@ -168,6 +169,20 @@ public class ArtifactUtils {
         return String.format(placeholder, sourceType, jenkinsArtifactConfig.getJobName().getValue(),
             jenkinsArtifactConfig.getArtifactPath().getValue(), jenkinsArtifactConfig.getBuild().getValue(),
             jenkinsArtifactConfig.getConnectorRef().getValue());
+      case GOOGLE_ARTIFACT_REGISTRY:
+        GoogleArtifactRegistryConfig googleArtifactRegistryConfig = (GoogleArtifactRegistryConfig) artifactConfig;
+        String version = googleArtifactRegistryConfig.getVersion().getValue() != null
+            ? googleArtifactRegistryConfig.getVersion().getValue()
+            : googleArtifactRegistryConfig.getVersionRegex().getValue();
+        return String.format(
+            "\ntype: %s \nregion: %s \nproject: %s \nrepositoryName: %s \npackage: %s \nversion/versionRegex: %s \nconnectorRef: %s \nregistryType: %s\n",
+            sourceType, googleArtifactRegistryConfig.getRegion().getValue(),
+            googleArtifactRegistryConfig.getProject().getValue(),
+            googleArtifactRegistryConfig.getRepositoryName().getValue(),
+            googleArtifactRegistryConfig.getPkg().getValue(), version,
+            googleArtifactRegistryConfig.getConnectorRef().getValue(),
+            googleArtifactRegistryConfig.getGoogleArtifactRegistryType().getValue());
+
       default:
         throw new UnsupportedOperationException(String.format("Unknown Artifact Config type: [%s]", sourceType));
     }
