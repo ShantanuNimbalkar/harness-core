@@ -56,6 +56,7 @@ message HandleStepResponseRequest {
 message ResumeNodeExecutionRequest {
   map<string, bytes> response = 2;
   bool asyncError = 3;
+  bool timedOut = 4;
 }
 
 message EventErrorRequest {

@@ -92,9 +92,17 @@ public class SdkNodeExecutionServiceImpl implements SdkNodeExecutionService {
 
   @Override
   public void resumeNodeExecution(Ambiance ambiance, Map<String, ResponseData> response, boolean asyncError) {
+    resumeNodeExecution(ambiance, response, asyncError, false);
+  }
+  @Override
+  public void resumeNodeExecution(
+      Ambiance ambiance, Map<String, ResponseData> response, boolean asyncError, boolean timedOut) {
     Map<String, ByteString> responseBytes = responseDataMapper.toResponseDataProto(response);
-    ResumeNodeExecutionRequest resumeNodeExecutionRequest =
-        ResumeNodeExecutionRequest.newBuilder().putAllResponse(responseBytes).setAsyncError(asyncError).build();
+    ResumeNodeExecutionRequest resumeNodeExecutionRequest = ResumeNodeExecutionRequest.newBuilder()
+                                                                .putAllResponse(responseBytes)
+                                                                .setTimedOut(timedOut)
+                                                                .setAsyncError(asyncError)
+                                                                .build();
     SdkResponseEventProto sdkResponseEvent = SdkResponseEventProto.newBuilder()
                                                  .setSdkResponseEventType(SdkResponseEventType.RESUME_NODE_EXECUTION)
                                                  .setResumeNodeExecutionRequest(resumeNodeExecutionRequest)

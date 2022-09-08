@@ -19,6 +19,7 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.execution.AsyncSdkProgressCallback;
 import io.harness.pms.sdk.core.execution.AsyncSdkResumeCallback;
 import io.harness.pms.sdk.core.execution.AsyncSdkSingleCallback;
+import io.harness.pms.sdk.core.execution.AsyncSdkTimeoutCallback;
 import io.harness.pms.sdk.core.execution.InvokerPackage;
 import io.harness.pms.sdk.core.execution.ProgressableStrategy;
 import io.harness.pms.sdk.core.execution.ResumePackage;
@@ -59,8 +60,19 @@ public class AsyncStrategy extends ProgressableStrategy {
   public void resume(ResumePackage resumePackage) {
     Ambiance ambiance = resumePackage.getAmbiance();
     AsyncExecutable asyncExecutable = extractStep(ambiance);
-    StepResponse stepResponse = asyncExecutable.handleAsyncResponse(
-        ambiance, resumePackage.getStepParameters(), resumePackage.getResponseDataMap());
+    StepResponse stepResponse;
+    // If step does not implement handleTimeout() then handleAsyncResponse() will be called internally.
+    if (resumePackage.getTimedOut()) {
+      log.info("Timing out the nodeExecution with nodeExecutionId: {} and planExecutionId: {}",
+          AmbianceUtils.obtainCurrentRuntimeId(ambiance), ambiance.getPlanExecutionId());
+      stepResponse = asyncExecutable.handleTimeout(
+          ambiance, resumePackage.getStepParameters(), resumePackage.getResponseDataMap());
+    } else {
+      log.info("Handling async response for nodeExecution with nodeExecutionId: {} and planExecutionId: {}",
+          AmbianceUtils.obtainCurrentRuntimeId(ambiance), ambiance.getPlanExecutionId());
+      stepResponse = asyncExecutable.handleAsyncResponse(
+          ambiance, resumePackage.getStepParameters(), resumePackage.getResponseDataMap());
+    }
     sdkNodeExecutionService.handleStepResponse(ambiance, StepResponseMapper.toStepResponseProto(stepResponse));
   }
 
@@ -92,25 +104,32 @@ public class AsyncStrategy extends ProgressableStrategy {
     byte[] parameterBytes =
         stepParamString == null ? new byte[] {} : ByteString.copyFromUtf8(stepParamString).toByteArray();
     byte[] ambianceBytes = ambiance.toByteArray();
-    if (response.getCallbackIdsList().size() > 1) {
-      for (String callbackId : response.getCallbackIdsList()) {
-        // This is per callback Id callback
-        AsyncSdkSingleCallback singleCallback = AsyncSdkSingleCallback.builder()
-                                                    .ambianceBytes(ambianceBytes)
-                                                    .stepParameters(parameterBytes)
-                                                    .allCallbackIds(new ArrayList<>(response.getCallbackIdsList()))
-                                                    .build();
-        asyncWaitEngine.waitForAllOn(singleCallback, null, callbackId);
+    if (response.getIsTimeoutConfigured()) {
+      AsyncSdkTimeoutCallback asyncSdkTimeoutCallback =
+          AsyncSdkTimeoutCallback.builder().ambianceBytes(ambianceBytes).build();
+      asyncWaitEngine.waitForAllOnWithTimeout(
+          asyncSdkTimeoutCallback, response.getCallbackIdsList(), response.getTimeout());
+    } else {
+      if (response.getCallbackIdsList().size() > 1) {
+        for (String callbackId : response.getCallbackIdsList()) {
+          // This is per callback Id callback
+          AsyncSdkSingleCallback singleCallback = AsyncSdkSingleCallback.builder()
+                                                      .ambianceBytes(ambianceBytes)
+                                                      .stepParameters(parameterBytes)
+                                                      .allCallbackIds(new ArrayList<>(response.getCallbackIdsList()))
+                                                      .build();
+          asyncWaitEngine.waitForAllOn(singleCallback, null, callbackId);
+        }
       }
+      // This is overall callback will be called once all the responses are received
+      AsyncSdkResumeCallback callback = AsyncSdkResumeCallback.builder().ambianceBytes(ambianceBytes).build();
+      AsyncSdkProgressCallback progressCallback = AsyncSdkProgressCallback.builder()
+                                                      .ambianceBytes(ambianceBytes)
+                                                      .stepParameters(parameterBytes)
+                                                      .mode(mode)
+                                                      .build();
+      asyncWaitEngine.waitForAllOn(callback, progressCallback, response.getCallbackIdsList().toArray(new String[0]));
     }
-    // This is overall callback will be called once all the responses are received
-    AsyncSdkResumeCallback callback = AsyncSdkResumeCallback.builder().ambianceBytes(ambianceBytes).build();
-    AsyncSdkProgressCallback progressCallback = AsyncSdkProgressCallback.builder()
-                                                    .ambianceBytes(ambianceBytes)
-                                                    .stepParameters(parameterBytes)
-                                                    .mode(mode)
-                                                    .build();
-    asyncWaitEngine.waitForAllOn(callback, progressCallback, response.getCallbackIdsList().toArray(new String[0]));
   }
 
   @Override
