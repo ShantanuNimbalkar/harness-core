@@ -24,7 +24,6 @@ import io.harness.models.constants.InstanceSyncConstants;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

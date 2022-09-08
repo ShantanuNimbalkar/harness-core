@@ -25,7 +25,6 @@ import io.harness.repositories.instance.InstanceRepository;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.mongodb.client.result.UpdateResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
