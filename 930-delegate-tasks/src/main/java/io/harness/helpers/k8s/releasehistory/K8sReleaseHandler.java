@@ -15,7 +15,7 @@ import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
 import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
 
-import org.codehaus.commons.nullanalysis.NotNull;
+import javax.validation.constraints.NotNull;
 
 @OwnedBy(CDP)
 public interface K8sReleaseHandler {
