@@ -46,6 +46,7 @@ import io.harness.pms.sdk.core.pipeline.variables.PipelineVariableCreator;
 import io.harness.pms.sdk.core.pipeline.variables.StepGroupVariableCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
+import io.harness.pms.sdk.core.variables.EmptyAnyVariableCreator;
 import io.harness.pms.sdk.core.variables.StrategyVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.pms.utils.InjectorUtils;
@@ -77,6 +78,7 @@ import io.harness.steps.shellscript.ShellScriptStepPlanCreator;
 import io.harness.steps.shellscript.ShellScriptStepVariableCreator;
 import io.harness.variables.ExecutionVariableCreator;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
@@ -162,6 +164,7 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new QueueStepVariableCreator());
     variableCreators.add(new CustomApprovalStepVariableCreator());
     variableCreators.add(new StrategyVariableCreator());
+    variableCreators.add(new EmptyAnyVariableCreator(ImmutableSet.of("parallel", "steps", "spec", "stages")));
     injectorUtils.injectMembers(variableCreators);
     return variableCreators;
   }
