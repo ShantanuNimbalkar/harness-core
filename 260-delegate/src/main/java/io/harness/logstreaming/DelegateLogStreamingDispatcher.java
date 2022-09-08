@@ -92,13 +92,11 @@ public class DelegateLogStreamingDispatcher {
       if (!logCache.containsKey(logKey)) {
         logCache.put(logKey, new ArrayList<>());
       }
-      List<LogLine> logLines = logCache.get(logKey);
-      logCache.remove(logKey);
-      shouldCloseStream.put(logKey, true);
-      logStreamingExecutor.submit(() -> sendLogsOverHttpAndCloseStream(logKey, logLines));
     } finally {
       readWriteLockForMap.readLock().unlock();
     }
+    shouldCloseStream.put(logKey, true);
+    swapMapsAndDispatchLogs();
   }
 
   private void sendLogsOverHttpAndCloseStream(String logKey, List<LogLine> logLines) {
