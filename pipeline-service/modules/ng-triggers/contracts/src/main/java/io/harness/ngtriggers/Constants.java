@@ -97,7 +97,7 @@ public interface Constants {
   String ACR = "Acr";
   String JENKINS = "Jenkins";
   String AMAZON_S3 = "AmazonS3";
-  String GITHUB_PACKAGES = "GithubPackages";
+  String GITHUB_PACKAGES = "GithubPackageRegistry";
 
   String MANIFEST_VERSION = "<+trigger.manifest.version>";
   String ARTIFACT_VERSION = "<+trigger.artifact.build>";
