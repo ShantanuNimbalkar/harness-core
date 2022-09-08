@@ -8,13 +8,13 @@
 package software.wings.delegatetasks.helm;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.filesystem.FileIo.createDirectoryIfDoesNotExist;
 import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfProcess;
 import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.replace;
 
 import io.harness.annotations.dev.HarnessModule;
@@ -41,7 +41,6 @@ import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.beans.command.ExecutionLogCallback;
 import software.wings.beans.command.HelmDummyCommandUnitConstants;
-import software.wings.beans.settings.helm.HelmRepoConfig;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.helpers.ext.container.ContainerDeploymentDelegateHelper;
 import software.wings.helpers.ext.helm.HelmCommandExecutionResponse;
@@ -156,7 +155,7 @@ public class HelmCommandTask extends AbstractDelegateRunnableTask {
 
     boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
     String workingDir = EMPTY;
-    boolean isNotReleaseHistCmd = helmCommandRequest instanceof HelmReleaseHistoryCommandRequest ? false : true;
+    boolean isNotReleaseHistCmd = helmCommandRequest instanceof HelmReleaseHistoryCommandRequest;
 
     if (isNotReleaseHistCmd) {
       if (isEnvVarSet) {

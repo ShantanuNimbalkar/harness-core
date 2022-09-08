@@ -840,7 +840,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     ProcessResult jobCompletionTimeResult = new ProcessResult(1, new ProcessOutput("Something went wrong".getBytes()));
 
     doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
-    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobCompletionTimeResult)
+        .when(jobCompletionCommand)
+        .execute(RANDOM, null, null, false, Collections.emptyMap());
     doReturn("kubectl --kubeconfig=file get").when(jobCompletionCommand).command();
 
     if (isErrorFrameworkEnabled) {
@@ -902,7 +904,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     ProcessResult jobCompletionTimeResult = new ProcessResult(0, new ProcessOutput("time".getBytes()));
 
     doReturn(jobStatusResult).when(jobCompletionStatus).execute(RANDOM, null, null, false, Collections.emptyMap());
-    doReturn(jobCompletionTimeResult).when(jobCompletionCommand).execute(RANDOM, null, null, false, Collections.emptyMap());
+    doReturn(jobCompletionTimeResult)
+        .when(jobCompletionCommand)
+        .execute(RANDOM, null, null, false, Collections.emptyMap());
 
     assertThat(k8sTaskHelperBase.getJobStatus(k8sDelegateTaskParams, null, null, jobCompletionStatus, null,
                    jobStatusCommand, jobCompletionCommand, isErrorFrameworkEnabled))

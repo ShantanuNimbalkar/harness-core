@@ -400,15 +400,14 @@ public class HelmTaskHelperTest extends WingsBaseTest {
   private void verifyFetchChartFilesProcessExecutor(String outputDirectory) throws Exception {
     verify(helmTaskHelperBase, times(1))
         .createProcessExecutor(
-            eq("v3/helm repo add repoName-bucketName http://127.0.0.1:1234 --repository-config cache/repo-repoName-bucketName.yaml"),
+            eq("v3/helm repo add repoName http://127.0.0.1:1234 --repository-config cache/repo-repoName.yaml"),
             eq(outputDirectory), eq(LONG_TIMEOUT_INTERVAL), anyMap());
     verify(helmTaskHelperBase, times(1))
         .createProcessExecutor(
-            eq("v3/helm pull repoName-bucketName/chartName  --untar  --repository-config cache/repo-repoName-bucketName.yaml"),
+            eq("v3/helm pull repoName/chartName  --untar  --repository-config cache/repo-repoName.yaml"),
             eq(outputDirectory), eq(LONG_TIMEOUT_INTERVAL), anyMap());
     verify(helmTaskHelperBase, times(1))
-        .createProcessExecutor(
-            eq("v3/helm repo remove repoName-bucketName --repository-config cache/repo-repoName-bucketName.yaml"),
+        .createProcessExecutor(eq("v3/helm repo remove repoName --repository-config cache/repo-repoName.yaml"),
             eq(null), eq(LONG_TIMEOUT_INTERVAL), anyMap());
     verify(processExecutor, times(4)).execute();
   }
