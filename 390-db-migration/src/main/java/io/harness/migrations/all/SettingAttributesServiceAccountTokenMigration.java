@@ -29,7 +29,7 @@ public class SettingAttributesServiceAccountTokenMigration implements Migration 
   @Inject private MongoPersistence mongoPersistence;
   @Override
   public void migrate() {
-    log.info("Starting Cloud Provider migration");
+    log.info("Starting Service Account Token migration");
     String accountId =
         "yTbabkw4SdCPZdnEWynUNg"; // Account Id for the customer- "Kroger" for whom the migration is required
     Set<String> tokenIds = new HashSet<>();
@@ -67,6 +67,9 @@ public class SettingAttributesServiceAccountTokenMigration implements Migration 
           mongoPersistence.update(settingAttribute, ops);
         }
       }
+    } catch (Exception ex) {
+      log.error(
+          String.format("Exception occurred during Service Account Token migration for account- %s", accountId), ex);
     }
   }
 }
