@@ -393,7 +393,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
         .thenReturn(resourceGroupResponseProject);
 
-    Response response = projectResourceGroupsApi.createResourceGroupProject(org, project, request, account);
+    Response response = projectResourceGroupsApi.createResourceGroupProject(request, org, project, account);
     ResourceGroupsResponse newResourceGroupResponse = (ResourceGroupsResponse) response.getEntity();
     assertEquals(slug, newResourceGroupResponse.getSlug());
     assertEquals(name, newResourceGroupResponse.getName());
