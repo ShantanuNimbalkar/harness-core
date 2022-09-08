@@ -31,15 +31,16 @@ public class NextGenManagerMongoDBMetricsPublisher implements MetricsPublisher {
   @Override
   public void recordMetrics() {
     ConcurrentMap<ServerId, HarnessConnectionPoolStatistics> map = harnessConnectionPoolListener.getStatistics();
-    map.forEach(((serverId, harnessConnectionPoolStatistics) -> {
+    map.forEach((serverId, harnessConnectionPoolStatistics) -> {
       String serverAddress = sanitizeName(serverId.getAddress().toString());
       String clientDescription = sanitizeName(serverId.getClusterId().getDescription());
-      try (MongoMetricsContext ignore = new MongoMetricsContext(NAMESPACE, CONTAINER_NAME, serverAddress, clientDescription)) {
+      try (MongoMetricsContext ignore =
+               new MongoMetricsContext(NAMESPACE, CONTAINER_NAME, serverAddress, clientDescription)) {
         recordMetric(CONNECTION_POOL_SIZE, harnessConnectionPoolStatistics.getSize());
         recordMetric(CONNECTIONS_CHECKED_OUT, harnessConnectionPoolStatistics.getCheckedOutCount());
         recordMetric(WAIT_QUEUE_SIZE, harnessConnectionPoolStatistics.getWaitQueueSize());
       }
-    }));
+    });
   }
 
   private static String sanitizeName(String labelName) {
