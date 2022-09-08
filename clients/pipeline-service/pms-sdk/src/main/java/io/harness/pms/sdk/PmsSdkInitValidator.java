@@ -10,6 +10,7 @@ package io.harness.pms.sdk;
 import static org.apache.commons.collections4.CollectionUtils.subtract;
 
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.exception.PmsSdkPlanCreatorValidationException;
 import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
@@ -24,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -38,9 +39,9 @@ class PmsSdkInitValidator {
    * VariableCreator}. For this moment we only detect and notify the differences without change current final list of
    * supported types.
    *
-   * @return a {@link Pair} of detected unsupported filters and unsupported variables.
+   * @throws PmsSdkPlanCreatorValidationException when any difference is detected.
    */
-  static Pair<Map<String, Set<String>>, Map<String, Set<String>>> validatePlanCreators(
+  static void validatePlanCreators(
       Map<String, Set<String>> supportedPlan, PipelineServiceInfoProvider pipelineServiceInfoProvider) {
     final Map<String, Set<String>> supportedFilters =
         supportedTypesF(pipelineServiceInfoProvider.getFilterJsonCreators());
@@ -55,7 +56,9 @@ class PmsSdkInitValidator {
       detectUnsupportedTypes("VariableJsonCreators", entry, supportedVariables, unsupportedVariables);
     });
 
-    return Pair.of(unsupportedFilters, unsupportedVariables);
+    if (MapUtils.isNotEmpty(unsupportedFilters) || MapUtils.isNotEmpty(unsupportedVariables)) {
+      throw new PmsSdkPlanCreatorValidationException(unsupportedFilters, unsupportedVariables);
+    }
   }
 
   private static void detectUnsupportedTypes(String label, Map.Entry<String, Set<String>> entry,
