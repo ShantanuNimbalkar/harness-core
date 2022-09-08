@@ -13,8 +13,8 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.task.k8s.K8sTaskHelperBase.getResourcesInStringFormat;
 import static io.harness.k8s.K8sCommandUnitConstants.Delete;
 import static io.harness.k8s.K8sCommandUnitConstants.Init;
-import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Failed;
-import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.InProgress;
+import static io.harness.k8s.releasehistory.IK8sRelease.Status.FAILED;
+import static io.harness.k8s.releasehistory.IK8sRelease.Status.IN_PROGRESS;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.INFO;
 import static io.harness.logging.LogLevel.WARN;
@@ -38,10 +38,10 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.k8s.K8sConstants;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.model.K8sDelegateTaskParams;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.LogCallback;
 
 import com.google.inject.Inject;
@@ -138,7 +138,7 @@ public class K8sCanaryDeleteRequestHandler extends K8sRequestHandler {
     // release. To ensure that the latest release is actually a canary release we have a more deep logic
     // in K8s Canary Delete Step (we will rely on release history only when we queued K8s Canary Task and step expire)
     K8sLegacyRelease release = releaseHistory.getLatestRelease();
-    if (InProgress != release.getStatus() && Failed != release.getStatus()) {
+    if (IN_PROGRESS != release.getStatus() && FAILED != release.getStatus()) {
       logCallback.saveExecutionLog(
           format("Unable to identify any canary deployments for release %s.", releaseName), WARN);
       return Collections.emptyList();

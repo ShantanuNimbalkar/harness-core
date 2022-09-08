@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.model.releasehistory;
+package io.harness.k8s.releasehistory;
 
 import java.util.Map;
 import lombok.experimental.UtilityClass;

@@ -8,15 +8,10 @@
 package io.harness.helpers.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_KEY;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_LABELS_MAP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_MAP;
 import static io.harness.rule.OwnerRule.ABHINAV2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -26,13 +21,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.model.KubernetesConfig;
-import io.harness.k8s.model.releasehistory.K8sRelease;
-import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.K8sRelease;
+import io.harness.k8s.releasehistory.K8sReleasePersistDTO;
 import io.harness.rule.Owner;
 
 import io.kubernetes.client.openapi.models.V1Secret;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,7 +36,6 @@ import org.mockito.MockitoAnnotations;
 @OwnedBy(CDP)
 public class K8sReleaseHandlerImplTest extends CategoryTest {
   @Mock KubernetesContainerService kubernetesContainerService;
-  @Mock K8sReleaseHelper releaseHelper;
 
   @InjectMocks K8sReleaseHandlerImpl releaseHandler;
 
@@ -58,24 +50,18 @@ public class K8sReleaseHandlerImplTest extends CategoryTest {
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
   public void testGetReleaseHistory() {
-    Map<String, String> labels = new HashMap<>(RELEASE_SECRET_LABELS_MAP);
-    labels.put(RELEASE_KEY, RELEASE_NAME);
-
-    doReturn(labels).when(releaseHelper).createLabelsMap(RELEASE_NAME);
-    doReturn("labelArg").when(releaseHelper).createCommaSeparatedKeyValueList(labels);
-    doReturn("fieldArg").when(releaseHelper).createCommaSeparatedKeyValueList(RELEASE_SECRET_TYPE_MAP);
-
     releaseHandler.getReleaseHistory(KubernetesConfig.builder().build(), RELEASE_NAME);
-    verify(kubernetesContainerService).getSecretsWithLabelsAndFields(any(), eq("labelArg"), eq("fieldArg"));
+    verify(kubernetesContainerService)
+        .getSecretsWithLabelsAndFields(
+            any(), eq("owner=harness,release=" + RELEASE_NAME), eq("type=harness.io/release/v2"));
   }
 
   @Test
   @Owner(developers = ABHINAV2)
   @Category(UnitTests.class)
   public void testCreateRelease() {
-    doReturn(RELEASE_NAME).when(releaseHelper).generateName(anyString(), anyInt());
     K8sRelease release = (K8sRelease) releaseHandler.createRelease("name", 1);
-    assertThat(release.getReleaseName()).isEqualTo(RELEASE_NAME);
+    assertThat(release.getReleaseSecret().getMetadata().getName()).isEqualTo("release.name.1");
   }
 
   @Test

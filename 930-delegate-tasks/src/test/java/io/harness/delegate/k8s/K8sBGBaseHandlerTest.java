@@ -40,13 +40,13 @@ import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.model.HarnessLabelValues;
 import io.harness.k8s.model.HarnessLabels;
 import io.harness.k8s.model.K8sDelegateTaskParams;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.K8sPod;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 
@@ -194,22 +194,22 @@ public class K8sBGBaseHandlerTest extends CategoryTest {
 
     ReleaseHistory releaseHistory = ReleaseHistory.createNew();
     releaseHistory.createNewRelease(asList(stage, versioned));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(stage);
     releaseHistory.setReleaseNumber(0);
 
     releaseHistory.createNewRelease(singletonList(stage));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.FAILED);
     releaseHistory.getLatestRelease().setManagedWorkload(stage);
     releaseHistory.setReleaseNumber(1);
 
     releaseHistory.createNewRelease(asList(primary, versioned));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(primary);
     releaseHistory.setReleaseNumber(2);
 
     releaseHistory.createNewRelease(asList(stage, versioned));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(stage);
     releaseHistory.setReleaseNumber(3);
 
@@ -270,24 +270,24 @@ public class K8sBGBaseHandlerTest extends CategoryTest {
 
     releaseHistory.createNewReleaseWithResourceMap(
         getResourcesWithSpecForRelease(asList(stage0, versioned0, persistentResource, oldResource)));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(stage0);
     releaseHistory.setReleaseNumber(0);
 
     releaseHistory.createNewReleaseWithResourceMap(
         getResourcesWithSpecForRelease(asList(stage1, versioned1, persistentResource, oldResource)));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.FAILED);
     releaseHistory.getLatestRelease().setManagedWorkload(stage1);
     releaseHistory.setReleaseNumber(1);
 
     releaseHistory.createNewReleaseWithResourceMap(
         getResourcesWithSpecForRelease(asList(primary, versioned2, persistentResource)));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(primary);
     releaseHistory.setReleaseNumber(2);
 
     releaseHistory.createNewReleaseWithResourceMap(getResourcesWithSpecForRelease(asList(currentStage, versioned3)));
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     releaseHistory.getLatestRelease().setManagedWorkload(currentStage);
     releaseHistory.setReleaseNumber(3);
 

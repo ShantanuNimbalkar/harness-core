@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.model.releasehistory;
+package io.harness.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -42,7 +42,7 @@ public class K8sReleaseHistory implements IK8sReleaseHistory {
     Optional<K8sRelease> lastSuccessfulReleaseOptional =
         releaseHistory.stream()
             .filter(release -> release.getReleaseNumber() != currentReleaseNumber)
-            .filter(release -> release.getStatus().equals(IK8sRelease.Status.Succeeded.name()))
+            .filter(release -> release.getReleaseStatus().equals(IK8sRelease.Status.SUCCEEDED))
             .max(Comparator.comparing(K8sRelease::getReleaseNumber));
 
     return lastSuccessfulReleaseOptional.orElse(null);

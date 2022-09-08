@@ -5,15 +5,17 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.model.releasehistory;
+package io.harness.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 
+import javax.validation.constraints.NotNull;
+
 @OwnedBy(CDP)
 public interface IK8sReleaseHistory {
   int getCurrentReleaseNumber();
-  IK8sRelease getLastSuccessfulRelease(int currentReleaseNumber);
+  IK8sRelease getLastSuccessfulRelease(@NotNull int currentReleaseNumber);
   IK8sRelease getLatestRelease();
 }

@@ -24,9 +24,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
 import io.harness.k8s.model.KubernetesConfig;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8SLegacyReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.K8SLegacyReleaseHistory;
+import io.harness.k8s.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.rule.Owner;
 
 import org.junit.Before;

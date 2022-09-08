@@ -33,11 +33,11 @@ import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.model.HarnessAnnotations;
 import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sDelegateTaskParams;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.CommandExecutionStatus;
 
 import software.wings.beans.command.ExecutionLogCallback;

@@ -59,13 +59,13 @@ import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.HelmVersion;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
@@ -583,8 +583,8 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     KubernetesConfig kubernetesConfig =
         containerDeploymentDelegateHelper.getKubernetesConfig(request.getContainerServiceParams());
     releaseHistory.setReleaseStatus(CommandExecutionStatus.SUCCESS == response.getCommandExecutionStatus()
-            ? IK8sRelease.Status.Succeeded
-            : IK8sRelease.Status.Failed);
+            ? IK8sRelease.Status.SUCCEEDED
+            : IK8sRelease.Status.FAILED);
     k8sTaskHelperBase.saveReleaseHistory(kubernetesConfig, request.getReleaseName(), releaseHistory.getAsYaml(), true);
   }
 
@@ -663,7 +663,7 @@ public class HelmDeployServiceImpl implements HelmDeployService {
     K8sLegacyRelease rollbackRelease = releaseHistory.getRelease(request.getPrevReleaseVersion());
     notNullCheck("Unable to find release " + request.getPrevReleaseVersion(), rollbackRelease);
 
-    if (IK8sRelease.Status.Succeeded != rollbackRelease.getStatus()) {
+    if (IK8sRelease.Status.SUCCEEDED != rollbackRelease.getStatus()) {
       throw new InvalidRequestException("Invalid status for release with number " + request.getPrevReleaseVersion()
               + ". Expected 'Succeeded' status, actual status is '" + rollbackRelease.getStatus() + "'",
           USER);

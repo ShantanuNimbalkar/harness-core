@@ -11,11 +11,11 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.kubectl.Kubectl;
-import io.harness.k8s.model.K8sLegacyRelease;
-import io.harness.k8s.model.K8sLegacyRelease.KubernetesResourceIdRevision;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
-import io.harness.k8s.model.ReleaseHistory;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.K8sLegacyRelease.KubernetesResourceIdRevision;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 
 import java.util.ArrayList;
 import java.util.List;

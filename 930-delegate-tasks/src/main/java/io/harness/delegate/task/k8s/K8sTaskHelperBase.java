@@ -33,7 +33,7 @@ import static io.harness.k8s.manifest.ManifestHelper.yaml_file_extension;
 import static io.harness.k8s.manifest.ManifestHelper.yml_file_extension;
 import static io.harness.k8s.model.K8sExpressions.canaryDestinationExpression;
 import static io.harness.k8s.model.K8sExpressions.stableDestinationExpression;
-import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Failed;
+import static io.harness.k8s.releasehistory.IK8sRelease.Status.FAILED;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.logging.LogLevel.ERROR;
@@ -154,15 +154,15 @@ import io.harness.k8s.model.HelmVersion;
 import io.harness.k8s.model.IstioDestinationWeight;
 import io.harness.k8s.model.K8sContainer;
 import io.harness.k8s.model.K8sDelegateTaskParams;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.K8sPod;
 import io.harness.k8s.model.Kind;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceComparer;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
 import io.harness.k8s.model.response.CEK8sDelegatePrerequisite;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
@@ -975,7 +975,7 @@ public class K8sTaskHelperBase {
 
     for (int releaseIndex = releaseHistory.getReleases().size() - 1; releaseIndex >= 0; releaseIndex--) {
       K8sLegacyRelease release = releaseHistory.getReleases().get(releaseIndex);
-      if (release.getNumber() < lastSuccessfulReleaseNumber || release.getStatus() == Failed) {
+      if (release.getNumber() < lastSuccessfulReleaseNumber || release.getStatus() == FAILED) {
         for (int resourceIndex = release.getResources().size() - 1; resourceIndex >= 0; resourceIndex--) {
           KubernetesResourceId resourceId = release.getResources().get(resourceIndex);
           if (resourceId.isVersioned()) {
@@ -991,7 +991,7 @@ public class K8sTaskHelperBase {
       }
     }
     releaseHistory.getReleases().removeIf(
-        release -> release.getNumber() < lastSuccessfulReleaseNumber || release.getStatus() == Failed);
+        release -> release.getNumber() < lastSuccessfulReleaseNumber || release.getStatus() == FAILED);
   }
 
   public void delete(Kubectl client, K8sDelegateTaskParams k8sDelegateTaskParams,

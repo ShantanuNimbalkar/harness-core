@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.manifest;
+package io.harness.k8s.releasehistory;
 
-import static io.harness.k8s.model.ReleaseHistory.createFromData;
+import static io.harness.k8s.releasehistory.ReleaseHistory.createFromData;
 import static io.harness.rule.OwnerRule.PUNEET;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,10 +16,7 @@ import static org.assertj.core.api.Assertions.fail;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.WingsException;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
 import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableList;
@@ -55,7 +52,7 @@ public class K8sLegacyReleaseHistoryTest extends CategoryTest {
     }
 
     try {
-      releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+      releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
       fail("Should not reach here.");
     } catch (WingsException e) {
       assertThat(e.getMessage()).isEqualTo("No existing release found.");
@@ -72,22 +69,22 @@ public class K8sLegacyReleaseHistoryTest extends CategoryTest {
     K8sLegacyRelease release = releaseHistory.getLatestRelease();
 
     assertThat(release.getNumber()).isEqualTo(1);
-    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.InProgress);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.IN_PROGRESS);
     assertThat(release.getResources()).hasSize(1);
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("kind", "Deployment");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("name", "nginx");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("namespace", "default");
 
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     release = releaseHistory.getLatestRelease();
-    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.Succeeded);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.SUCCEEDED);
 
     releaseHistory.createNewRelease(ImmutableList.of(
         KubernetesResourceId.builder().kind("Deployment").name("nginx-1").namespace("default").build()));
     release = releaseHistory.getLatestRelease();
 
     assertThat(release.getNumber()).isEqualTo(2);
-    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.InProgress);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.IN_PROGRESS);
     assertThat(release.getResources()).hasSize(1);
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("kind", "Deployment");
     assertThat(release.getResources().get(0)).hasFieldOrPropertyWithValue("name", "nginx-1");
@@ -109,12 +106,12 @@ public class K8sLegacyReleaseHistoryTest extends CategoryTest {
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
 
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Succeeded);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.SUCCEEDED);
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNotNull();
-    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.Succeeded);
+    assertThat(release.getStatus()).isEqualTo(IK8sRelease.Status.SUCCEEDED);
 
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.FAILED);
     release = releaseHistory.getLastSuccessfulRelease();
     assertThat(release).isNull();
   }

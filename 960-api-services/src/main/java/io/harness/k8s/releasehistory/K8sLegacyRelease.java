@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.k8s.model;
+package io.harness.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
+import io.harness.k8s.model.KubernetesResource;
+import io.harness.k8s.model.KubernetesResourceId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,11 @@ public class K8sLegacyRelease implements IK8sRelease {
   @Override
   public Integer getReleaseNumber() {
     return number;
+  }
+
+  @Override
+  public Status getReleaseStatus() {
+    return status;
   }
 
   @Override

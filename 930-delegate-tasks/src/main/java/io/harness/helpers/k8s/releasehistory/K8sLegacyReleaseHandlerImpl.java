@@ -12,21 +12,26 @@ import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.task.k8s.K8sTaskHelperBase;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesConfig;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
-import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8SLegacyReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sReleaseHistory;
+import io.harness.k8s.releasehistory.K8SLegacyReleaseHistory;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.K8sReleaseCleanupDTO;
+import io.harness.k8s.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(CDP)
 @Singleton
+@AllArgsConstructor(onConstructor = @__({ @Inject }))
+@Slf4j
 public class K8sLegacyReleaseHandlerImpl implements K8sReleaseHandler {
-  @Inject K8sTaskHelperBase k8sTaskHelperBase;
+  @Inject private final K8sTaskHelperBase k8sTaskHelperBase;
 
   @Override
   public IK8sReleaseHistory getReleaseHistory(KubernetesConfig kubernetesConfig, String releaseName) throws Exception {
@@ -38,12 +43,19 @@ public class K8sLegacyReleaseHandlerImpl implements K8sReleaseHandler {
 
   @Override
   public IK8sRelease createRelease(String name, int number) {
-    return K8sLegacyRelease.builder().number(number).status(IK8sRelease.Status.InProgress).build();
+    return K8sLegacyRelease.builder().number(number).status(IK8sRelease.Status.IN_PROGRESS).build();
   }
 
   @Override
   public void saveRelease(KubernetesConfig kubernetesConfig, K8sReleasePersistDTO releasePersistDTO) throws Exception {
     k8sTaskHelperBase.saveReleaseHistory(kubernetesConfig, releasePersistDTO.getReleaseName(),
         releasePersistDTO.getReleaseHistoryYaml(), releasePersistDTO.isStoreInSecrets());
+  }
+
+  @Override
+  public void cleanReleaseHistory(K8sReleaseCleanupDTO releaseCleanupDTO) throws Exception {
+    ReleaseHistory releaseHistory = (ReleaseHistory) releaseCleanupDTO.getReleaseHistory();
+    k8sTaskHelperBase.cleanup(releaseCleanupDTO.getClient(), releaseCleanupDTO.getDelegateTaskParams(), releaseHistory,
+        releaseCleanupDTO.getLogCallback());
   }
 }

@@ -10,8 +10,8 @@ package io.harness.delegate.k8s;
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.k8s.manifest.ManifestHelper.getWorkloadsForCanaryAndBG;
 import static io.harness.k8s.manifest.VersionUtils.markVersionedResources;
-import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.Failed;
-import static io.harness.k8s.model.releasehistory.IK8sRelease.Status.InProgress;
+import static io.harness.k8s.releasehistory.IK8sRelease.Status.FAILED;
+import static io.harness.k8s.releasehistory.IK8sRelease.Status.IN_PROGRESS;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.LogLevel.ERROR;
 
@@ -36,13 +36,13 @@ import io.harness.k8s.model.HarnessAnnotations;
 import io.harness.k8s.model.HarnessLabelValues;
 import io.harness.k8s.model.HarnessLabels;
 import io.harness.k8s.model.K8sDelegateTaskParams;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.K8sPod;
 import io.harness.k8s.model.KubernetesConfig;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
-import io.harness.k8s.model.ReleaseHistory;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
+import io.harness.k8s.releasehistory.ReleaseHistory;
 import io.harness.logging.LogCallback;
 
 import software.wings.beans.LogColor;
@@ -103,8 +103,8 @@ public class K8sCanaryBaseHandler {
     }
 
     for (K8sLegacyRelease release : canaryHandlerConfig.getReleaseHistory().getReleases()) {
-      if (release.getStatus() == InProgress) {
-        release.setStatus(Failed);
+      if (release.getStatus() == IN_PROGRESS) {
+        release.setStatus(FAILED);
       }
     }
 
@@ -203,7 +203,7 @@ public class K8sCanaryBaseHandler {
   public void failAndSaveKubernetesRelease(K8sCanaryHandlerConfig canaryHandlerConfig, String releaseName)
       throws IOException {
     ReleaseHistory releaseHistory = canaryHandlerConfig.getReleaseHistory();
-    releaseHistory.setReleaseStatus(IK8sRelease.Status.Failed);
+    releaseHistory.setReleaseStatus(IK8sRelease.Status.FAILED);
     k8sTaskHelperBase.saveReleaseHistoryInConfigMap(
         canaryHandlerConfig.getKubernetesConfig(), releaseName, releaseHistory.getAsYaml());
   }

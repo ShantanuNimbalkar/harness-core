@@ -13,8 +13,8 @@ import static java.util.Arrays.asList;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.k8s.model.K8sLegacyRelease;
 import io.harness.k8s.model.KubernetesResource;
+import io.harness.k8s.releasehistory.K8sLegacyRelease;
 
 import com.google.common.io.Resources;
 import java.io.IOException;

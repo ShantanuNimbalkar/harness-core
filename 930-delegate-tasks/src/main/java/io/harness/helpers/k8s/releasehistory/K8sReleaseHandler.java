@@ -11,9 +11,10 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.k8s.model.KubernetesConfig;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
-import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sReleaseHistory;
+import io.harness.k8s.releasehistory.K8sReleaseCleanupDTO;
+import io.harness.k8s.releasehistory.K8sReleasePersistDTO;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,4 +25,5 @@ public interface K8sReleaseHandler {
   IK8sRelease createRelease(@NotNull String name, @NotNull int number);
   void saveRelease(@NotNull KubernetesConfig kubernetesConfig, @NotNull K8sReleasePersistDTO releasePersistDTO)
       throws Exception;
+  void cleanReleaseHistory(@NotNull K8sReleaseCleanupDTO releaseCleanupDTO) throws Exception;
 }

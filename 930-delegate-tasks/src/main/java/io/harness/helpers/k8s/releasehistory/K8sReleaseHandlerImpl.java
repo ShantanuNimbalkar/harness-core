@@ -8,20 +8,27 @@
 package io.harness.helpers.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_NUMBER_LABEL_KEY;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_MAP;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_VALUE;
-import static io.harness.k8s.model.releasehistory.K8sReleaseConstants.RELEASE_STATUS_LABEL_KEY;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_KEY;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_NUMBER_LABEL_KEY;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_MAP;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TYPE_VALUE;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.SECRET_LABEL_DELIMITER;
+
+import static java.lang.String.format;
+import static java.lang.String.join;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.model.KubernetesConfig;
-import io.harness.k8s.model.releasehistory.IK8sRelease;
-import io.harness.k8s.model.releasehistory.IK8sReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sRelease;
-import io.harness.k8s.model.releasehistory.K8sReleaseHistory;
-import io.harness.k8s.model.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.IK8sRelease;
+import io.harness.k8s.releasehistory.IK8sReleaseHistory;
+import io.harness.k8s.releasehistory.K8sRelease;
+import io.harness.k8s.releasehistory.K8sReleaseCleanupDTO;
+import io.harness.k8s.releasehistory.K8sReleaseHistory;
+import io.harness.k8s.releasehistory.K8sReleaseHistoryHelper;
+import io.harness.k8s.releasehistory.K8sReleasePersistDTO;
+import io.harness.k8s.releasehistory.K8sReleaseSecretHelper;
+import io.harness.logging.LogCallback;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -30,6 +37,7 @@ import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,14 +48,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class K8sReleaseHandlerImpl implements K8sReleaseHandler {
   @Inject private final KubernetesContainerService kubernetesContainerService;
-  @Inject private final K8sReleaseHelper releaseHelper;
 
   @Override
   public IK8sReleaseHistory getReleaseHistory(KubernetesConfig kubernetesConfig, String releaseName) {
-    Map<String, String> labels = releaseHelper.createLabelsMap(releaseName);
+    Map<String, String> labels = K8sReleaseSecretHelper.createLabelsMap(releaseName);
 
-    String labelArg = releaseHelper.createCommaSeparatedKeyValueList(labels);
-    String fieldArg = releaseHelper.createCommaSeparatedKeyValueList(RELEASE_SECRET_TYPE_MAP);
+    String labelArg = K8sReleaseSecretHelper.createCommaSeparatedKeyValueList(labels);
+    String fieldArg = K8sReleaseSecretHelper.createCommaSeparatedKeyValueList(RELEASE_SECRET_TYPE_MAP);
     List<V1Secret> releaseSecrets =
         kubernetesContainerService.getSecretsWithLabelsAndFields(kubernetesConfig, labelArg, fieldArg);
     List<K8sRelease> releases = createReleasesFromSecrets(releaseSecrets);
@@ -57,21 +64,16 @@ public class K8sReleaseHandlerImpl implements K8sReleaseHandler {
 
   @Override
   public IK8sRelease createRelease(String name, int number) {
-    String status = IK8sRelease.Status.InProgress.name();
-    String generatedReleaseName = releaseHelper.generateName(name, number);
-    Map<String, String> labels = releaseHelper.generateLabels(name, number, status);
+    String status = IK8sRelease.Status.IN_PROGRESS.name();
+    String generatedReleaseName = K8sReleaseSecretHelper.generateName(name, number);
+    Map<String, String> labels = K8sReleaseSecretHelper.generateLabels(name, number, status);
     V1Secret releaseSecret =
         new V1SecretBuilder()
             .withMetadata(new V1ObjectMetaBuilder().withName(generatedReleaseName).withLabels(labels).build())
             .withType(RELEASE_SECRET_TYPE_VALUE)
             .build();
 
-    return K8sRelease.builder()
-        .releaseSecret(releaseSecret)
-        .releaseName(generatedReleaseName)
-        .releaseNumber(number)
-        .status(status)
-        .build();
+    return K8sRelease.builder().releaseSecret(releaseSecret).build();
   }
 
   @Override
@@ -80,22 +82,28 @@ public class K8sReleaseHandlerImpl implements K8sReleaseHandler {
     kubernetesContainerService.createOrReplaceSecret(kubernetesConfig, releaseSecret.getReleaseSecret());
   }
 
+  @Override
+  public void cleanReleaseHistory(K8sReleaseCleanupDTO releaseCleanupDTO) throws Exception {
+    K8sReleaseHistory releaseHistory = (K8sReleaseHistory) releaseCleanupDTO.getReleaseHistory();
+    LogCallback logCallback = releaseCleanupDTO.getLogCallback();
+    Set<String> releasesToDelete =
+        K8sReleaseHistoryHelper.getReleaseNumbersToClean(releaseHistory, releaseCleanupDTO.getCurrentReleaseNumber());
+    logCallback.saveExecutionLog(
+        format("Release numbers to be deleted are: %s", join(SECRET_LABEL_DELIMITER, releasesToDelete)));
+
+    deleteReleases(releaseCleanupDTO.getKubernetesConfig(), releaseCleanupDTO.getReleaseName(), releasesToDelete);
+  }
+
   private List<K8sRelease> createReleasesFromSecrets(List<V1Secret> releaseSecrets) {
     return releaseSecrets.stream()
-        .map(releaseSecret
-            -> K8sRelease.builder()
-                   .releaseSecret(releaseSecret)
-                   .releaseNumber(getReleaseNumberFromRelease(releaseSecret))
-                   .status(releaseHelper.getReleaseLabelValue(releaseSecret, RELEASE_STATUS_LABEL_KEY))
-                   .build())
+        .map(releaseSecret -> K8sRelease.builder().releaseSecret(releaseSecret).build())
         .collect(Collectors.toList());
   }
 
-  private Integer getReleaseNumberFromRelease(V1Secret release) {
-    String releaseNumberLabelValue = releaseHelper.getReleaseLabelValue(release, RELEASE_NUMBER_LABEL_KEY);
-    if (EmptyPredicate.isNotEmpty(releaseNumberLabelValue)) {
-      return Integer.parseInt(releaseNumberLabelValue);
-    }
-    return -1;
+  private void deleteReleases(KubernetesConfig kubernetesConfig, String releaseName, Set<String> releaseNumbers) {
+    String labelArg = join(SECRET_LABEL_DELIMITER, K8sReleaseSecretHelper.createListBasedArg(RELEASE_KEY, releaseName),
+        K8sReleaseSecretHelper.createSetBasedArg(RELEASE_NUMBER_LABEL_KEY, releaseNumbers));
+    String fieldArg = K8sReleaseSecretHelper.createCommaSeparatedKeyValueList(RELEASE_SECRET_TYPE_MAP);
+    kubernetesContainerService.deleteSecrets(kubernetesConfig, labelArg, fieldArg);
   }
 }

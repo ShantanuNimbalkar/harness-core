@@ -2164,13 +2164,15 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public List<V1Secret> getSecretsWithLabelsAndFields(KubernetesConfig kubernetesConfig, String labels, String fields) {
     final Supplier<List<V1Secret>> secretSupplier = Retry.decorateSupplier(retry, () -> {
       ApiClient apiClient = kubernetesHelperService.getApiClient(kubernetesConfig);
+      String namespace = kubernetesConfig.getNamespace();
       try {
         V1SecretList secrets = new CoreV1Api(apiClient).listNamespacedSecret(
-            kubernetesConfig.getNamespace(), null, null, null, fields, labels, null, null, null, null, null);
+            namespace, null, null, null, fields, labels, null, null, null, null, null);
         return secrets.getItems();
       } catch (ApiException e) {
         throw new InvalidRequestException(
-            String.format("Unable to get secret list. Code: %s, message: %s", e.getCode(), getErrorMessage(e)));
+            String.format("Unable to get secrets from namespace: %s %nCode: %s, message: %s, labels: %s, fields: %s",
+                namespace, e.getCode(), getErrorMessage(e), labels, fields));
       }
     });
     return secretSupplier.get();
@@ -2180,12 +2182,14 @@ public class KubernetesContainerServiceImpl implements KubernetesContainerServic
   public V1Status deleteSecrets(KubernetesConfig kubernetesConfig, String labels, String fields) {
     final Supplier<V1Status> secretSupplier = Retry.decorateSupplier(retry, () -> {
       ApiClient apiClient = kubernetesHelperService.getApiClient(kubernetesConfig);
+      String namespace = kubernetesConfig.getNamespace();
       try {
-        return new CoreV1Api(apiClient).deleteCollectionNamespacedSecret(kubernetesConfig.getNamespace(), null, null,
-            null, fields, null, labels, null, null, null, null, null, null, null);
+        return new CoreV1Api(apiClient).deleteCollectionNamespacedSecret(
+            namespace, null, null, null, fields, null, labels, null, null, null, null, null, null, null);
       } catch (ApiException e) {
         throw new InvalidRequestException(
-            String.format("Unable to delete secrets. Code: %s, message: %s", e.getCode(), getErrorMessage(e)));
+            String.format("Unable to delete secrets from namespace %s %nCode: %s, message: %s, labels: %s, fields: %s",
+                namespace, e.getCode(), getErrorMessage(e), labels, fields));
       }
     });
     return secretSupplier.get();

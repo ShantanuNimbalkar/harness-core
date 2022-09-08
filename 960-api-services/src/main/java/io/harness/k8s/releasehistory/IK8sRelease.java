@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.k8s.model.releasehistory;
+package io.harness.k8s.releasehistory;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
 
@@ -14,18 +14,20 @@ import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 
 @OwnedBy(CDP)
 public interface IK8sRelease {
   enum Status {
-    InProgress,
-    Succeeded,
-    Failed;
+    IN_PROGRESS,
+    SUCCEEDED,
+    FAILED;
   }
 
   Integer getReleaseNumber();
+  Status getReleaseStatus();
   List<KubernetesResource> getResourcesWithSpecs();
   List<KubernetesResourceId> getResourceIds();
-  IK8sRelease setReleaseData(List<KubernetesResource> resources, boolean isPruningEnabled);
-  IK8sRelease updateReleaseStatus(Status status);
+  IK8sRelease setReleaseData(@NotNull List<KubernetesResource> resources, @NotNull boolean isPruningEnabled);
+  IK8sRelease updateReleaseStatus(@NotNull Status status);
 }
