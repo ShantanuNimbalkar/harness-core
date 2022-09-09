@@ -106,6 +106,8 @@ import io.harness.cdng.provision.terraform.variablecreator.TerraformPlanStepVari
 import io.harness.cdng.provision.terraform.variablecreator.TerraformRollbackStepVariableCreator;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.executions.steps.StepSpecTypeConstants;
+import io.harness.filters.EmptyAnyFilterJsonCreator;
+import io.harness.filters.EmptyFilterJsonCreator;
 import io.harness.filters.ExecutionPMSFilterJsonCreator;
 import io.harness.filters.ParallelGenericFilterJsonCreator;
 import io.harness.filters.StepGroupPmsFilterJsonCreator;
@@ -118,17 +120,23 @@ import io.harness.pms.contracts.steps.StepMetaData;
 import io.harness.pms.sdk.core.pipeline.filters.FilterJsonCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
+import io.harness.pms.sdk.core.variables.EmptyAnyVariableCreator;
+import io.harness.pms.sdk.core.variables.EmptyVariableCreator;
 import io.harness.pms.sdk.core.variables.StrategyVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.pms.utils.InjectorUtils;
+import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.variables.ExecutionVariableCreator;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @OwnedBy(HarnessTeam.CDC)
 @Singleton
@@ -143,6 +151,22 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
   private static final List<String> AZURE_RESOURCE_CATEGORY =
       Arrays.asList("Kubernetes", "Provisioner", "Azure", "Helm", "AzureWebApp");
   private static final String AZURE_RESOURCE_STEP_METADATA = "AzureProvisioner";
+
+  private static final Set<String> EMPTY_IDENTIFIERS = Sets.newHashSet("sidecars", "spec", "serviceConfig",
+      "configFile", "startupCommand", "applicationSettings", "artifacts", "rollbackSteps", "connectionStrings", "steps",
+      "configFiles", "environmentGroup", "service", "manifests", "strategy", "stepGroup");
+  private static final Set<String> EMPTY_SIDECAR_TYPES = Sets.newHashSet("CustomArtifact", "Jenkins", "DockerRegistry",
+      "Acr", "AmazonS3", "ArtifactoryRegistry", "Ecr", "GoogleArtifactRegistry", "Gcr", "Nexus3Registry");
+  private static final Set<String> EMPTY_MANIFEST_TYPES =
+      Sets.newHashSet("EcsTaskDefinition", "ServerlessAwsLambda", "EcsScalingPolicyDefinition", "K8sManifest", "Values",
+          "KustomizePatches", "EcsScalableTargetDefinition", "Kustomize", "EcsServiceDefinition", "configFiles",
+          "HelmChart", "ReleaseRepo", "OpenshiftTemplate", "OpenshiftParam");
+  private static final Set<String> EMPTY_ENVIRONMENT_TYPES = Sets.newHashSet("Production", "PreProduction");
+  private static final Set<String> EMPTY_PRIMARY_TYPES = Sets.newHashSet("CustomArtifact", "Jenkins", "DockerRegistry",
+      "Acr", "AmazonS3", "ArtifactoryRegistry", "Ecr", "GoogleArtifactRegistry", "Gcr", "Nexus3Registry");
+  private static final Set<String> EMPTY_SERVICE_DEFINITION_TYPES =
+      Sets.newHashSet("ServerlessAwsLambda", "ECS", "NativeHelm", "Ssh", "AzureWebApp", "WinRm", "Kubernetes");
+
   @Inject InjectorUtils injectorUtils;
   @Inject DeploymentStageVariableCreator deploymentStageVariableCreator;
 
@@ -224,6 +248,12 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     filterJsonCreators.add(new ExecutionPMSFilterJsonCreator());
     filterJsonCreators.add(new ParallelGenericFilterJsonCreator());
     filterJsonCreators.add(new StepGroupPmsFilterJsonCreator());
+    filterJsonCreators.add(new EmptyAnyFilterJsonCreator(EMPTY_IDENTIFIERS));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("sidecar", EMPTY_SIDECAR_TYPES));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("manifest", EMPTY_MANIFEST_TYPES));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("environment", EMPTY_ENVIRONMENT_TYPES));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("primary", EMPTY_PRIMARY_TYPES));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("serviceDefinition", EMPTY_SERVICE_DEFINITION_TYPES));
     injectorUtils.injectMembers(filterJsonCreators);
 
     return filterJsonCreators;
@@ -231,7 +261,16 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
 
   @Override
   public List<VariableCreator> getVariableCreators() {
+    Set<String> emptyVariableIdentifiers = new HashSet<>(EMPTY_IDENTIFIERS);
+    emptyVariableIdentifiers.add(YAMLFieldNameConstants.PARALLEL);
+
     List<VariableCreator> variableCreators = new ArrayList<>();
+    variableCreators.add(new EmptyAnyVariableCreator(emptyVariableIdentifiers));
+    variableCreators.add(new EmptyVariableCreator("sidecar", EMPTY_SIDECAR_TYPES));
+    variableCreators.add(new EmptyVariableCreator("manifest", EMPTY_MANIFEST_TYPES));
+    variableCreators.add(new EmptyVariableCreator("environment", EMPTY_ENVIRONMENT_TYPES));
+    variableCreators.add(new EmptyVariableCreator("primary", EMPTY_PRIMARY_TYPES));
+    variableCreators.add(new EmptyVariableCreator("serviceDefinition", EMPTY_SERVICE_DEFINITION_TYPES));
     variableCreators.add(new GitOpsCreatePRStepVariableCreator());
     variableCreators.add(new GitOpsMergePRStepVariableCreator());
     variableCreators.add(deploymentStageVariableCreator);
