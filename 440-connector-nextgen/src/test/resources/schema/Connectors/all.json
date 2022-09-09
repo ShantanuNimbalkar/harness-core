@@ -2026,6 +2026,9 @@
                 ]
               },
               "minLength": 1
+            },
+            "isAWSGovCloudAccount": {
+              "type": "boolean"
             }
           }
         }

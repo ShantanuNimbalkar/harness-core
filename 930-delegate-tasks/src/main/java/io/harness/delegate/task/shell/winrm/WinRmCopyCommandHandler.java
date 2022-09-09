@@ -19,6 +19,8 @@ import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_DE
 import static io.harness.delegate.task.ssh.exception.SshExceptionConstants.NO_DESTINATION_PATH_SPECIFIED_HINT;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 
+import static software.wings.common.Constants.WINDOWS_HOME_DIR;
+
 import static java.lang.String.format;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -32,6 +34,7 @@ import io.harness.delegate.task.shell.WinrmTaskParameters;
 import io.harness.delegate.task.shell.ssh.CommandHandler;
 import io.harness.delegate.task.ssh.CopyCommandUnit;
 import io.harness.delegate.task.ssh.NgCommandUnit;
+import io.harness.delegate.task.ssh.WinRmInfraDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.CustomArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.artifact.SkipCopyArtifactDelegateConfig;
 import io.harness.delegate.task.ssh.config.ConfigFileParameters;
@@ -81,14 +84,20 @@ public class WinRmCopyCommandHandler implements CommandHandler {
     WinRmSessionConfigBuilder configBuilder = WinRmSessionConfig.builder()
                                                   .accountId(winRmCommandTaskParameters.getAccountId())
                                                   .executionId(winRmCommandTaskParameters.getExecutionId())
-                                                  .workingDirectory(copyCommandUnit.getWorkingDirectory())
+                                                  .workingDirectory(WINDOWS_HOME_DIR)
                                                   .commandUnitName(copyCommandUnit.getName())
                                                   .environment(winRmCommandTaskParameters.getEnvironmentVariables())
                                                   .hostname(winRmCommandTaskParameters.getHost())
                                                   .timeout(SESSION_TIMEOUT);
 
-    WinRmSessionConfig config =
-        winRmConfigAuthEnhancer.configureAuthentication(winRmCommandTaskParameters, configBuilder);
+    final WinRmInfraDelegateConfig winRmInfraDelegateConfig = winRmCommandTaskParameters.getWinRmInfraDelegateConfig();
+    if (winRmInfraDelegateConfig == null) {
+      throw new InvalidRequestException("Task parameters must include WinRm Infra Delegate config.");
+    }
+
+    WinRmSessionConfig config = winRmConfigAuthEnhancer.configureAuthentication(
+        winRmInfraDelegateConfig.getWinRmCredentials(), winRmInfraDelegateConfig.getEncryptionDataDetails(),
+        configBuilder, winRmCommandTaskParameters.isUseWinRMKerberosUniqueCacheFile());
     FileBasedWinRmExecutorNG executor = winRmExecutorFactoryNG.getFiledBasedWinRmExecutor(config,
         winRmCommandTaskParameters.isDisableWinRMCommandEncodingFFSet(), logStreamingTaskClient, commandUnitsProgress);
 
