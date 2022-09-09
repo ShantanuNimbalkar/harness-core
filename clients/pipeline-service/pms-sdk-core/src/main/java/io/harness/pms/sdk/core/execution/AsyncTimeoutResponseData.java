@@ -5,8 +5,8 @@ import io.harness.tasks.ResponseData;
 import lombok.Builder;
 import lombok.Data;
 
-@Builder
 @Data
-public class AsyncTimeoutData implements ResponseData {
+@Builder
+public class AsyncTimeoutResponseData implements ResponseData {
   boolean timedOut;
 }
