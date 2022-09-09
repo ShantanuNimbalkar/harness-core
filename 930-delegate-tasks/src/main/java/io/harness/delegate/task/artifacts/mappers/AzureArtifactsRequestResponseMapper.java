@@ -21,10 +21,6 @@ public class AzureArtifactsRequestResponseMapper {
 
     String token = "";
 
-    if (request.getAzureArtifactsConnectorDTO().getAuthentication() != null
-        && request.getAzureArtifactsConnectorDTO().getAuthentication().getCredentials() != null) {
-    }
-
     return null;
   }
 }

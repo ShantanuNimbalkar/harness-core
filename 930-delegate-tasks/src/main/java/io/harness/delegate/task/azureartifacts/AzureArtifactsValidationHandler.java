@@ -9,6 +9,7 @@ package io.harness.delegate.task.azureartifacts;
 
 import io.harness.connector.ConnectivityStatus;
 import io.harness.connector.ConnectorValidationResult;
+import io.harness.connector.ConnectorValidationResult.ConnectorValidationResultBuilder;
 import io.harness.connector.task.ConnectorValidationHandler;
 import io.harness.delegate.beans.connector.ConnectorValidationParams;
 import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsValidationParams;
@@ -48,8 +49,7 @@ public class AzureArtifactsValidationHandler implements ConnectorValidationHandl
 
     boolean isAzureArtifactsCredentialsValid = false;
 
-    ConnectorValidationResult.ConnectorValidationResultBuilder validationResultBuilder =
-        ConnectorValidationResult.builder();
+    ConnectorValidationResultBuilder validationResultBuilder = ConnectorValidationResult.builder();
 
     if (validationResponse.getArtifactTaskExecutionResponse() != null) {
       isAzureArtifactsCredentialsValid = validationResponse.getArtifactTaskExecutionResponse().isArtifactServerValid();
