@@ -46,5 +46,6 @@ public class OutcomeExpressionConstants {
   public final String ECS_CANARY_DELETE_DATA_OUTCOME = "ecsCanaryDeleteDataOutcome";
   public final String ECS_CANARY_DELETE_OUTCOME = "ecsCanaryDeleteOutcome";
   public final String ECS_CANARY_DEPLOY_OUTCOME = "ecsCanaryDeployOutcome";
+  public final String ECS_RUN_TASK_OUTCOME = "ecsRunTaskOutcome";
   public final String ROLLBACK_ARTIFACT = "rollbackArtifact";
 }
