@@ -188,7 +188,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setName(name);
     request.setIncludedScope(includedScopes);
     request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
+    request.setIncludeAllResources(false);
 
     doNothing().when(resourceGroupValidator).validateResourceGroup(any());
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
@@ -248,7 +248,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setSlug(slug);
     request.setName(name);
     request.setIncludedScope(includedScopes);
-    request.setIncludeAll(true);
+    request.setIncludeAllResources(true);
 
     resourceGroupResponseAcc.getResourceGroup().setResourceFilter(
         io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
@@ -264,7 +264,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ACCOUNT),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
+    assertEquals(true, newResourceGroupResponse.isIncludeAllResources().booleanValue());
   }
 
   @Test
@@ -325,7 +325,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setName(name);
     request.setIncludedScope(includedScopes);
     request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
+    request.setIncludeAllResources(false);
 
     doNothing().when(resourceGroupValidator).validateResourceGroup(any());
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
@@ -385,7 +385,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setSlug(slug);
     request.setName(name);
     request.setIncludedScope(includedScopes);
-    request.setIncludeAll(true);
+    request.setIncludeAllResources(true);
 
     resourceGroupResponseOrg.getResourceGroup().setResourceFilter(
         io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
@@ -401,7 +401,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
+    assertEquals(true, newResourceGroupResponse.isIncludeAllResources().booleanValue());
   }
 
   @Test
@@ -463,7 +463,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setName(name);
     request.setIncludedScope(includedScopes);
     request.setResourceFilter(Collections.singletonList(resourceFilter));
-    request.setIncludeAll(false);
+    request.setIncludeAllResources(false);
 
     doNothing().when(resourceGroupValidator).validateResourceGroup(any());
     when(resourceGroupService.create(any(ResourceGroupDTO.class), any(Boolean.class)))
@@ -523,7 +523,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     request.setSlug(slug);
     request.setName(name);
     request.setIncludedScope(includedScopes);
-    request.setIncludeAll(true);
+    request.setIncludeAllResources(true);
 
     resourceGroupResponseProject.getResourceGroup().setResourceFilter(
         io.harness.resourcegroup.v2.model.ResourceFilter.builder().resources(null).includeAllResources(true).build());
@@ -539,7 +539,7 @@ public class ResourceGroupApiImplTest extends CategoryTest {
     assertEquals(Collections.singletonList(ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT),
         newResourceGroupResponse.getAllowedScopeLevels());
     assertEquals(includedScopes, newResourceGroupResponse.getIncludedScope());
-    assertEquals(true, newResourceGroupResponse.isIncludeAll().booleanValue());
+    assertEquals(true, newResourceGroupResponse.isIncludeAllResources().booleanValue());
   }
 
   @Test
