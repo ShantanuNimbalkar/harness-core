@@ -11,6 +11,7 @@ import io.harness.ng.beans.PageRequest;
 import io.harness.resourcegroup.beans.ScopeFilterType;
 import io.harness.resourcegroup.v1.remote.dto.ManagedFilter;
 import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO;
+import io.harness.resourcegroup.v1.remote.dto.ResourceGroupFilterDTO.ResourceGroupFilterDTOBuilder;
 import io.harness.resourcegroup.v1.remote.dto.ResourceSelectorFilter;
 import io.harness.resourcegroup.v2.model.AttributeFilter;
 import io.harness.resourcegroup.v2.model.ResourceFilter;
@@ -35,76 +36,88 @@ import javax.ws.rs.core.UriBuilder;
 public class ResourceGroupApiUtils {
   public static ResourceGroupRequest getResourceGroupRequestAcc(CreateResourceGroupRequest body, String account) {
     return ResourceGroupRequest.builder()
-        .resourceGroup(ResourceGroupDTO.builder()
-                           .accountIdentifier(account)
-                           .identifier(body.getSlug())
-                           .name(body.getName())
-                           .color(body.getColor())
-                           .tags(body.getTags())
-                           .description(body.getDescription())
-                           .allowedScopeLevels(Collections.singleton("account"))
-                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-                           .build())
+        .resourceGroup(
+            ResourceGroupDTO.builder()
+                .accountIdentifier(account)
+                .identifier(body.getSlug())
+                .name(body.getName())
+                .color(body.getColor())
+                .tags(body.getTags())
+                .description(body.getDescription())
+                .allowedScopeLevels(Collections.singleton("account"))
+                .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAllResources()))
+                .build())
         .build();
   }
   public static ResourceGroupRequest getResourceGroupRequestOrg(
       String org, CreateResourceGroupRequest body, String account) {
     return ResourceGroupRequest.builder()
-        .resourceGroup(ResourceGroupDTO.builder()
-                           .accountIdentifier(account)
-                           .orgIdentifier(org)
-                           .identifier(body.getSlug())
-                           .name(body.getName())
-                           .color(body.getColor())
-                           .tags(body.getTags())
-                           .description(body.getDescription())
-                           .allowedScopeLevels(Collections.singleton("organization"))
-                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-                           .build())
+        .resourceGroup(
+            ResourceGroupDTO.builder()
+                .accountIdentifier(account)
+                .orgIdentifier(org)
+                .identifier(body.getSlug())
+                .name(body.getName())
+                .color(body.getColor())
+                .tags(body.getTags())
+                .description(body.getDescription())
+                .allowedScopeLevels(Collections.singleton("organization"))
+                .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAllResources()))
+                .build())
         .build();
   }
   public static ResourceGroupRequest getResourceGroupRequestProject(
       String org, String project, CreateResourceGroupRequest body, String account) {
     return ResourceGroupRequest.builder()
-        .resourceGroup(ResourceGroupDTO.builder()
-                           .accountIdentifier(account)
-                           .orgIdentifier(org)
-                           .projectIdentifier(project)
-                           .identifier(body.getSlug())
-                           .name(body.getName())
-                           .color(body.getColor())
-                           .tags(body.getTags())
-                           .description(body.getDescription())
-                           .allowedScopeLevels(Collections.singleton("project"))
-                           .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
-                           .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAll()))
-                           .build())
+        .resourceGroup(
+            ResourceGroupDTO.builder()
+                .accountIdentifier(account)
+                .orgIdentifier(org)
+                .projectIdentifier(project)
+                .identifier(body.getSlug())
+                .name(body.getName())
+                .color(body.getColor())
+                .tags(body.getTags())
+                .description(body.getDescription())
+                .allowedScopeLevels(Collections.singleton("project"))
+                .includedScopes(getIncludedScopeRequest(body.getIncludedScope()))
+                .resourceFilter(getResourceFilterRequest(body.getResourceFilter(), body.isIncludeAllResources()))
+                .build())
         .build();
   }
-  public static List<ScopeSelector> getIncludedScopeRequest(List<ResourceGroupScope> resourceGroupScopes) {
-    if (resourceGroupScopes == null) {
+  public static List<ScopeSelector> getIncludedScopeRequest(List<ResourceGroupScope> includedScopes) {
+    if (includedScopes == null) {
       return null;
     }
-    return resourceGroupScopes.stream()
+    return includedScopes.stream()
         .map(scope
             -> ScopeSelector.builder()
                    .accountIdentifier(scope.getAccount())
                    .orgIdentifier(scope.getOrg())
                    .projectIdentifier(scope.getProject())
-                   .filter((scope.getFilter()).equals(ResourceGroupScope.FilterEnum.INCLUDING_CHILD_SCOPES)
-                           ? ScopeFilterType.INCLUDING_CHILD_SCOPES
-                           : ScopeFilterType.EXCLUDING_CHILD_SCOPES)
+                   .filter(getFilter(scope))
                    .build())
         .collect(Collectors.toList());
   }
 
+  private static ScopeFilterType getFilter(ResourceGroupScope scope) {
+    if ((scope.getFilter()).equals(ResourceGroupScope.FilterEnum.INCLUDING_CHILD_SCOPES)) {
+      return ScopeFilterType.INCLUDING_CHILD_SCOPES;
+    }
+    if ((scope.getFilter()).equals(ResourceGroupScope.FilterEnum.EXCLUDING_CHILD_SCOPES)) {
+      return ScopeFilterType.EXCLUDING_CHILD_SCOPES;
+    }
+    throw new InvalidRequestException(
+        "Filter in Included Scope must be either INCLUDING_CHILD_SCOPES or EXCLUDING_CHILD_SCOPES");
+  }
+
   public static ResourceFilter getResourceFilterRequest(
-      List<io.harness.spec.server.platform.model.ResourceFilter> filters, boolean includeAll) {
+      List<io.harness.spec.server.platform.model.ResourceFilter> filters, boolean includeAllResources) {
     return ResourceFilter.builder()
         .resources(filters.stream().map(ResourceGroupApiUtils::getFilterRequest).collect(Collectors.toList()))
-        .includeAllResources(includeAll)
+        .includeAllResources(includeAllResources)
         .build();
   }
 
@@ -150,7 +163,8 @@ public class ResourceGroupApiUtils {
     }
     resourceGroupsResponse.setResourceFilter(getResourceFilters(response));
     if (response.getResourceGroup().getResourceFilter() != null) {
-      resourceGroupsResponse.setIncludeAll(response.getResourceGroup().getResourceFilter().isIncludeAllResources());
+      resourceGroupsResponse.setIncludeAllResources(
+          response.getResourceGroup().getResourceFilter().isIncludeAllResources());
     }
     resourceGroupsResponse.setCreated(response.getCreatedAt());
     resourceGroupsResponse.setUpdated(response.getLastModifiedAt());
@@ -179,7 +193,10 @@ public class ResourceGroupApiUtils {
     if (scope.equals("organization")) {
       return ResourceGroupsResponse.AllowedScopeLevelsEnum.ORGANIZATION;
     }
-    return ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT;
+    if (scope.equals("project")) {
+      return ResourceGroupsResponse.AllowedScopeLevelsEnum.PROJECT;
+    }
+    throw new InvalidRequestException("Unknown Scope in Allowed Scope Level");
   }
 
   public static ResourceGroupScope getIncludedScopeResponse(ScopeSelector includedScopes) {
@@ -209,8 +226,11 @@ public class ResourceGroupApiUtils {
   public static ResourceGroupFilterDTO getResourceFilterDTO(String account, String org, String project,
       String searchTerm, List<String> identifierFilter, String managedFilter,
       List<io.harness.spec.server.platform.model.ResourceSelectorFilter> resourceSelectorFilter) {
-    ResourceGroupFilterDTO.ResourceGroupFilterDTOBuilder builder = ResourceGroupFilterDTO.builder();
-    builder.accountIdentifier(account).orgIdentifier(org).projectIdentifier(project).searchTerm(searchTerm);
+    ResourceGroupFilterDTOBuilder builder = ResourceGroupFilterDTO.builder()
+                                                .accountIdentifier(account)
+                                                .orgIdentifier(org)
+                                                .projectIdentifier(project)
+                                                .searchTerm(searchTerm);
     if (identifierFilter != null) {
       builder.identifierFilter(new HashSet<>(identifierFilter));
     }
