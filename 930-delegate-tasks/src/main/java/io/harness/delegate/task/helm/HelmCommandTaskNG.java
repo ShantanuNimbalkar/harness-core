@@ -16,7 +16,6 @@ import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateResponseData;
@@ -35,7 +34,6 @@ import io.harness.delegate.task.ManifestDelegateConfigHelper;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.k8s.ContainerDeploymentDelegateBaseHelper;
 import io.harness.delegate.task.k8s.GcpK8sInfraDelegateConfig;
-import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.ExplanationException;
 import io.harness.exception.HintException;
@@ -46,8 +44,6 @@ import io.harness.k8s.K8sGlobalConfigService;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
-
-import software.wings.helpers.ext.helm.request.HelmReleaseHistoryCommandRequest;
 
 import com.google.inject.Inject;
 import java.io.IOException;

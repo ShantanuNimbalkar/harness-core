@@ -25,7 +25,6 @@ import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME_PATH;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CHART_VERSION_FLAG;
 import static io.harness.helm.HelmConstants.VALUES_YAML;
-import static io.harness.helm.HelmConstants.WORKING_DIR_BASE;
 import static io.harness.state.StateConstants.DEFAULT_STEADY_STATE_TIMEOUT;
 
 import static java.lang.String.format;

@@ -732,14 +732,14 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.ServiceOverride.name(), singletonList("values1.yaml"));
 
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).chartVersion("0.1.0").build();
     String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, valuesFileContent);
 
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
     doReturn(new ProcessResult(0, new ProcessOutput("success".getBytes())))
         .when(helmTaskHelperBase)
-        .executeCommand(
-            any(), contains("helm/path fetch chartName --untar"), any(), eq("fetch chart chartName"), anyLong(), any());
+        .executeCommand(any(), contains("helm/path fetch repo/chartName --untar"), any(), eq("fetch chart chartName"),
+            anyLong(), any());
 
     try {
       Map<String, List<String>> result = helmTaskHelper.getValuesYamlFromChart(
@@ -763,13 +763,13 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.Environment.name(), singletonList("values2.yaml"));
 
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).chartVersion("0.1.0").build();
     String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, valuesFileContent);
 
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
     doReturn(new ProcessResult(0, new ProcessOutput("success".getBytes())))
         .when(helmTaskHelperBase)
-        .executeCommand(any(), contains("helm/path fetch chartName --untar"), any(), eq("fetch chart chartName"),
+        .executeCommand(any(), contains("helm/path fetch repo/chartName --untar"), any(), eq("fetch chart chartName"),
             anyLong(), eq(HelmCliCommandType.FETCH));
 
     try {
@@ -800,7 +800,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.Environment.name(), asList("values2.yaml", "values3.yaml"));
 
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).chartVersion("0.1.0").build();
 
     Map<String, String> mapValuesFileContent = new HashMap<>();
     mapValuesFileContent.put("values1.yaml", valuesFileContent);
@@ -811,8 +811,8 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
     doReturn(new ProcessResult(0, new ProcessOutput("success".getBytes())))
         .when(helmTaskHelperBase)
-        .executeCommand(
-            any(), contains("helm/path fetch chartName --untar"), any(), eq("fetch chart chartName"), anyLong(), any());
+        .executeCommand(any(), contains("helm/path fetch repo/chartName --untar"), any(), eq("fetch chart chartName"),
+            anyLong(), any());
 
     try {
       Map<String, List<String>> result = helmTaskHelper.getValuesYamlFromChart(
@@ -842,7 +842,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.Environment.name(), singletonList("values2.yaml"));
 
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).chartVersion("0.1.0").build();
 
     Map<String, String> mapValuesFileContent = new HashMap<>();
     mapValuesFileContent.put("values1.yaml", valuesFileContent);
@@ -852,8 +852,8 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
     doReturn(new ProcessResult(0, new ProcessOutput("success".getBytes())))
         .when(helmTaskHelperBase)
-        .executeCommand(
-            any(), contains("helm/path fetch chartName --untar"), any(), eq("fetch chart chartName"), anyLong(), any());
+        .executeCommand(any(), contains("helm/path fetch repo/chartName --untar"), any(), eq("fetch chart chartName"),
+            anyLong(), any());
 
     try {
       Map<String, List<String>> result = helmTaskHelper.getValuesYamlFromChart(
@@ -877,7 +877,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
 
     String chartName = "chartName";
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).chartVersion("0.1.0").build();
     String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, "");
 
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
@@ -904,7 +904,8 @@ public class HelmTaskHelperTest extends WingsBaseTest {
   public void testGetValuesYamlFromChartPopulateChartVersion() throws Exception {
     String chartName = "chartName";
     String chartVersion = "1.0.0";
-    HelmChartConfigParams helmChartConfigParams = HelmChartConfigParams.builder().chartName(chartName).build();
+    HelmChartConfigParams helmChartConfigParams =
+        HelmChartConfigParams.builder().repoName("repo").chartName(chartName).build();
 
     String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, "content");
     K8sValuesLocation k8sValuesLocation = K8sValuesLocation.ServiceOverride;
@@ -930,7 +931,8 @@ public class HelmTaskHelperTest extends WingsBaseTest {
   @Category(UnitTests.class)
   public void testGetValuesYamlFromChartUnableToPopulateChartVersion() throws Exception {
     String chartName = "chartName";
-    HelmChartConfigParams helmChartConfigParams = HelmChartConfigParams.builder().chartName("chartName").build();
+    HelmChartConfigParams helmChartConfigParams =
+        HelmChartConfigParams.builder().repoName("repo").chartName("chartName").build();
 
     K8sValuesLocation k8sValuesLocation = K8sValuesLocation.ServiceOverride;
     Map<String, List<String>> mapK8sValuesLocationToFilePaths = new HashMap<>();
@@ -1339,14 +1341,14 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     mapK8sValuesLocationToFilePaths.put(K8sValuesLocation.ServiceOverride.name(), singletonList("values1.yaml"));
 
     HelmChartConfigParams helmChartConfigParams =
-        HelmChartConfigParams.builder().chartName(chartName).chartVersion("0.1.0").build();
+        HelmChartConfigParams.builder().repoName("nexusRepo").chartName(chartName).chartVersion("0.1.0").build();
     String workingDirectory = prepareChartDirectoryWithValuesFileForTest(chartName, valuesFileContent);
 
     doNothing().when(helmTaskHelper).initHelm(any(), any(), anyLong());
     doReturn(new ProcessResult(1, new ProcessOutput("something went wrong executing command".getBytes())))
         .when(helmTaskHelperBase)
-        .executeCommand(
-            any(), contains("helm/path fetch chartName --untar"), any(), eq("fetch chart chartName"), anyLong(), any());
+        .executeCommand(any(), contains("helm/path fetch nexusRepo/chartName --untar"), any(),
+            eq("fetch chart chartName"), anyLong(), any());
 
     assertThatThrownBy(()
                            -> helmTaskHelper.getValuesYamlFromChart(

@@ -37,7 +37,6 @@ import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME_PATH;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_REPO_ADD_FORCE_UPDATE;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_REPO_FLAGS;
-import static io.harness.helm.HelmConstants.WORKING_DIR_BASE;
 import static io.harness.k8s.kubectl.Utils.encloseWithQuotesIfNeeded;
 import static io.harness.logging.LogLevel.ERROR;
 import static io.harness.logging.LogLevel.WARN;
@@ -151,6 +150,9 @@ public class HelmTaskHelperBase {
    */
   public void newModifyRepoNameToIncludeBucket(HelmChartConfigParams helmChartConfigParams) {
     HelmRepoConfig helmRepoConfig = helmChartConfigParams.getHelmRepoConfig();
+    if (helmRepoConfig == null) {
+      return;
+    }
     /*
      repoName will be a combination of the connectorId and bucket name;
      this way, parallel deployments with charts in different buckets will work fine
@@ -926,9 +928,9 @@ public class HelmTaskHelperBase {
       return ((GcsHelmStoreDelegateConfig) storeDelegateConfig).getRepoName() + "-"
           + ((GcsHelmStoreDelegateConfig) storeDelegateConfig).getBucketName();
     } else if (storeDelegateConfig instanceof OciHelmStoreDelegateConfig) {
-      return (((OciHelmStoreDelegateConfig) storeDelegateConfig).getRepoName());
+      return ((OciHelmStoreDelegateConfig) storeDelegateConfig).getRepoName();
     }
-    return (((HttpHelmStoreDelegateConfig) storeDelegateConfig).getRepoName());
+    return ((HttpHelmStoreDelegateConfig) storeDelegateConfig).getRepoName();
   }
 
   public Map<String, HelmFetchFileResult> fetchValuesYamlFromChart(
