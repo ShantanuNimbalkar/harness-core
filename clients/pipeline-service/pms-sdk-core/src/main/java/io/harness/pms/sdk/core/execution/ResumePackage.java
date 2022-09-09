@@ -25,5 +25,4 @@ public class ResumePackage {
   StepInputPackage stepInputPackage;
   Map<String, ResponseData> responseDataMap;
   ChainDetails chainDetails;
-  Boolean timedOut;
 }
