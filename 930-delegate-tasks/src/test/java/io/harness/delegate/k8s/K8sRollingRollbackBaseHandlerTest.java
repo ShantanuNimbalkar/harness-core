@@ -489,7 +489,7 @@ public class K8sRollingRollbackBaseHandlerTest extends CategoryTest {
     ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
     verify(logCallback, times(2)).saveExecutionLog(logCaptor.capture());
     List<String> allLogs = logCaptor.getAllValues();
-    assertThat(allLogs).containsExactly("Previous eligible Release is 1 with status Succeeded",
+    assertThat(allLogs).containsExactly("Previous eligible Release is 1 with status SUCCEEDED",
         "No Managed Workload found in previous eligible release. Skipping rollback.");
   }
 
@@ -521,7 +521,7 @@ public class K8sRollingRollbackBaseHandlerTest extends CategoryTest {
     ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
     verify(logCallback, times(4)).saveExecutionLog(logCaptor.capture());
     List<String> logValues = logCaptor.getAllValues();
-    assertThat(logValues).contains("Previous eligible Release is 1 with status Succeeded",
+    assertThat(logValues).contains("Previous eligible Release is 1 with status SUCCEEDED",
         "\nRolling back to release 1",
         "\nRolling back resource Deployment/nginx-deployment in namespace null to revision null");
   }

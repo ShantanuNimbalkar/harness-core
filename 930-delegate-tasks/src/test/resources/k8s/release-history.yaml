@@ -18,7 +18,7 @@ releases:
         namespace: default
         versioned: false
     resourcesWithSpec: []
-    status: Succeeded
+    status: SUCCEEDED
   - customWorkloads: []
     managedWorkload:
     managedWorkloadRevision:
@@ -44,5 +44,5 @@ releases:
         namespace: default
         versioned: false
     resourcesWithSpec: []
-    status: Succeeded
+    status: SUCCEEDED
 version: v1

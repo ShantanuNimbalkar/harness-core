@@ -296,7 +296,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     String releaseHistory = "---\n"
         + "version: v1\n"
         + "releases:\n"
-        + "- status: Succeeded\n"
+        + "- status: SUCCEEDED\n"
         + "  managedWorkloads: []\n";
     doReturn(releaseHistory).when(k8sTaskHelperBase).getReleaseHistoryData(any(), any());
     doReturn(true)
@@ -346,7 +346,7 @@ public class K8sRollingDeployTaskHandlerTest extends WingsBaseTest {
     String releaseHistory = "---\n"
         + "version: v1\n"
         + "releases:\n"
-        + "- status: Succeeded\n"
+        + "- status: SUCCEEDED\n"
         + "  managedWorkloads: []\n";
     doReturn(releaseHistory).when(k8sTaskHelperBase).getReleaseHistoryData(any(), any());
     doReturn(true)

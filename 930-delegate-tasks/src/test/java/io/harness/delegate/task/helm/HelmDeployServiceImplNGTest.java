@@ -679,7 +679,7 @@ public class HelmDeployServiceImplNGTest extends CategoryTest {
 
     assertThatThrownBy(() -> executeRollbackWithReleaseHistory(releaseHistory, 2))
         .isInstanceOf(InvalidRequestException.class)
-        .hasMessage("Invalid status for release with number 2. Expected 'Succeeded' status, actual status is 'Failed'");
+        .hasMessage("Invalid status for release with number 2. Expected 'Succeeded' status, actual status is 'FAILED'");
   }
 
   @Test
