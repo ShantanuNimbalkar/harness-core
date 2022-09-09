@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -81,8 +82,9 @@ public class DynatraceHealthSourceSpecTransformerTest extends CvNextGenTestBase 
     assertThat(dynatraceMetricDefinition.getIdentifier()).isEqualTo(MOCKED_METRIC_NAME_ONE);
 
     assertThat(dynatraceHealthSourceSpec.getMetricPacks().size()).isEqualTo(METRIC_PACK_COUNT);
-    TimeSeriesMetricPackDTO metricPackOne = dynatraceHealthSourceSpec.getMetricPacks().stream().iterator().next();
-    TimeSeriesMetricPackDTO metricPackTwo = dynatraceHealthSourceSpec.getMetricPacks().stream().iterator().next();
+    Iterator<TimeSeriesMetricPackDTO> iterator = dynatraceHealthSourceSpec.getMetricPacks().stream().iterator();
+    TimeSeriesMetricPackDTO metricPackOne = iterator.next();
+    TimeSeriesMetricPackDTO metricPackTwo = iterator.next();
     assertThat(metricPackOne).isNotNull();
     assertThat(metricPackTwo).isNotNull();
     assertThat(metricPackOne.getIdentifier()).isEqualTo(CUSTOM_IDENTIFIER);
