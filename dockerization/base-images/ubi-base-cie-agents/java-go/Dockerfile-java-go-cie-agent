@@ -38,7 +38,9 @@ ENV CC /usr/bin/gcc
 ENV CXX /usr/bin/g++
 
 ##TODO: google-cloud-cli can be removed, update pipelines for the same
-RUN yum install -y mongodb-org-shell google-cloud-cli autoconf binutils gdb glibc-devel redhat-rpm-config rpm-build wget git gcc gcc-c++ jq bc zlib-devel --nodocs --skip-broken \
+RUN yum install -y mongodb-org-shell google-cloud-cli autoconf binutils gdb glibc-devel redhat-rpm-config rpm-build wget git gcc gcc-c++ jq bc zlib-devel yum-utils --nodocs --skip-broken \
+    && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo\
+    && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
     && git --version \
     && curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.7.4/bazelisk-linux-amd64 \
     && chown root:root /usr/local/bin/bazel \
@@ -55,8 +57,6 @@ RUN curl -O https://dl.google.com/go/go1.18.linux-amd64.tar.gz \
     && tar -xvf go1.18.linux-amd64.tar.gz \
     && mv go/ /usr/local/ \
     && rm -rf go1.18.linux-amd64.tar.gz
-
-RUN curl -fsSL https://get.docker.com/ | sh
 
 ENV PATH ${PATH}:/opt/gsutil:/usr/local/go/bin
 
