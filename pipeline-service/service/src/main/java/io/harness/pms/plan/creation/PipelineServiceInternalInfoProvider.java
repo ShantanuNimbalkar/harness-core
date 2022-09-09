@@ -12,6 +12,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cf.pipeline.CfExecutionPMSPlanCreator;
 import io.harness.cf.pipeline.FeatureFlagStageFilterJsonCreator;
 import io.harness.cf.pipeline.FeatureFlagStagePlanCreator;
+import io.harness.filters.EmptyAnyFilterJsonCreator;
+import io.harness.filters.EmptyFilterJsonCreator;
 import io.harness.filters.ExecutionPMSFilterJsonCreator;
 import io.harness.filters.ParallelFilterJsonCreator;
 import io.harness.filters.PipelineFilterJsonCreator;
@@ -47,6 +49,7 @@ import io.harness.pms.sdk.core.pipeline.variables.StepGroupVariableCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.pms.sdk.core.plan.creation.creators.PipelineServiceInfoProvider;
 import io.harness.pms.sdk.core.variables.EmptyAnyVariableCreator;
+import io.harness.pms.sdk.core.variables.EmptyVariableCreator;
 import io.harness.pms.sdk.core.variables.StrategyVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreator;
 import io.harness.pms.utils.InjectorUtils;
@@ -138,6 +141,8 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     filterJsonCreators.add(new StepGroupPmsFilterJsonCreator());
     filterJsonCreators.add(new FeatureFlagStageFilterJsonCreator());
     filterJsonCreators.add(new CustomStageFilterCreator());
+    filterJsonCreators.add(new EmptyAnyFilterJsonCreator(ImmutableSet.of("stages", "strategy", "steps", "spec")));
+    filterJsonCreators.add(new EmptyFilterJsonCreator("step", ImmutableSet.of("FlagConfiguration")));
     injectorUtils.injectMembers(filterJsonCreators);
     return filterJsonCreators;
   }
@@ -165,6 +170,9 @@ public class PipelineServiceInternalInfoProvider implements PipelineServiceInfoP
     variableCreators.add(new CustomApprovalStepVariableCreator());
     variableCreators.add(new StrategyVariableCreator());
     variableCreators.add(new EmptyAnyVariableCreator(ImmutableSet.of("parallel", "steps", "spec", "stages")));
+    variableCreators.add(new EmptyVariableCreator("stage", ImmutableSet.of("FeatureFlag")));
+    variableCreators.add(
+        new EmptyVariableCreator("step", ImmutableSet.of("FlagConfiguration", "Barrier", "ResourceConstraint")));
     injectorUtils.injectMembers(variableCreators);
     return variableCreators;
   }
