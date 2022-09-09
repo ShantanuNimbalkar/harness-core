@@ -19,6 +19,7 @@ import io.harness.delegate.task.artifacts.request.ArtifactTaskParameters;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskResponse;
 import io.harness.errorhandling.NGErrorHelper;
 
+import com.google.inject.Inject;
 import java.util.Collections;
 
 public class AzureArtifactsValidationHandler implements ConnectorValidationHandler {

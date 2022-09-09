@@ -15,6 +15,7 @@ import io.harness.security.encryption.SecretDecryptionService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import java.util.concurrent.ExecutorService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
