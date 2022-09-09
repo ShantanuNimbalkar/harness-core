@@ -85,7 +85,7 @@ public class NewRelicHealthSourceSpecTransformer
       if (isNotEmpty(metricThresholds)) {
         metricThresholds.forEach(metricThreshold -> metricThreshold.setMetricType(identifier));
       }
-      if (!(MonitoredServiceConstants.CUSTOM_METRIC_PACK.equals(identifier) && isEmpty(metricThresholds))) {
+      if (isNotEmpty(metricThresholds)) {
         metricPacks.add(
             TimeSeriesMetricPackDTO.builder().identifier(identifier).metricThresholds(metricThresholds).build());
       }
