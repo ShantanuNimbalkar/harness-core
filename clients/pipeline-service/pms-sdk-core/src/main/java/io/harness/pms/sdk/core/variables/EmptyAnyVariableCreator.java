@@ -15,7 +15,6 @@ import io.harness.pms.yaml.YamlField;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,34 +25,28 @@ import org.apache.commons.collections4.CollectionUtils;
  * Create the map of supported types to each element received in constructor and the keyword {@value
  * io.harness.pms.plan.creation.PlanCreatorUtils#ANY_TYPE} as value.
  */
-public class EmptyAnyVariableCreator extends ChildrenVariableCreator<YamlField> {
-  private final Set<String> types;
+public class EmptyAnyVariableCreator implements VariableCreator<YamlField> {
+  private final Set<String> identifiers;
 
   /**
-   * @param types cannot be null or empty
+   * @param identifiers cannot be null or empty
    */
-  public EmptyAnyVariableCreator(Set<String> types) {
-    if (CollectionUtils.isEmpty(types)) {
+  public EmptyAnyVariableCreator(Set<String> identifiers) {
+    if (CollectionUtils.isEmpty(identifiers)) {
       throw new IllegalArgumentException("Type list cannot be null or empty");
     }
-    this.types = types;
+    this.identifiers = identifiers;
   }
 
   @Override
-  public LinkedHashMap<String, VariableCreationResponse> createVariablesForChildrenNodes(
-      VariableCreationContext ctx, YamlField config) {
-    return new LinkedHashMap<>();
-  }
-
-  @Override
-  public VariableCreationResponse createVariablesForParentNode(VariableCreationContext ctx, YamlField config) {
+  public VariableCreationResponse createVariablesForField(VariableCreationContext ctx, YamlField field) {
     return VariableCreationResponse.builder().build();
   }
 
   @Override
   public Map<String, Set<String>> getSupportedTypes() {
     Map<String, Set<String>> supportedTypes = new HashMap<>();
-    types.forEach(type -> supportedTypes.put(type, Collections.singleton(ANY_TYPE)));
+    identifiers.forEach(type -> supportedTypes.put(type, Collections.singleton(ANY_TYPE)));
     return supportedTypes;
   }
 }
