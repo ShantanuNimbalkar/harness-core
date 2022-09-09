@@ -118,6 +118,17 @@ public class EcsStepCommonHelper extends EcsStepUtils {
         ambiance, stepElementParameters, infrastructureOutcome, ecsManifestOutcome, ecsStepHelper);
   }
 
+  public TaskChainResponse startChainLinkEcsRunTask(
+          Ambiance ambiance, StepElementParameters stepElementParameters, EcsStepHelper ecsStepHelper) {
+
+    // Get InfrastructureOutcome
+    InfrastructureOutcome infrastructureOutcome = (InfrastructureOutcome) outcomeService.resolve(
+            ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.INFRASTRUCTURE_OUTCOME));
+
+    return prepareEcsRunTaskTaskDefinitionGitFetchTask(
+            ambiance, stepElementParameters, infrastructureOutcome, ecsStepHelper);
+  }
+
   public List<ManifestOutcome> getEcsManifestOutcome(
       @NotEmpty Collection<ManifestOutcome> manifestOutcomes, EcsStepHelper ecsStepHelper) {
     return ecsStepHelper.getEcsManifestOutcome(manifestOutcomes);
@@ -190,6 +201,22 @@ public class EcsStepCommonHelper extends EcsStepUtils {
     return getGitFetchFileTaskResponse(ambiance, true, stepElementParameters, ecsGitFetchPassThroughData,
         ecsTaskDefinitionGitFetchFileConfig, ecsServiceDefinitionGitFetchFileConfig,
         ecsScalableTargetGitFetchFileConfigs, ecsScalingPolicyGitFetchFileConfigs);
+  }
+
+  private TaskChainResponse prepareEcsRunTaskTaskDefinitionGitFetchTask(Ambiance ambiance,
+                                                           StepElementParameters stepElementParameters, InfrastructureOutcome infrastructureOutcome,
+                                                           ,EcsStepHelper ecsStepHelper) {
+
+    EcsRunTaskStepParameters ecsRunTaskStepParameters = (EcsRunTaskStepParameters) stepElementParameters.getSpec();
+
+    EcsGitFetchPassThroughData ecsGitFetchPassThroughData =
+            EcsGitFetchPassThroughData.builder().infrastructureOutcome(infrastructureOutcome).build();
+
+    ManifestOutcome ecsRunTaskManifest 
+
+    return getGitFetchFileTaskResponse(ambiance, true, stepElementParameters, ecsGitFetchPassThroughData,
+            ecsTaskDefinitionGitFetchFileConfig, null,
+            null, null);
   }
 
   private EcsGitFetchFileConfig getEcsGitFetchFilesConfigFromManifestOutcome(

@@ -12,23 +12,18 @@ import static io.harness.exception.WingsException.USER;
 import io.harness.account.services.AccountService;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.CDStepHelper;
-import io.harness.cdng.ecs.beans.EcsCanaryDeleteDataOutcome;
-import io.harness.cdng.ecs.beans.EcsCanaryDeleteOutcome;
 import io.harness.cdng.ecs.beans.EcsExecutionPassThroughData;
+import io.harness.cdng.ecs.beans.EcsPrepareRollbackDataPassThroughData;
 import io.harness.cdng.ecs.beans.EcsRunTaskOutcome;
+import io.harness.cdng.ecs.beans.EcsStepExecutorParams;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
-import io.harness.cdng.manifest.steps.ManifestsOutcome;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants;
-import io.harness.data.structure.EmptyPredicate;
-import io.harness.delegate.beans.ecs.EcsCanaryDeleteResult;
 import io.harness.delegate.beans.ecs.EcsRunTaskResult;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
+import io.harness.delegate.beans.logstreaming.UnitProgressData;
 import io.harness.delegate.task.ecs.EcsCommandTypeNG;
-import io.harness.delegate.task.ecs.request.EcsCanaryDeleteRequest;
 import io.harness.delegate.task.ecs.request.EcsRunTaskRequest;
-import io.harness.delegate.task.ecs.response.EcsCanaryDeleteResponse;
 import io.harness.delegate.task.ecs.response.EcsCommandResponse;
 import io.harness.delegate.task.ecs.response.EcsRunTaskResponse;
 import io.harness.exception.ExceptionUtils;
@@ -36,23 +31,24 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.executions.steps.ExecutionNodeType;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.plancreator.steps.common.StepElementParameters;
+import io.harness.plancreator.steps.common.rollback.TaskChainExecutableWithRollbackAndRbac;
 import io.harness.plancreator.steps.common.rollback.TaskExecutableWithRollbackAndRbac;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.tasks.SkipTaskRequest;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
-import io.harness.pms.contracts.refobjects.RefObject;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.sdk.core.data.OptionalOutcome;
 import io.harness.pms.sdk.core.data.OptionalSweepingOutput;
-import io.harness.pms.sdk.core.data.Outcome;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outcome.OutcomeService;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
+import io.harness.pms.sdk.core.steps.executables.TaskChainResponse;
+import io.harness.pms.sdk.core.steps.io.PassThroughData;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
@@ -61,12 +57,12 @@ import io.harness.steps.StepUtils;
 import io.harness.supplier.ThrowingSupplier;
 
 import com.google.inject.Inject;
-import java.util.jar.Manifest;
+import io.harness.tasks.ResponseData;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.CDP)
 @Slf4j
-public class EcsRunTaskStep extends TaskExecutableWithRollbackAndRbac<EcsCommandResponse> {
+public class EcsRunTaskStep extends TaskChainExecutableWithRollbackAndRbac implements EcsStepExecutor {
   public static final StepType STEP_TYPE = StepType.newBuilder()
                                                .setType(ExecutionNodeType.ECS_RUN_TASK.getYamlType())
                                                .setStepCategory(StepCategory.STEP)
@@ -86,104 +82,32 @@ public class EcsRunTaskStep extends TaskExecutableWithRollbackAndRbac<EcsCommand
   }
 
   @Override
-  public StepResponse handleTaskResultWithSecurityContext(Ambiance ambiance,
-      StepElementParameters stepElementParameters, ThrowingSupplier<EcsCommandResponse> responseDataSupplier)
-      throws Exception {
-    StepResponse stepResponse = null;
-    try {
-      EcsRunTaskResponse ecsRunTaskResponse = (EcsRunTaskResponse) responseDataSupplier.get();
-
-      StepResponseBuilder stepResponseBuilder =
-          StepResponse.builder().unitProgressList(ecsRunTaskResponse.getUnitProgressData().getUnitProgresses());
-      stepResponse = generateStepResponse(ambiance, ecsRunTaskResponse, stepResponseBuilder);
-    } catch (Exception e) {
-      log.error("Error while processing ecs run Task response: {}", ExceptionUtils.getMessage(e), e);
-      throw e;
-    }
-    return stepResponse;
-  }
-
-  private StepResponse generateStepResponse(
-      Ambiance ambiance, EcsRunTaskResponse ecsRunTaskResponse, StepResponseBuilder stepResponseBuilder) {
-    StepResponse stepResponse;
-    if (ecsRunTaskResponse.getCommandExecutionStatus() != CommandExecutionStatus.SUCCESS) {
-      stepResponse = stepResponseBuilder.status(Status.FAILED)
-                         .failureInfo(FailureInfo.newBuilder()
-                                          .setErrorMessage(ecsStepCommonHelper.getErrorMessage(ecsRunTaskResponse))
-                                          .build())
-                         .build();
-    } else {
-      EcsRunTaskResult ecsRunTaskResult = ecsRunTaskResponse.getEcsRunTaskResult();
-
-      EcsRunTaskOutcome ecsRunTaskOutcome =
-          EcsRunTaskOutcome.builder().runTaskServiceName(ecsRunTaskResult.getRunTaskServiceName()).build();
-
-      executionSweepingOutputService.consume(
-          ambiance, OutcomeExpressionConstants.ECS_RUN_TASK_OUTCOME, ecsRunTaskOutcome, StepOutcomeGroup.STEP.name());
-
-      stepResponse = stepResponseBuilder.status(Status.SUCCEEDED)
-                         .stepOutcome(StepResponse.StepOutcome.builder()
-                                          .name(OutcomeExpressionConstants.OUTPUT)
-                                          .outcome(ecsRunTaskOutcome)
-                                          .build())
-                         .build();
-    }
-    return stepResponse;
+  public TaskChainResponse executeNextLinkWithSecurityContext(Ambiance ambiance, StepElementParameters stepParameters, StepInputPackage inputPackage, PassThroughData passThroughData, ThrowingSupplier<ResponseData> responseSupplier) throws Exception {
+    return null;
   }
 
   @Override
-  public TaskRequest obtainTaskAfterRbac(
-      Ambiance ambiance, StepElementParameters stepElementParameters, StepInputPackage inputPackage) {
-    final String accountId = AmbianceUtils.getAccountId(ambiance);
-
-    EcsRunTaskStepParameters ecsRunTaskStepParameters = (EcsRunTaskStepParameters) stepElementParameters.getSpec();
-
-    OptionalSweepingOutput ecsRunTaskDataOptionalOutput = executionSweepingOutputService.resolveOptional(
-        ambiance, RefObjectUtils.getSweepingOutputRefObject(OutcomeExpressionConstants.ECS_RUN_TASK_OUTCOME));
-
-    //    if (!ecsRunTaskDataOptionalOutput.isFound()) {
-    //      return skipTaskRequestOrThrowException(ambiance);
-    //    }
-
-    InfrastructureOutcome infrastructureOutcome = (InfrastructureOutcome) outcomeService.resolve(
-        ambiance, RefObjectUtils.getOutcomeRefObject(OutcomeExpressionConstants.INFRASTRUCTURE_OUTCOME));
-
-    //    EcsCanaryDeleteDataOutcome ecsCanaryDeleteDataOutcome =
-    //            (EcsCanaryDeleteDataOutcome) ecsCanaryDeleteDataOptionalOutput.getOutput();
-    String taskDefinition = getStringtaskDefinition(ambiance);
-    EcsRunTaskRequest ecsRunTaskRequest =
-        EcsRunTaskRequest.builder()
-            .accountId(accountId)
-            .ecsCommandType(EcsCommandTypeNG.ECS_RUN_TASK)
-            .commandName(ECS_RUN_TASK_COMMAND_NAME)
-            .commandUnitsProgress(CommandUnitsProgress.builder().build())
-            .ecsInfraConfig(ecsStepCommonHelper.getEcsInfraConfig(infrastructureOutcome, ambiance))
-            .ecsTaskDefinitionManifestContent(taskDefinition)
-            .build();
-    return ecsStepCommonHelper
-        .queueEcsTask(stepElementParameters, ecsRunTaskRequest, ambiance,
-            EcsExecutionPassThroughData.builder().infrastructure(infrastructureOutcome).build(), false)
-        .getTaskRequest();
+  public StepResponse finalizeExecutionWithSecurityContext(Ambiance ambiance, StepElementParameters stepParameters, PassThroughData passThroughData, ThrowingSupplier<ResponseData> responseDataSupplier) throws Exception {
+    return null;
   }
 
-  private String getStringtaskDefinition(Ambiance ambiance) {
-    OptionalOutcome manifestOutcome =
-        outcomeService.resolveOptional(ambiance, RefObjectUtils.getOutcomeRefObject("manifests"));
-    ManifestOutcome runTaskManifestOutcome = (ManifestOutcome) manifestOutcome.getOutcome();
-    return "";
-  }
-
-  private TaskRequest skipTaskRequestOrThrowException(Ambiance ambiance) {
-    if (StepUtils.isStepInRollbackSection(ambiance)) {
-      return TaskRequest.newBuilder()
-          .setSkipTaskRequest(SkipTaskRequest.newBuilder().setMessage(ECS_RUN_TASK_MISSING).build())
-          .build();
-    }
-    throw new InvalidRequestException(ECS_RUN_TASK_MISSING, USER);
+  @Override
+  public TaskChainResponse startChainLinkAfterRbac(Ambiance ambiance, StepElementParameters stepParameters, StepInputPackage inputPackage) {
+    return null;
   }
 
   @Override
   public Class<StepElementParameters> getStepParametersClass() {
     return StepElementParameters.class;
+  }
+
+  @Override
+  public TaskChainResponse executeEcsTask(Ambiance ambiance, StepElementParameters stepParameters, EcsExecutionPassThroughData executionPassThroughData, UnitProgressData unitProgressData, EcsStepExecutorParams ecsStepExecutorParams) {
+    return null;
+  }
+
+  @Override
+  public TaskChainResponse executeEcsPrepareRollbackTask(Ambiance ambiance, StepElementParameters stepParameters, EcsPrepareRollbackDataPassThroughData ecsStepPassThroughData, UnitProgressData unitProgressData) {
+    return null;
   }
 }
