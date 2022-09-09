@@ -40,6 +40,7 @@ import io.harness.platform.remote.HealthResource;
 import io.harness.platform.resourcegroup.ResourceGroupServiceModule;
 import io.harness.platform.resourcegroup.ResourceGroupServiceSetup;
 import io.harness.request.RequestContextFilter;
+import io.harness.resourcegroup.framework.v3.provider.ResourceSelectorFilterProvider;
 import io.harness.secret.ConfigSecretUtils;
 import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
@@ -242,6 +243,7 @@ public class PlatformApplication extends Application<PlatformConfiguration> {
     environment.jersey().register(NGAccessDeniedExceptionMapper.class);
     environment.jersey().register(WingsExceptionMapperV2.class);
     environment.jersey().register(GenericExceptionMapperV2.class);
+    environment.jersey().register(ResourceSelectorFilterProvider.class);
   }
 
   public SwaggerBundleConfiguration getSwaggerConfiguration(PlatformConfiguration appConfig) {

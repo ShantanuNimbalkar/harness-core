@@ -209,29 +209,17 @@ public class ResourceGroupApiUtils {
   public static ResourceGroupFilterDTO getResourceFilterDTO(String account, String org, String project,
       String searchTerm, List<String> identifierFilter, String managedFilter,
       List<io.harness.spec.server.platform.model.ResourceSelectorFilter> resourceSelectorFilter) {
-    if (identifierFilter == null) {
-      return ResourceGroupFilterDTO.builder()
-          .accountIdentifier(account)
-          .orgIdentifier(org)
-          .projectIdentifier(project)
-          .searchTerm(searchTerm)
-          .resourceSelectorFilterList(resourceSelectorFilter.stream()
-                                          .map(ResourceGroupApiUtils::getResourceSelectorFilter)
-                                          .collect(Collectors.toSet()))
-          .managedFilter(getManagedFilter(managedFilter))
-          .build();
+    ResourceGroupFilterDTO.ResourceGroupFilterDTOBuilder builder = ResourceGroupFilterDTO.builder();
+    builder.accountIdentifier(account).orgIdentifier(org).projectIdentifier(project).searchTerm(searchTerm);
+    if (identifierFilter != null) {
+      builder.identifierFilter(new HashSet<>(identifierFilter));
     }
-    return ResourceGroupFilterDTO.builder()
-        .accountIdentifier(account)
-        .orgIdentifier(org)
-        .projectIdentifier(project)
-        .searchTerm(searchTerm)
-        .identifierFilter(new HashSet<>(identifierFilter))
-        .resourceSelectorFilterList(resourceSelectorFilter.stream()
-                                        .map(ResourceGroupApiUtils::getResourceSelectorFilter)
-                                        .collect(Collectors.toSet()))
-        .managedFilter(getManagedFilter(managedFilter))
-        .build();
+    if (resourceSelectorFilter != null) {
+      builder.resourceSelectorFilterList(resourceSelectorFilter.stream()
+                                             .map(ResourceGroupApiUtils::getResourceSelectorFilter)
+                                             .collect(Collectors.toSet()));
+    }
+    return builder.managedFilter(getManagedFilter(managedFilter)).build();
   }
 
   public static ResourceSelectorFilter getResourceSelectorFilter(
