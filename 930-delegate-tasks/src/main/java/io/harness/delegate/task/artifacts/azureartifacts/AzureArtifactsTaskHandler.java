@@ -9,6 +9,7 @@ package io.harness.delegate.task.artifacts.azureartifacts;
 
 import io.harness.artifacts.azureartifacts.service.AzureArtifactsRegistryService;
 import io.harness.delegate.task.artifacts.DelegateArtifactTaskHandler;
+import io.harness.delegate.task.artifacts.jenkins.JenkinsArtifactDelegateRequest;
 import io.harness.delegate.task.artifacts.mappers.AzureArtifactsRequestResponseMapper;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskExecutionResponse;
 import io.harness.security.encryption.SecretDecryptionService;
@@ -38,4 +39,7 @@ public class AzureArtifactsTaskHandler extends DelegateArtifactTaskHandler<Azure
 
     return ArtifactTaskExecutionResponse.builder().isArtifactServerValid(isServerValidated).build();
   }
+
+  @Override
+  public void decryptRequestDTOs(AzureArtifactsDelegateRequest attributesRequest) {}
 }
