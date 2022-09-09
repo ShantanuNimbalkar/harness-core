@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ELKServiceImpl implements ELKService {
   @Inject private OnboardingService onboardingService;
@@ -51,7 +52,7 @@ public class ELKServiceImpl implements ELKService {
   }
 
   @Override
-  public List<LinkedHashMap> getSampleData(
+  public LinkedHashMap getSampleData(
       ProjectParams projectParams, String connectorIdentifier, String query, String index, String tracingId) {
     DataCollectionRequest request = ELKSampleDataCollectionRequest.builder().query(query).index(index).build();
 
@@ -67,7 +68,7 @@ public class ELKServiceImpl implements ELKService {
     OnboardingResponseDTO response =
         onboardingService.getOnboardingResponse(projectParams.getAccountIdentifier(), onboardingRequestDTO);
     final Gson gson = new Gson();
-    Type type = new TypeToken<List<LinkedHashMap>>() {}.getType();
+    Type type = new TypeToken<LinkedHashMap>() {}.getType();
     return gson.fromJson(JsonUtils.asJson(response.getResult()), type);
   }
 }
