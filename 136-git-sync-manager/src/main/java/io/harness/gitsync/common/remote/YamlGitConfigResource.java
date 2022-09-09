@@ -210,6 +210,17 @@ public class YamlGitConfigResource {
     return gitEnabledHelper.getGitEnabledDTO(projectIdentifier, organizationIdentifier, accountIdentifier);
   }
 
+  @GET
+  @Path("/reset-cache")
+  public GitEnabledDTO resetGitSyncSDKCache(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
+                                                NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ORG_KEY) String organizationIdentifier) {
+    gitEnabledHelper.resetGitSyncSDKCache(accountIdentifier, organizationIdentifier, projectIdentifier);
+  }
+
   @VisibleForTesting
   protected void formatRequest(GitSyncConfigDTO gitSyncConfigDTO) {
     gitSyncConfigDTO.setName(gitSyncConfigDTO.getName().trim());
