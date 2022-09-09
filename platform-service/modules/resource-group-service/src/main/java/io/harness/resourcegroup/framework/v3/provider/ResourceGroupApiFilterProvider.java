@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
-public class ApiFilterProvider implements ParamConverterProvider {
+public class ResourceGroupApiFilterProvider implements ParamConverterProvider {
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
     if (rawType == ResourceSelectorFilter.class) {

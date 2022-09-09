@@ -40,7 +40,7 @@ import io.harness.platform.remote.HealthResource;
 import io.harness.platform.resourcegroup.ResourceGroupServiceModule;
 import io.harness.platform.resourcegroup.ResourceGroupServiceSetup;
 import io.harness.request.RequestContextFilter;
-import io.harness.resourcegroup.framework.v3.provider.ApiFilterProvider;
+import io.harness.resourcegroup.framework.v3.provider.ResourceGroupApiFilterProvider;
 import io.harness.secret.ConfigSecretUtils;
 import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
@@ -247,7 +247,7 @@ public class PlatformApplication extends Application<PlatformConfiguration> {
   }
 
   private void registerOasParamConverter(Environment environment) {
-    environment.jersey().register(ApiFilterProvider.class);
+    environment.jersey().register(ResourceGroupApiFilterProvider.class);
   }
 
   public SwaggerBundleConfiguration getSwaggerConfiguration(PlatformConfiguration appConfig) {
