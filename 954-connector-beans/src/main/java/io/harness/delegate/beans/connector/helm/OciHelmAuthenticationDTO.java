@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.harness.annotation.RecasterFieldName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -29,9 +30,9 @@ import lombok.experimental.FieldDefaults;
 @JsonDeserialize(using = OciHelmAuthenticationDTODeserializer.class)
 @Schema(name = "OciHelmAuthentication", description = "This contains oci helm authentication details")
 public class OciHelmAuthenticationDTO {
-  @NotNull @JsonProperty("type") OciHelmAuthType authType;
+  @NotNull @RecasterFieldName(name = "type") @JsonProperty("type") OciHelmAuthType authType;
 
-  @JsonProperty("spec")
+  @RecasterFieldName(name = "spec") @JsonProperty("spec")
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
   @Valid

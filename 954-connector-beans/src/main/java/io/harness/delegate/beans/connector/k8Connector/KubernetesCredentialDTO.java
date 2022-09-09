@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.harness.annotation.RecasterFieldName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,8 +25,8 @@ import lombok.NoArgsConstructor;
 @JsonDeserialize(using = KubernetesCredentialDTODeserializer.class)
 @Schema(name = "KubernetesCredential", description = "This contains kubernetes credentials details")
 public class KubernetesCredentialDTO {
-  @NotNull @JsonProperty("type") KubernetesCredentialType kubernetesCredentialType;
-  @JsonProperty("spec")
+  @NotNull @RecasterFieldName(name = "type") @JsonProperty("type") KubernetesCredentialType kubernetesCredentialType;
+  @RecasterFieldName(name = "spec") @JsonProperty("spec")
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
   @Valid

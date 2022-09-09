@@ -114,6 +114,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mongodb.morphia.Key;
+import software.wings.sm.states.DeploymentPackage.InstanceMapperUtils;
 
 public class InstanceFetchStateTest extends WingsBaseTest {
   @Mock private ExecutionContext context;

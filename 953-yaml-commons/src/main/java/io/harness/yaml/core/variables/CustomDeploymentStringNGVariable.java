@@ -8,7 +8,7 @@
 package io.harness.yaml.core.variables;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
@@ -49,7 +49,7 @@ public class CustomDeploymentStringNGVariable implements CustomDeploymentNGVaria
   CustomDeploymentNGVariableType type = CustomDeploymentNGVariableType.STRING;
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
-  @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD, skipInnerObjectTraversal = true)
+  @VariableExpression(policy = REGULAR, skipInnerObjectTraversal = true)
   ParameterField<String> value;
   @VariableExpression(skipVariableExpression = true) String description;
   @VariableExpression(skipVariableExpression = true) boolean required;

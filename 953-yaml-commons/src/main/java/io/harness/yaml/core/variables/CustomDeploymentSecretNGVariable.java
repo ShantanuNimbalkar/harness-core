@@ -8,7 +8,7 @@
 package io.harness.yaml.core.variables;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
@@ -48,13 +48,13 @@ public class CustomDeploymentSecretNGVariable implements CustomDeploymentNGVaria
   CustomDeploymentNGVariableType type = CustomDeploymentNGVariableType.SECRET;
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
-  @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD, skipInnerObjectTraversal = true)
-  ParameterField<SecretRefData> value;
+  @VariableExpression(policy = REGULAR)
+  ParameterField<SecretRefData> secret;
   @VariableExpression(skipVariableExpression = true) String description;
   @VariableExpression(skipVariableExpression = true) boolean required;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
   @Override
   public ParameterField<?> getCurrentValue() {
-    return value;
+    return secret;
   }
 }

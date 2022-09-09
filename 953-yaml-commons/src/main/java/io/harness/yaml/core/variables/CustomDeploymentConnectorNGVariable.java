@@ -8,6 +8,7 @@
 package io.harness.yaml.core.variables;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR;
 import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
 
 import io.harness.annotation.RecasterAlias;
@@ -49,7 +50,11 @@ public class CustomDeploymentConnectorNGVariable implements CustomDeploymentNGVa
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD, skipInnerObjectTraversal = true)
-  ParameterField<ConnectorInfoDTO> value;
+  ParameterField<String> value;
+  @NotNull
+  @ApiModelProperty(hidden = true)
+  @VariableExpression(policy = REGULAR)
+  ParameterField<ConnectorInfoDTO> connector;
   @VariableExpression(skipVariableExpression = true) String description;
   @VariableExpression(skipVariableExpression = true) boolean required;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;

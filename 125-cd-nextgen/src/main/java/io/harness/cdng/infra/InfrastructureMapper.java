@@ -52,8 +52,11 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.ng.core.infrastructure.InfrastructureKind;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.steps.environment.EnvironmentOutcome;
+import io.harness.yaml.core.variables.CustomDeploymentNGVariable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
@@ -234,8 +237,14 @@ public class InfrastructureMapper {
 
       case InfrastructureKind.CUSTOM_DEPLOYMENT:
         CustomDeploymentInfrastructure customDeploymentInfrastructure = (CustomDeploymentInfrastructure) infrastructure;
+        validateCustomDeploymentInfrastructure(customDeploymentInfrastructure);
         CustomDeploymentInfrastructureOutcome customDeploymentInfrastructureOutcome =
             CustomDeploymentInfrastructureOutcome.builder()
+                .variables(convertListVariablesToMap(customDeploymentInfrastructure.getVariables()))
+                .instanceAttributes(customDeploymentInfrastructure.getInstanceAttributes())
+                .instanceFetchScript(customDeploymentInfrastructure.getInstanceFetchScript())
+                .instancesListPath(customDeploymentInfrastructure.getInstancesListPath())
+                .environment(environmentOutcome)
                 .infrastructureKey(InfrastructureKey.generate(
                     service, environmentOutcome, customDeploymentInfrastructure.getInfrastructureKeyValues()))
                 .build();
@@ -422,6 +431,11 @@ public class InfrastructureMapper {
       throw new InvalidArgumentsException(Pair.of("region", "cannot be empty"));
     }
   }
+  private static void validateCustomDeploymentInfrastructure(CustomDeploymentInfrastructure infrastructure) {
+    if ((infrastructure.getVariables().isEmpty())) {
+      throw new InvalidArgumentsException(Pair.of("variables", "cannot be empty"));
+    }
+  }
 
   private boolean hasValueOrExpression(ParameterField<String> parameterField) {
     if (ParameterField.isNull(parameterField)) {
@@ -445,5 +459,13 @@ public class InfrastructureMapper {
     } else {
       return parameterField.getValue();
     }
+  }
+  private Map<String, CustomDeploymentNGVariable> convertListVariablesToMap(
+      List<CustomDeploymentNGVariable> variables) {
+    Map<String, CustomDeploymentNGVariable> mapOfVariables = new HashMap<>();
+    for (CustomDeploymentNGVariable variable : variables) {
+      mapOfVariables.put(variable.getName(), variable);
+    }
+    return mapOfVariables;
   }
 }

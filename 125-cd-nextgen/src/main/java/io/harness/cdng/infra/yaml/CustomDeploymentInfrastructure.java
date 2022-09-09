@@ -46,8 +46,10 @@ import org.springframework.data.annotation.TypeAlias;
 public class CustomDeploymentInfrastructure
     extends InfrastructureDetailsAbstract implements Infrastructure, Visitable, WithConnectorRef {
   @NotNull @NotEmpty @Wither List<CustomDeploymentNGVariable> variables;
+  @NotNull @NotEmpty @Wither String instancesListPath;
+  @NotNull @NotEmpty @Wither Map<String, String> instanceAttributes;
+  @NotNull @NotEmpty @Wither String instanceFetchScript;
   @NotNull @NotEmpty StepTemplateRef customDeploymentRef;
-
   @Override
   public InfraMapping getInfraMapping() {
     Map<String, String> infraVars = new HashMap<>();

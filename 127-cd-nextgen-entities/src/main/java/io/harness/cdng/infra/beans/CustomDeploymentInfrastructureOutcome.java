@@ -13,8 +13,10 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.infrastructure.InfrastructureKind;
 import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.yaml.core.VariableExpression;
+import io.harness.yaml.core.variables.CustomDeploymentNGVariable;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.data.annotation.TypeAlias;
@@ -27,11 +29,18 @@ import org.springframework.data.annotation.TypeAlias;
 @RecasterAlias("io.harness.cdng.infra.beans.CustomDeploymentInfrastructureOutcome")
 public class CustomDeploymentInfrastructureOutcome
     extends InfrastructureDetailsAbstract implements InfrastructureOutcome {
+  String instancesListPath;
+  Map<String, String> instanceAttributes;
+  String instanceFetchScript;
+  Map<String, CustomDeploymentNGVariable> variables;
   @VariableExpression(skipVariableExpression = true) EnvironmentOutcome environment;
   String infrastructureKey;
   String connectorRef;
   @Override
   public String getKind() {
     return InfrastructureKind.CUSTOM_DEPLOYMENT;
+  }
+  public String getConnectorRef() {
+    return null;
   }
 }

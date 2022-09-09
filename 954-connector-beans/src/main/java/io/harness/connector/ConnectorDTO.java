@@ -9,6 +9,7 @@ package io.harness.connector;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
+import io.harness.annotation.RecasterFieldName;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.beans.YamlDTO;
 
@@ -30,5 +31,5 @@ import lombok.experimental.FieldDefaults;
 @OwnedBy(DX)
 @Schema(name = "Connector", description = "This is the view of Connector entity as defined in Harness.")
 public class ConnectorDTO implements YamlDTO {
-  @JsonProperty("connector") @Valid ConnectorInfoDTO connectorInfo;
+ @JsonProperty("connector") @Valid ConnectorInfoDTO connectorInfo;
 }

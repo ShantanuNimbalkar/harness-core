@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.harness.annotation.RecasterFieldName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -26,9 +27,9 @@ import lombok.NoArgsConstructor;
 @JsonDeserialize(using = HelmAuthenticationDTODeserializer.class)
 @Schema(name = "HttpHelmAuthentication", description = "This contains http helm authentication details")
 public class HttpHelmAuthenticationDTO {
-  @NotNull @JsonProperty("type") HttpHelmAuthType authType;
+  @NotNull @RecasterFieldName(name = "type") @JsonProperty("type") HttpHelmAuthType authType;
 
-  @JsonProperty("spec")
+  @RecasterFieldName(name = "spec") @JsonProperty("spec")
   @JsonTypeInfo(
       use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXTERNAL_PROPERTY, visible = true)
   @Valid
