@@ -510,7 +510,6 @@ public class K8sTaskHelper {
           throw new InvalidRequestException(
               "Env Variable $HELM_WORKING_DIR set, expecting chart directory to exist locally after helm fetch but did not find it \n");
         }
-        // Log saying copying from ... to ...
         String workingDirectory = helmTaskHelper.createDirectory(
             Paths.get(destinationDirectory, helmChartConfigParams.getChartName()).toString());
         log.info("Copying locally present chart from directory: %s to current working directory: %s \n",

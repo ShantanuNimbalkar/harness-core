@@ -26,6 +26,7 @@ import static io.harness.helm.HelmCommandType.RELEASE_HISTORY;
 import static io.harness.helm.HelmConstants.ADD_COMMAND_FOR_REPOSITORY;
 import static io.harness.helm.HelmConstants.CHARTS_YAML_KEY;
 import static io.harness.helm.HelmConstants.HELM_CACHE_HOME_PLACEHOLDER;
+import static io.harness.helm.HelmConstants.HELM_FETCH_OLD_WORKING_DIR_BASE;
 import static io.harness.helm.HelmConstants.HELM_HOME_PATH_FLAG;
 import static io.harness.helm.HelmConstants.HELM_PATH_PLACEHOLDER;
 import static io.harness.helm.HelmConstants.PASSWORD;
@@ -917,15 +918,45 @@ public class HelmTaskHelperBase {
     return Paths.get(parentDir, chartName).toString();
   }
 
+  public String getRepoNameNG(StoreDelegateConfig storeDelegateConfig) {
+    if (storeDelegateConfig instanceof S3HelmStoreDelegateConfig) {
+      return ((S3HelmStoreDelegateConfig) storeDelegateConfig).getRepoName() + "-"
+          + ((S3HelmStoreDelegateConfig) storeDelegateConfig).getBucketName();
+    } else if (storeDelegateConfig instanceof GcsHelmStoreDelegateConfig) {
+      return ((GcsHelmStoreDelegateConfig) storeDelegateConfig).getRepoName() + "-"
+          + ((GcsHelmStoreDelegateConfig) storeDelegateConfig).getBucketName();
+    } else if (storeDelegateConfig instanceof OciHelmStoreDelegateConfig) {
+      return (((OciHelmStoreDelegateConfig) storeDelegateConfig).getRepoName());
+    }
+    return (((HttpHelmStoreDelegateConfig) storeDelegateConfig).getRepoName());
+  }
+
   public Map<String, HelmFetchFileResult> fetchValuesYamlFromChart(
       HelmChartManifestDelegateConfig helmChartManifestDelegateConfig, long timeoutInMillis, LogCallback logCallback,
       List<HelmFetchFileConfig> helmFetchFileConfigList) throws Exception {
     logCallback.saveExecutionLog(color("\nStarting fetching Helm values", White, Bold));
-    String workingDirectory = createNewDirectoryAtPath(Paths.get(WORKING_DIR_BASE).toString());
-    logCallback.saveExecutionLog(color("\nFetching values.yaml from helm chart repo", White, Bold));
+    String workingDirectory = "";
+    String repoName = getRepoNameNG(helmChartManifestDelegateConfig.getStoreDelegateConfig());
+    String chartName = helmChartManifestDelegateConfig.getChartName();
+    boolean isEnvVarSet = isNotEmpty(newGetWorkingDirFromEnv());
+    boolean isChartPresent = false;
+    if (!isEnvVarSet) {
+      workingDirectory = createNewDirectoryAtPath(
+          Paths.get(HELM_FETCH_OLD_WORKING_DIR_BASE.replace("${REPO_NAME}", repoName)).toString());
+    } else {
+      workingDirectory = newGetWorkingDirectory(newGetWorkingDirFromEnv(), repoName);
+      createDirectoryIfDoesNotExist(workingDirectory);
+      waitForDirectoryToBeAccessibleOutOfProcess(workingDirectory, 10);
+      if (newDoesChartExist(workingDirectory, chartName)) {
+        isChartPresent = true;
+      }
+    }
 
+    logCallback.saveExecutionLog(color("\nFetching values.yaml from helm chart repo", White, Bold));
     try {
-      downloadHelmChartFiles(helmChartManifestDelegateConfig, workingDirectory, timeoutInMillis);
+      if (!isChartPresent) {
+        downloadHelmChartFiles(helmChartManifestDelegateConfig, workingDirectory, timeoutInMillis);
+      }
       printHelmChartInfoWithVersionInExecutionLogs(workingDirectory, helmChartManifestDelegateConfig, logCallback);
       logCallback.saveExecutionLog(color("\nFollowing were fetched successfully :", White, Bold));
 
@@ -961,7 +992,9 @@ public class HelmTaskHelperBase {
       logCallback.saveExecutionLog(errorMsg + ExceptionUtils.getMessage(ex), WARN);
       throw ex;
     } finally {
-      cleanup(workingDirectory);
+      if (!isEnvVarSet) {
+        cleanup(workingDirectory);
+      }
     }
   }
 
@@ -1095,7 +1128,7 @@ public class HelmTaskHelperBase {
     }
   }
 
-  String createDirectory(String directoryBase) throws IOException {
+  public String createDirectory(String directoryBase) throws IOException {
     String workingDirectory = Paths.get(directoryBase).normalize().toAbsolutePath().toString();
 
     createDirectoryIfDoesNotExist(workingDirectory);

@@ -14,7 +14,6 @@ import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfPr
 import static io.harness.filesystem.FileIo.writeUtf8StringToFile;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.replace;
 
 import io.harness.annotations.dev.HarnessModule;
@@ -154,22 +153,11 @@ public class HelmCommandTask extends AbstractDelegateRunnableTask {
         "Setting KubeConfig\nKUBECONFIG_PATH=" + configLocation, LogLevel.INFO, CommandExecutionStatus.RUNNING);
 
     boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
-    String workingDir = EMPTY;
+    String workingDir = "";
     boolean isNotReleaseHistCmd = helmCommandRequest instanceof HelmReleaseHistoryCommandRequest;
 
     if (isNotReleaseHistCmd) {
-      if (isEnvVarSet) {
-        HelmChartConfigParams helmChartConfigParams = null;
-        if (helmCommandRequest.getRepoConfig() != null) {
-          helmChartConfigParams = helmCommandRequest.getRepoConfig().getHelmChartConfigParams();
-        }
-        if (helmChartConfigParams == null) {
-          // TODO: Achyuth -- throw error
-        } else {
-          workingDir = helmTaskHelperBase.newGetWorkingDirectory(
-              helmTaskHelperBase.newGetWorkingDirFromEnv(), helmChartConfigParams.getRepoName());
-        }
-      } else {
+      if (!isEnvVarSet) {
         workingDir = Paths
                          .get(replace(WORKING_DIR,
                              "${"

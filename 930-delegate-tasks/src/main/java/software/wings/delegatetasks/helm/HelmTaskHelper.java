@@ -19,6 +19,7 @@ import static io.harness.filesystem.FileIo.waitForDirectoryToBeAccessibleOutOfPr
 import static io.harness.helm.HelmConstants.CHARTS_YAML_KEY;
 import static io.harness.helm.HelmConstants.CHART_VERSION;
 import static io.harness.helm.HelmConstants.HELM_CACHE_HOME_PLACEHOLDER;
+import static io.harness.helm.HelmConstants.HELM_FETCH_OLD_WORKING_DIR_BASE;
 import static io.harness.helm.HelmConstants.REPO_NAME;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME_PATH;
@@ -224,7 +225,9 @@ public class HelmTaskHelper {
         isChartPresent = true;
       }
     } else {
-      workingDir = createNewDirectoryAtPath(Paths.get(WORKING_DIR_BASE).toString());
+      workingDir = createNewDirectoryAtPath(
+          Paths.get(HELM_FETCH_OLD_WORKING_DIR_BASE.replace("${REPO_NAME}", helmChartConfigParams.getRepoName()))
+              .toString());
     }
     Map<String, List<String>> mapK8sValuesLocationToContents = new HashMap<>();
     if (!isChartPresent) {
