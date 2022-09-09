@@ -70,6 +70,7 @@ import io.harness.exception.TerraformCommandExecutionException;
 import io.harness.exception.WingsException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
+import io.harness.git.GitClientV2;
 import io.harness.git.model.GitRepositoryType;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
@@ -129,6 +130,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +158,7 @@ import org.zeroturnaround.exec.stream.LogOutputStream;
 @OwnedBy(CDP)
 public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
   @Inject private GitClient gitClient;
+  @Inject private GitClientV2 gitClientV2;
   @Inject private GitClientHelper gitClientHelper;
   @Inject private EncryptionService encryptionService;
   @Inject private DelegateLogService logService;
@@ -259,7 +262,16 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
     }
 
     try {
-      copyFilesToWorkingDirectory(gitClientHelper.getRepoDirectory(gitOperationContext), workingDir);
+      gitClient.downloadFiles(gitConfig,
+          GitFetchFilesRequest.builder()
+              .branch(parameters.getSourceRepo().getBranch())
+              .commitId(gitConfig.getReference())
+              .filePaths(Collections.singletonList(""))
+              .useBranch(isEmpty(gitConfig.getReference()))
+              .gitConnectorId(parameters.getSourceRepoSettingId())
+              .recursive(true)
+              .build(),
+          workingDir, false);
     } catch (Exception ex) {
       Exception sanitizedException = ExceptionMessageSanitizer.sanitizeException(ex);
       log.error("Exception in copying files to provisioner specific directory", sanitizedException);
@@ -269,6 +281,7 @@ public class TerraformProvisionTask extends AbstractDelegateRunnableTask {
           .errorMessage(ExceptionUtils.getMessage(sanitizedException))
           .build();
     }
+
     String scriptDirectory = terraformBaseHelper.resolveScriptDirectory(workingDir, parameters.getScriptPath());
     log.info("Script Directory: " + scriptDirectory);
     saveExecutionLog(

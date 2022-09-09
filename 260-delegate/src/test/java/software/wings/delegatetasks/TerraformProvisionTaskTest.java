@@ -872,7 +872,6 @@ public class TerraformProvisionTaskTest extends WingsBaseTest {
   private void verify(TerraformExecutionData terraformExecutionData, TerraformCommand command) {
     Mockito.verify(mockEncryptionService, times(1)).decrypt(gitConfig, sourceRepoEncryptionDetails, false);
     Mockito.verify(gitClient, times(1)).ensureRepoLocallyClonedAndUpdated(any(GitOperationContext.class));
-    Mockito.verify(gitClientHelper, times(1)).getRepoDirectory(any(GitOperationContext.class));
     Mockito.verify(delegateFileManager, times(1)).upload(any(DelegateFile.class), any(InputStream.class));
     assertThat(terraformExecutionData.getWorkspace()).isEqualTo(WORKSPACE);
     assertThat(terraformExecutionData.getEntityId()).isEqualTo(ENTITY_ID);
