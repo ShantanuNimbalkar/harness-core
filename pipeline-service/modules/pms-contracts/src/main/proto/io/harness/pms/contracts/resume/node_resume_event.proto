@@ -21,7 +21,6 @@ message NodeResumeEvent {
   bool asyncError = 5;
   map<string, bytes> response = 6;
   ChainDetails chainDetails = 7;
-  bool timedOut = 8;
 }
 
 message ChainDetails {

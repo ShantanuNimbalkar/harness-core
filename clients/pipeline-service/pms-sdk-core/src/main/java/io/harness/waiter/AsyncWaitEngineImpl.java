@@ -25,12 +25,9 @@ public class AsyncWaitEngineImpl implements AsyncWaitEngine {
   }
 
   @Override
-  public void waitForAllOn(NotifyCallback notifyCallback, ProgressCallback progressCallback, String... correlationIds) {
-    waitNotifyEngine.waitForAllOn(publisherName, notifyCallback, progressCallback, correlationIds);
-  }
-
-  @Override
-  public void waitForAllOnWithTimeout(OldNotifyCallback notifyCallback, List<String> correlationIds, int timeout) {
-    waitNotifyEngine.waitForAllOnInList(publisherName, notifyCallback, correlationIds, Duration.ofMillis(timeout));
+  public void waitForAllOn(
+      NotifyCallback notifyCallback, ProgressCallback progressCallback, List<String> correlationIds, int timeout) {
+    waitNotifyEngine.waitForAllOn(
+        publisherName, notifyCallback, progressCallback, correlationIds, Duration.ofMillis(timeout));
   }
 }

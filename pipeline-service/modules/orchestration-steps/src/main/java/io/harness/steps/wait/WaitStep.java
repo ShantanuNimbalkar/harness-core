@@ -14,7 +14,6 @@ import io.harness.data.structure.UUIDGenerator;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.AsyncExecutableResponse;
-import io.harness.pms.contracts.execution.Status;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.steps.executables.AsyncExecutable;
 import io.harness.pms.sdk.core.steps.io.PassThroughData;
@@ -36,11 +35,7 @@ public class WaitStep implements AsyncExecutable<StepElementParameters> {
     String correlationId = UUIDGenerator.generateUuid();
     // Store correlationId and NodeExecutionId together in DB collection to retrieve correlationId from nodeExecutionId.
     // get the duration from stepParameters.
-    return AsyncExecutableResponse.newBuilder()
-        .setIsTimeoutConfigured(true)
-        .addCallbackIds(correlationId)
-        .setTimeout(3600)
-        .build();
+    return AsyncExecutableResponse.newBuilder().addCallbackIds(correlationId).setTimeout(3600).build();
   }
 
   @Override
@@ -59,13 +54,5 @@ public class WaitStep implements AsyncExecutable<StepElementParameters> {
   @Override
   public Class<StepElementParameters> getStepParametersClass() {
     return StepElementParameters.class;
-  }
-
-  @Override
-  public StepResponse handleTimeout(
-      Ambiance ambiance, StepElementParameters stepParameters, Map<String, ResponseData> responseDataMap) {
-    // timeout occurred. return the step response with success data.
-    StepResponse.builder().status(Status.SUCCEEDED).build();
-    return null;
   }
 }

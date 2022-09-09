@@ -58,8 +58,4 @@ public interface AsyncExecutable<T extends StepParameters>
   default void handleFailureInterrupt(Ambiance ambiance, T stepParameters, Map<String, String> metadata) {
     // NOOP : By default this is noop as task failure is handled by the PMS but you are free to override it
   }
-
-  default StepResponse handleTimeout(Ambiance ambiance, T stepParameters, Map<String, ResponseData> responseDataMap) {
-    return handleAsyncResponse(ambiance, stepParameters, responseDataMap);
-  }
 }

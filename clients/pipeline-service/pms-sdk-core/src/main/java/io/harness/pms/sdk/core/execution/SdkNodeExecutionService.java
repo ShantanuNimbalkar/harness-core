@@ -42,8 +42,6 @@ public interface SdkNodeExecutionService {
 
   void resumeNodeExecution(Ambiance ambiance, Map<String, ResponseData> response, boolean asyncError);
 
-  void resumeNodeExecution(Ambiance ambiance, Map<String, ResponseData> response, boolean asyncError, boolean timedOut);
-
   void handleFacilitationResponse(
       Ambiance ambiance, @NonNull String notifyId, FacilitatorResponseProto facilitatorResponseProto);
 
