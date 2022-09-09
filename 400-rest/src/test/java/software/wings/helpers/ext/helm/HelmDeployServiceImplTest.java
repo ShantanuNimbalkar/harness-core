@@ -1020,7 +1020,7 @@ public class HelmDeployServiceImplTest extends WingsBaseTest {
     releaseHistory.setReleaseStatus(IK8sRelease.Status.FAILED);
     assertThatThrownBy(() -> executeRollbackWithReleaseHistory(releaseHistory, 1))
         .hasMessageContaining(
-            "Invalid status for release with number 1. Expected 'Succeeded' status, actual status is 'Failed'");
+            "Invalid status for release with number 1. Expected 'Succeeded' status, actual status is 'FAILED'");
 
     releaseHistory.createNewRelease(singletonList(resource1));
     releaseHistory.setReleaseNumber(1);
