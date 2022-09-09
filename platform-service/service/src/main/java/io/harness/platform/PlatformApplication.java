@@ -40,7 +40,7 @@ import io.harness.platform.remote.HealthResource;
 import io.harness.platform.resourcegroup.ResourceGroupServiceModule;
 import io.harness.platform.resourcegroup.ResourceGroupServiceSetup;
 import io.harness.request.RequestContextFilter;
-import io.harness.resourcegroup.framework.v3.provider.ResourceSelectorFilterProvider;
+import io.harness.resourcegroup.framework.v3.provider.ApiFilterProvider;
 import io.harness.secret.ConfigSecretUtils;
 import io.harness.security.InternalApiAuthFilter;
 import io.harness.security.NextGenAuthenticationFilter;
@@ -174,6 +174,7 @@ public class PlatformApplication extends Application<PlatformConfiguration> {
     registerCommonResources(appConfig, environment, godInjector);
     registerCorsFilter(appConfig, environment);
     registerJerseyProviders(environment);
+    registerOasParamConverter(environment);
     registerJerseyFeatures(environment);
     registerAuthFilters(appConfig, environment, godInjector);
     registerRequestContextFilter(environment);
@@ -243,7 +244,10 @@ public class PlatformApplication extends Application<PlatformConfiguration> {
     environment.jersey().register(NGAccessDeniedExceptionMapper.class);
     environment.jersey().register(WingsExceptionMapperV2.class);
     environment.jersey().register(GenericExceptionMapperV2.class);
-    environment.jersey().register(ResourceSelectorFilterProvider.class);
+  }
+
+  private void registerOasParamConverter(Environment environment) {
+    environment.jersey().register(ApiFilterProvider.class);
   }
 
   public SwaggerBundleConfiguration getSwaggerConfiguration(PlatformConfiguration appConfig) {

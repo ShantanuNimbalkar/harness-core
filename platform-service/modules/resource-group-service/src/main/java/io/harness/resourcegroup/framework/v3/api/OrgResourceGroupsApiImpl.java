@@ -59,7 +59,7 @@ public class OrgResourceGroupsApiImpl implements OrganizationResourceGroupsApi {
     resourceGroupValidator.validateResourceGroup(resourceGroupRequest);
     ResourceGroupsResponse resourceGroupsResponse = ResourceGroupApiUtils.getResourceGroupResponse(
         resourceGroupService.create(resourceGroupRequest.getResourceGroup(), false));
-    return Response.ok().entity(resourceGroupsResponse).build();
+    return Response.status(201).entity(resourceGroupsResponse).build();
   }
 
   @Override

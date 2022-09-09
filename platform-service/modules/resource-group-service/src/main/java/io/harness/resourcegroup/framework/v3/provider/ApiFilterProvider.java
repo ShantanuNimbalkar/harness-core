@@ -13,24 +13,24 @@ import java.lang.reflect.Type;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
-public class ResourceSelectorFilterProvider implements ParamConverterProvider {
+public class ApiFilterProvider implements ParamConverterProvider {
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
     if (rawType == ResourceSelectorFilter.class) {
       return new ParamConverter<T>() {
         @Override
         public T fromString(String s) {
-          if(s==null){
+          if (s == null) {
             return null;
           }
           ResourceSelectorFilter resourceSelectorFilter = new ResourceSelectorFilter();
           String[] fields = s.split(",");
-          for(String x : fields){
+          for (String x : fields) {
             String[] temp = x.split("=");
-            if(temp[0].equals("type")){
+            if (temp[0].equals("type")) {
               resourceSelectorFilter.setResourceType(temp[1]);
             }
-            if(temp[0].equals("slug")){
+            if (temp[0].equals("slug")) {
               resourceSelectorFilter.setResourceSlug(temp[1]);
             }
           }
