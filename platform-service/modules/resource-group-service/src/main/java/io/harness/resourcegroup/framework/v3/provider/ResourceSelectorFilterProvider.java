@@ -20,7 +20,21 @@ public class ResourceSelectorFilterProvider implements ParamConverterProvider {
       return new ParamConverter<T>() {
         @Override
         public T fromString(String s) {
-          return null;
+          if(s==null){
+            return null;
+          }
+          ResourceSelectorFilter resourceSelectorFilter = new ResourceSelectorFilter();
+          String[] fields = s.split(",");
+          for(String x : fields){
+            String[] temp = x.split("=");
+            if(temp[0].equals("type")){
+              resourceSelectorFilter.setResourceType(temp[1]);
+            }
+            if(temp[0].equals("slug")){
+              resourceSelectorFilter.setResourceSlug(temp[1]);
+            }
+          }
+          return (T) resourceSelectorFilter;
         }
 
         @Override
