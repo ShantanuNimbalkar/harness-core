@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.harness.annotation.HarnessEntity;
-import io.harness.annotation.StoreIn;
+import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.BreakDependencyOn;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -409,6 +409,8 @@ public class WorkflowExecution implements PersistentRegularIterable, AccountData
     public static final String executionArgs_helmCharts = executionArgs + "." + ExecutionArgsKeys.helmCharts;
     public static final String executionArgs_helmCharts_displayName = executionArgs_helmCharts + "."
         + "displayName";
+    public static final String serviceExecutionSummaries_instanceStatusSummaries_instanceElement_uuid =
+        serviceExecutionSummaries + ".instanceStatusSummaries.instanceElement.uuid";
   }
 
   @PrePersist

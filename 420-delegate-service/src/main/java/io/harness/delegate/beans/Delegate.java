@@ -10,7 +10,7 @@ package io.harness.delegate.beans;
 import static java.time.Duration.ofDays;
 
 import io.harness.annotation.HarnessEntity;
-import io.harness.annotation.StoreIn;
+import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateEntityOwner.DelegateEntityOwnerKeys;
@@ -87,7 +87,7 @@ public class Delegate implements PersistentEntity, UuidAware, CreatedAtAware, Ac
   private String delegateGroupId;
   private String delegateName;
   private String delegateProfileId;
-  private long lastHeartBeat;
+  @FdIndex private long lastHeartBeat;
   private String version;
   private transient String sequenceNum;
   private String delegateType;
