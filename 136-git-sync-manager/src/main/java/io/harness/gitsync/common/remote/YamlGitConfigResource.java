@@ -72,10 +72,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @Api("/git-sync")
 @Path("/git-sync")
-@Slf4j
 @Produces({"application/json", "text/yaml", "text/html"})
 @Consumes({"application/json", "text/yaml", "text/html", "text/plain"})
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
+@Slf4j
 @Tag(name = "Git Sync", description = "Contains APIs for CRUD on Git Sync")
 @io.swagger.v3.oas.annotations.responses.
 ApiResponse(responseCode = BAD_REQUEST_CODE, description = BAD_REQUEST_PARAM_MESSAGE,
