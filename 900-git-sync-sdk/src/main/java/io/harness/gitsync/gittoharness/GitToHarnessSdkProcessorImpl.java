@@ -78,13 +78,14 @@ public class GitToHarnessSdkProcessorImpl implements GitToHarnessSdkProcessor {
   public GitToHarnessSdkProcessorImpl(ChangeSetInterceptorService changeSetInterceptorService,
       GitSdkInterface changeSetHelperService, @Named("GitSyncSortOrder") Supplier<List<EntityType>> sortOrder,
       GitSyncThreadDecorator gitSyncThreadDecorator, GitProcessingRequestService gitProcessingRequestDao,
-      PersistentLocker persistentLocker) {
+      PersistentLocker persistentLocker, GitSyncSdkService gitSyncSdkService) {
     this.changeSetInterceptorService = changeSetInterceptorService;
     this.changeSetHelperService = changeSetHelperService;
     this.sortOrder = sortOrder;
     this.gitSyncThreadDecorator = gitSyncThreadDecorator;
     this.gitProcessingRequestDao = gitProcessingRequestDao;
     this.persistentLocker = persistentLocker;
+    this.gitSyncSdkService = gitSyncSdkService;
   }
 
   /**
