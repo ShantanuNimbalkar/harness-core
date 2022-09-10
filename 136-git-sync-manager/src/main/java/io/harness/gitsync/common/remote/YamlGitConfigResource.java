@@ -28,6 +28,8 @@ import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.accesscontrol.ResourceTypes;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
+import io.harness.exception.AccessDeniedException;
+import io.harness.exception.WingsException;
 import io.harness.gitsync.common.dtos.GitEnabledDTO;
 import io.harness.gitsync.common.dtos.GitSyncConfigDTO;
 import io.harness.gitsync.common.helper.GitEnabledHelper;
@@ -38,6 +40,10 @@ import io.harness.ng.core.OrgIdentifier;
 import io.harness.ng.core.ProjectIdentifier;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
+import io.harness.ng.core.globalkms.services.NgConnectorManagerClientService;
+
+import software.wings.beans.User;
+import software.wings.security.UserThreadLocal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -63,13 +69,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Api("/git-sync")
 @Path("/git-sync")
-@Log
+@Slf4j
 @Produces({"application/json", "text/yaml", "text/html"})
 @Consumes({"application/json", "text/yaml", "text/html", "text/plain"})
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
@@ -98,6 +104,8 @@ public class YamlGitConfigResource {
   private final HarnessToGitHelperService harnessToGitHelperService;
   private final AccessControlClient accessControlClient;
   private final GitEnabledHelper gitEnabledHelper;
+  private final NgConnectorManagerClientService ngConnectorManagerClientService;
+
   @POST
   @ApiOperation(value = "Create a Git Sync", nickname = "postGitSync")
   @Operation(operationId = "createGitSyncConfig", summary = "Creates Git Sync Config in given scope",
@@ -223,8 +231,16 @@ public class YamlGitConfigResource {
       @Parameter(description = "") @QueryParam(TARGET_ACCOUNT_IDENTIFIER_KEY) String targetAccountIdentifier,
       @Parameter(description = "") @QueryParam(TARGET_ORG_IDENTIFIER_KEY) String targetOrgIdentifier,
       @Parameter(description = "") @QueryParam(TARGET_PROJECT_IDENTIFIER_KEY) String targetProjectIdentifier) {
-    log.info(String.format("[%s] resetting git sync sdk cache for account : %s , org : %s , project : %s",
-        accountIdentifier, targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier));
+    User authUser = UserThreadLocal.get();
+    if (!ngConnectorManagerClientService.isHarnessSupportUser(authUser.getUuid())) {
+      log.error(
+          "User : {} from account : {} not allowed to reset git sync sdk cache for account : {} , org : {} , project : {}",
+          authUser, accountIdentifier, targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
+      throw new AccessDeniedException("Not Authorized", WingsException.USER);
+    }
+    log.info(String.format(
+        "User : %s in account : %s resetting git sync sdk cache for account : %s , org : %s , project : %s",
+        authUser.getUuid(), accountIdentifier, targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier));
     gitEnabledHelper.resetGitSyncSDKCache(targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
   }
 
