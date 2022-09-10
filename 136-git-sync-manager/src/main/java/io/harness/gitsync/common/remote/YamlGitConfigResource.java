@@ -17,6 +17,7 @@ import static io.harness.NGCommonEntityConstants.INTERNAL_SERVER_ERROR_MESSAGE;
 import static io.harness.NGCommonEntityConstants.ORG_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.PROJECT_PARAM_MESSAGE;
 import static io.harness.annotations.dev.HarnessTeam.DX;
+import static io.harness.exception.WingsException.USER;
 import static io.harness.gitsync.common.remote.YamlGitConfigMapper.toSetupGitSyncDTO;
 import static io.harness.gitsync.common.remote.YamlGitConfigMapper.toYamlGitConfigDTO;
 import static io.harness.ng.core.rbac.ProjectPermissions.EDIT_PROJECT_PERMISSION;
@@ -28,6 +29,7 @@ import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.accesscontrol.ResourceTypes;
 import io.harness.delegate.beans.git.YamlGitConfigDTO;
+import io.harness.exception.AccessDeniedException;
 import io.harness.gitsync.common.dtos.GitEnabledDTO;
 import io.harness.gitsync.common.dtos.GitSyncConfigDTO;
 import io.harness.gitsync.common.helper.GitEnabledHelper;
@@ -88,6 +90,12 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
     })
 @OwnedBy(DX)
 public class YamlGitConfigResource {
+  private static final String TARGET_ACCOUNT_IDENTIFIER_KEY = "targetAccountIdentifier";
+  private static final String TARGET_ORG_IDENTIFIER_KEY = "targetOrgIdentifier";
+  private static final String TARGET_PROJECT_IDENTIFIER_KEY = "targetProjectIdentifier";
+  private static final String SECRET_KEY = "secretKey";
+  private static final String SECRET = "E38F162CA6532D651C5229C5E79FF";
+
   private final YamlGitConfigService yamlGitConfigService;
   private final HarnessToGitHelperService harnessToGitHelperService;
   private final AccessControlClient accessControlClient;
@@ -214,11 +222,14 @@ public class YamlGitConfigResource {
   @Path("/reset-cache")
   public void resetGitSyncSDKCache(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
                                        NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
-      @Parameter(description = PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String organizationIdentifier) {
-    gitEnabledHelper.resetGitSyncSDKCache(accountIdentifier, organizationIdentifier, projectIdentifier);
+      @Parameter(description = "") @QueryParam(TARGET_ACCOUNT_IDENTIFIER_KEY) String targetAccountIdentifier,
+      @Parameter(description = "") @QueryParam(TARGET_ORG_IDENTIFIER_KEY) String targetOrgIdentifier,
+      @Parameter(description = "") @QueryParam(TARGET_PROJECT_IDENTIFIER_KEY) String targetProjectIdentifier,
+      @Parameter(description = "") @QueryParam(SECRET_KEY) String secretKey) {
+    if (!SECRET.equals(secretKey)) {
+      throw new AccessDeniedException("static key doesn't match, you're not authorized to do this operation", USER);
+    }
+    gitEnabledHelper.resetGitSyncSDKCache(targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
   }
 
   @VisibleForTesting
