@@ -33,17 +33,14 @@ import io.harness.exception.WingsException;
 import io.harness.gitsync.common.dtos.GitEnabledDTO;
 import io.harness.gitsync.common.dtos.GitSyncConfigDTO;
 import io.harness.gitsync.common.helper.GitEnabledHelper;
-import io.harness.gitsync.common.service.HarnessToGitHelperService;
 import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.gitsync.sdk.GitSyncApiConstants;
 import io.harness.ng.core.OrgIdentifier;
 import io.harness.ng.core.ProjectIdentifier;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
-import io.harness.ng.core.globalkms.services.NgConnectorManagerClientService;
-
-import software.wings.beans.User;
-import software.wings.security.UserThreadLocal;
+import io.harness.security.dto.UserPrincipal;
+import io.harness.utils.UserHelperService;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -101,10 +98,9 @@ public class YamlGitConfigResource {
   private static final String TARGET_PROJECT_IDENTIFIER_KEY = "targetProjectIdentifier";
 
   private final YamlGitConfigService yamlGitConfigService;
-  private final HarnessToGitHelperService harnessToGitHelperService;
   private final AccessControlClient accessControlClient;
   private final GitEnabledHelper gitEnabledHelper;
-  private final NgConnectorManagerClientService ngConnectorManagerClientService;
+  private final UserHelperService userHelperService;
 
   @POST
   @ApiOperation(value = "Create a Git Sync", nickname = "postGitSync")
@@ -226,21 +222,20 @@ public class YamlGitConfigResource {
 
   @POST
   @Path("/reset-cache")
-  public void resetGitSyncSDKCache(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                                       NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+  public void resetGitSyncSDKCache(
       @Parameter(description = "") @QueryParam(TARGET_ACCOUNT_IDENTIFIER_KEY) String targetAccountIdentifier,
       @Parameter(description = "") @QueryParam(TARGET_ORG_IDENTIFIER_KEY) String targetOrgIdentifier,
       @Parameter(description = "") @QueryParam(TARGET_PROJECT_IDENTIFIER_KEY) String targetProjectIdentifier) {
-    User authUser = UserThreadLocal.get();
-    if (!ngConnectorManagerClientService.isHarnessSupportUser(authUser.getUuid())) {
-      log.error(
-          "User : {} from account : {} not allowed to reset git sync sdk cache for account : {} , org : {} , project : {}",
-          authUser, accountIdentifier, targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
+    UserPrincipal userPrincipal = userHelperService.getUserPrincipalOrThrow();
+    String userId = userPrincipal.getName();
+    if (!userHelperService.isHarnessSupportUser(userId)) {
+      log.error("User : {} not allowed to reset git sync sdk cache for account : {} , org : {} , project : {}", userId,
+          targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
       throw new AccessDeniedException("Not Authorized", WingsException.USER);
     }
-    log.info(String.format(
-        "User : %s in account : %s resetting git sync sdk cache for account : %s , org : %s , project : %s",
-        authUser.getUuid(), accountIdentifier, targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier));
+
+    log.info(String.format("User : %s resetting git sync sdk cache for account : %s , org : %s , project : %s", userId,
+        targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier));
     gitEnabledHelper.resetGitSyncSDKCache(targetAccountIdentifier, targetOrgIdentifier, targetProjectIdentifier);
   }
 
