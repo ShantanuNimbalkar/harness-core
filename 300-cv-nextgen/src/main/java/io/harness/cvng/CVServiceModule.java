@@ -76,6 +76,7 @@ import io.harness.cvng.client.VerificationManagerService;
 import io.harness.cvng.client.VerificationManagerServiceImpl;
 import io.harness.cvng.core.entities.AppDynamicsCVConfig.AppDynamicsCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.CVConfig.CVConfigUpdatableEntity;
+import io.harness.cvng.core.entities.CloudWatchMetricCVConfig;
 import io.harness.cvng.core.entities.CustomHealthLogCVConfig.CustomHealthLogCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.CustomHealthMetricCVConfig.CustomHealthMetricCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.DataCollectionTask.Type;
@@ -107,43 +108,7 @@ import io.harness.cvng.core.jobs.StateMachineEventPublisherServiceImpl;
 import io.harness.cvng.core.jobs.StateMachineMessageProcessor;
 import io.harness.cvng.core.jobs.StateMachineMessageProcessorImpl;
 import io.harness.cvng.core.services.CVNextGenConstants;
-import io.harness.cvng.core.services.api.AppDynamicsService;
-import io.harness.cvng.core.services.api.CVConfigService;
-import io.harness.cvng.core.services.api.CVNGLogService;
-import io.harness.cvng.core.services.api.CVNGYamlSchemaService;
-import io.harness.cvng.core.services.api.ChangeEventService;
-import io.harness.cvng.core.services.api.CustomHealthService;
-import io.harness.cvng.core.services.api.DataCollectionInfoMapper;
-import io.harness.cvng.core.services.api.DataCollectionSLIInfoMapper;
-import io.harness.cvng.core.services.api.DataCollectionTaskManagementService;
-import io.harness.cvng.core.services.api.DataCollectionTaskService;
-import io.harness.cvng.core.services.api.DataSourceConnectivityChecker;
-import io.harness.cvng.core.services.api.DatadogService;
-import io.harness.cvng.core.services.api.DebugService;
-import io.harness.cvng.core.services.api.DeleteEntityByHandler;
-import io.harness.cvng.core.services.api.DynatraceService;
-import io.harness.cvng.core.services.api.EntityDisabledTimeService;
-import io.harness.cvng.core.services.api.ExecutionLogService;
-import io.harness.cvng.core.services.api.FeatureFlagService;
-import io.harness.cvng.core.services.api.HostRecordService;
-import io.harness.cvng.core.services.api.LogRecordService;
-import io.harness.cvng.core.services.api.MetricPackService;
-import io.harness.cvng.core.services.api.MonitoringSourcePerpetualTaskService;
-import io.harness.cvng.core.services.api.NewRelicService;
-import io.harness.cvng.core.services.api.OnboardingService;
-import io.harness.cvng.core.services.api.PagerDutyService;
-import io.harness.cvng.core.services.api.ParseSampleDataService;
-import io.harness.cvng.core.services.api.PrometheusService;
-import io.harness.cvng.core.services.api.SetupUsageEventService;
-import io.harness.cvng.core.services.api.SideKickExecutor;
-import io.harness.cvng.core.services.api.SideKickService;
-import io.harness.cvng.core.services.api.SplunkService;
-import io.harness.cvng.core.services.api.StackdriverService;
-import io.harness.cvng.core.services.api.SumoLogicService;
-import io.harness.cvng.core.services.api.TimeSeriesRecordService;
-import io.harness.cvng.core.services.api.TimeSeriesThresholdService;
-import io.harness.cvng.core.services.api.VerificationTaskService;
-import io.harness.cvng.core.services.api.WebhookService;
+import io.harness.cvng.core.services.api.*;
 import io.harness.cvng.core.services.api.demo.CVNGDemoDataIndexService;
 import io.harness.cvng.core.services.api.demo.CVNGDemoPerpetualTaskService;
 import io.harness.cvng.core.services.api.demo.ChangeSourceDemoDataGenerator;
@@ -152,55 +117,7 @@ import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.services.api.monitoredService.HealthSourceService;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
 import io.harness.cvng.core.services.api.monitoredService.ServiceDependencyService;
-import io.harness.cvng.core.services.impl.AppDynamicsDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.AppDynamicsServiceImpl;
-import io.harness.cvng.core.services.impl.CVConfigServiceImpl;
-import io.harness.cvng.core.services.impl.CVNGLogServiceImpl;
-import io.harness.cvng.core.services.impl.CVNGYamlSchemaServiceImpl;
-import io.harness.cvng.core.services.impl.ChangeEventServiceImpl;
-import io.harness.cvng.core.services.impl.ChangeSourceUpdateHandler;
-import io.harness.cvng.core.services.impl.CustomHealthLogDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.CustomHealthMetricDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.CustomHealthServiceImpl;
-import io.harness.cvng.core.services.impl.DataCollectionTaskServiceImpl;
-import io.harness.cvng.core.services.impl.DatadogMetricDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.DatadogServiceImpl;
-import io.harness.cvng.core.services.impl.DebugServiceImpl;
-import io.harness.cvng.core.services.impl.DefaultDeleteEntityByHandler;
-import io.harness.cvng.core.services.impl.DynatraceDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.DynatraceServiceImpl;
-import io.harness.cvng.core.services.impl.EntityDisabledTimeServiceImpl;
-import io.harness.cvng.core.services.impl.ErrorTrackingDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.ExecutionLogServiceImpl;
-import io.harness.cvng.core.services.impl.FeatureFlagServiceImpl;
-import io.harness.cvng.core.services.impl.HostRecordServiceImpl;
-import io.harness.cvng.core.services.impl.KubernetesChangeSourceUpdateHandler;
-import io.harness.cvng.core.services.impl.LogRecordServiceImpl;
-import io.harness.cvng.core.services.impl.MetricPackServiceImpl;
-import io.harness.cvng.core.services.impl.MonitoringSourcePerpetualTaskServiceImpl;
-import io.harness.cvng.core.services.impl.NewRelicDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.NewRelicServiceImpl;
-import io.harness.cvng.core.services.impl.OnboardingServiceImpl;
-import io.harness.cvng.core.services.impl.PagerDutyServiceImpl;
-import io.harness.cvng.core.services.impl.PagerdutyChangeSourceUpdateHandler;
-import io.harness.cvng.core.services.impl.ParseSampleDataServiceImpl;
-import io.harness.cvng.core.services.impl.PrometheusDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.PrometheusServiceImpl;
-import io.harness.cvng.core.services.impl.SLIDataCollectionTaskServiceImpl;
-import io.harness.cvng.core.services.impl.ServiceGuardDataCollectionTaskServiceImpl;
-import io.harness.cvng.core.services.impl.SetupUsageEventServiceImpl;
-import io.harness.cvng.core.services.impl.SideKickServiceImpl;
-import io.harness.cvng.core.services.impl.SplunkDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.SplunkMetricDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.SplunkServiceImpl;
-import io.harness.cvng.core.services.impl.StackdriverDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.StackdriverLogDataCollectionInfoMapper;
-import io.harness.cvng.core.services.impl.StackdriverServiceImpl;
-import io.harness.cvng.core.services.impl.SumoLogicServiceImpl;
-import io.harness.cvng.core.services.impl.TimeSeriesRecordServiceImpl;
-import io.harness.cvng.core.services.impl.TimeSeriesThresholdServiceImpl;
-import io.harness.cvng.core.services.impl.VerificationTaskServiceImpl;
-import io.harness.cvng.core.services.impl.WebhookServiceImpl;
+import io.harness.cvng.core.services.impl.*;
 import io.harness.cvng.core.services.impl.demo.CVNGDemoDataIndexServiceImpl;
 import io.harness.cvng.core.services.impl.demo.CVNGDemoPerpetualTaskServiceImpl;
 import io.harness.cvng.core.services.impl.demo.ChiDemoServiceImpl;
@@ -228,20 +145,7 @@ import io.harness.cvng.core.transformer.changeSource.HarnessCDChangeSourceSpecTr
 import io.harness.cvng.core.transformer.changeSource.HarnessCDCurrentGenChangeSourceSpecTransformer;
 import io.harness.cvng.core.transformer.changeSource.KubernetesChangeSourceSpecTransformer;
 import io.harness.cvng.core.transformer.changeSource.PagerDutyChangeSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.AppDynamicsHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.CVConfigToHealthSourceTransformer;
-import io.harness.cvng.core.utils.monitoredService.CustomHealthSourceSpecLogTransformer;
-import io.harness.cvng.core.utils.monitoredService.CustomHealthSourceSpecMetricTransformer;
-import io.harness.cvng.core.utils.monitoredService.DatadogLogHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.DatadogMetricHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.DynatraceHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.ErrorTrackingHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.NewRelicHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.PrometheusHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.SplunkHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.SplunkMetricHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.StackdriverLogHealthSourceSpecTransformer;
-import io.harness.cvng.core.utils.monitoredService.StackdriverMetricHealthSourceSpecTransformer;
+import io.harness.cvng.core.utils.monitoredService.*;
 import io.harness.cvng.dashboard.services.api.ErrorTrackingDashboardService;
 import io.harness.cvng.dashboard.services.api.HeatMapService;
 import io.harness.cvng.dashboard.services.api.LogDashboardService;
@@ -491,7 +395,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeToHealthSourceTransformerMapBinder.addBinding(DataSourceType.ERROR_TRACKING)
         .to(ErrorTrackingHealthSourceSpecTransformer.class)
         .in(Scopes.SINGLETON);
-
+    dataSourceTypeToHealthSourceTransformerMapBinder.addBinding(DataSourceType.CLOUDWATCH_METRICS)
+        .to(CloudWatchMetricHealthSourceSpecTransformer.class)
+        .in(Scopes.SINGLETON);
     MapBinder<DataSourceType, DataCollectionInfoMapper> dataSourceTypeDataCollectionInfoMapperMapBinder =
         MapBinder.newMapBinder(binder(), DataSourceType.class, DataCollectionInfoMapper.class);
     dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.APP_DYNAMICS)
@@ -532,7 +438,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.ERROR_TRACKING)
         .to(ErrorTrackingDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
-
+    dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.CLOUDWATCH_METRICS)
+        .to(CloudWatchMetricDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
     MapBinder<DataSourceType, DataCollectionSLIInfoMapper> dataSourceTypeDataCollectionSLIInfoMapperMapBinder =
         MapBinder.newMapBinder(binder(), DataSourceType.class, DataCollectionSLIInfoMapper.class);
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.PROMETHEUS)
@@ -559,7 +467,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.SPLUNK_METRIC)
         .to(SplunkMetricDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
-
+    dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.CLOUDWATCH_METRICS)
+        .to(CloudWatchMetricDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
     MapBinder<MonitoredServiceSpecType, VerifyStepMonitoredServiceResolutionService>
         verifyStepCvConfigServiceMapBinder = MapBinder.newMapBinder(
             binder(), MonitoredServiceSpecType.class, VerifyStepMonitoredServiceResolutionService.class);
@@ -611,6 +521,7 @@ public class CVServiceModule extends AbstractModule {
         .annotatedWith(Names.named(EventsFrameworkMetadataConstants.CONNECTOR_ENTITY))
         .to(ConnectorChangeEventMessageProcessor.class);
     bind(NewRelicService.class).to(NewRelicServiceImpl.class);
+    bind(CloudWatchService.class).to(CloudWatchServiceImpl.class);
     bind(ParseSampleDataService.class).to(ParseSampleDataServiceImpl.class);
     bind(VerifyStepDemoService.class).to(VerifyStepDemoServiceImpl.class);
     bind(StateMachineEventPublisherService.class).to(StateMachineEventPublisherServiceImpl.class);
@@ -680,7 +591,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeCVConfigMapBinder.addBinding(DataSourceType.SPLUNK_METRIC)
         .to(SplunkMetricUpdatableEntity.class)
         .in(Scopes.SINGLETON);
-
+    dataSourceTypeCVConfigMapBinder.addBinding(DataSourceType.CLOUDWATCH_METRICS)
+        .to(CloudWatchMetricCVConfig.CloudWatchMetricCVConfigUpdatableEntity.class)
+        .in(Scopes.SINGLETON);
     MapBinder<SLIMetricType, ServiceLevelIndicatorUpdatableEntity> serviceLevelIndicatorMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, ServiceLevelIndicatorUpdatableEntity.class);
     serviceLevelIndicatorMapBinder.addBinding(SLIMetricType.RATIO)

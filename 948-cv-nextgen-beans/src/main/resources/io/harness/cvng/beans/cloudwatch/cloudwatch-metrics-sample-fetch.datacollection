@@ -1,6 +1,7 @@
-Var fullQuery = concat(Env:baseUrl, "query?nrql=", Env:query)
-Request metricRequest = new Request(url=Var:fullQuery, header=Env:commonHeaders)
-print Var:fullQuery
-Var resp = sync-call(url=Var:fullQuery, header=Env:commonHeaders)
-print Var:resp
-return Var:resp
+Var bodyMap = {}
+Var:bodyMap.put("EndTime", Env:endTimeSeconds)
+Var:bodyMap.put("StartTime",  Env:startTimeSeconds)
+Var:bodyMap.put("MetricDataQueries", Env:body)
+
+Var response = sync-call-aws(url=Env:url, header=Env:commonHeaders, options=Env:commonOptions, body=Var:bodyMap, bodyType=JSON, method=POST, region=Env:region, serviceName=Env:serviceName, secretAccessKey=Env:awsSecretKey, accessKeyId=Env:awsAccessKey)
+return Var:response

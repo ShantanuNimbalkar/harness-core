@@ -7,19 +7,19 @@
 
 package io.harness.cvng.beans.cloudwatch;
 
-import static io.harness.annotations.dev.HarnessTeam.CV;
-
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.DataCollectionRequest;
+import io.harness.cvng.utils.CloudWatchUtils;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
-import io.harness.delegate.beans.cvng.cloudwatch.CloudWatchUtils;
-
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.util.Collections;
+import java.util.Map;
+
+import static io.harness.annotations.dev.HarnessTeam.CV;
 
 @JsonTypeName("CLOUDWATCH_METRIC_SAMPLE_DATA_REQUEST")
 @Data
@@ -27,10 +27,16 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @OwnedBy(CV)
 public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionRequest<AwsConnectorDTO> {
+  private static final String service = "monitoring";
   public static final String DSL = DataCollectionRequest.readDSL(
       "cloudwatch-metrics-sample-fetch.datacollection", CloudWatchMetricFetchSampleDataRequest.class);
-  // TODO: Revisit this once DSL is working
+
   String query;
+  String region;
+  String group;
+  String metricName;
+  String metricIdentifier;
+
   @Override
   public String getDSL() {
     return DSL;
@@ -38,18 +44,17 @@ public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionReques
 
   @Override
   public String getBaseUrl() {
-    return CloudWatchUtils.getBaseUrl(getConnectorConfigDTO());
+    return CloudWatchUtils.getBaseUrl(region, service);
   }
 
   @Override
   public Map<String, String> collectionHeaders() {
-    return CloudWatchUtils.collectionHeaders(getConnectorConfigDTO());
+    return Collections.emptyMap();
   }
 
   @Override
   public Map<String, Object> fetchDslEnvVariables() {
-    Map<String, Object> variables = new HashMap<>();
-    // TODO: Put env variables
-    return variables;
+    return CloudWatchUtils.getDslEnvVariables(
+        region, group, query, metricName, metricIdentifier, service, getConnectorConfigDTO());
   }
 }

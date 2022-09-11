@@ -182,7 +182,6 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
     return Key.builder()
         .region(cloudWatchMetricCVConfig.getRegion())
         .metricPack(cloudWatchMetricCVConfig.getMetricPack())
-        .groupName(cloudWatchMetricCVConfig.getGroupName())
         .build();
   }
 
@@ -192,7 +191,6 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
   @FieldDefaults(level = AccessLevel.PRIVATE)
   public static class CloudWatchMetricDefinition extends HealthSourceMetricDefinition {
     String groupName;
-    String metricName;
     String expression;
     MetricResponseMapping responseMapping;
   }
@@ -202,7 +200,6 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
   private static class Key {
     String region;
     MetricPack metricPack;
-    String groupName;
   }
 
   @Value

@@ -8,8 +8,10 @@
 package io.harness.cvng.core.resources;
 
 import io.harness.annotations.ExposeInternalException;
+import io.harness.annotations.dev.HarnessTeam;
+import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.services.CloudWatchService;
+import io.harness.cvng.core.services.api.CloudWatchService;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -23,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.LinkedHashMap;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
@@ -30,8 +33,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-@Api("cloudwatch-metrics")
-@Path("/cloudwatch-metrics")
+@Api("cloudwatch")
+@Path("/cloudwatch")
 @Produces("application/json")
 @NextGenManagerAuth
 @ExposeInternalException
@@ -40,18 +43,30 @@ import javax.ws.rs.QueryParam;
       @ApiResponse(code = 400, response = FailureDTO.class, message = "Bad Request")
       , @ApiResponse(code = 500, response = ErrorDTO.class, message = "Internal server error")
     })
+@OwnedBy(HarnessTeam.CV)
 public class CloudWatchMetricsResource {
   @Inject private CloudWatchService cloudWatchService;
 
   @GET
-  @Path("/fetch-sample-data")
+  @Path("/metrics/fetch-sample-data")
   @Timed
   @ExceptionMetered
   @ApiOperation(value = "get sample data for given query", nickname = "getSampleDataForQuery")
   public ResponseDTO<LinkedHashMap> getSampleDataForQuery(@NotNull @BeanParam ProjectParams projectParams,
       @QueryParam("connectorIdentifier") @NotNull String connectorIdentifier,
-      @QueryParam("requestGuid") @NotNull String requestGuid, @QueryParam("query") @NotNull String query) {
-    return ResponseDTO.newResponse(
-        cloudWatchService.fetchSampleData(projectParams, connectorIdentifier, query, requestGuid));
+      @QueryParam("requestGuid") @NotNull String requestGuid, @QueryParam("region") @NotNull String region,
+      @QueryParam("query") @NotNull String query, @QueryParam("metricName") @NotNull String metricName,
+      @QueryParam("metricIdentifier") @NotNull String metricIdentifier) {
+    return ResponseDTO.newResponse(cloudWatchService.fetchSampleData(
+        projectParams, connectorIdentifier, requestGuid, query, region, metricName, metricIdentifier));
+  }
+
+  @GET
+  @Path("/metrics/regions")
+  @Timed
+  @ExceptionMetered
+  @ApiOperation(value = "get regions", nickname = "getRegions")
+  public ResponseDTO<List<String>> getRegions() {
+    return ResponseDTO.newResponse(cloudWatchService.fetchRegions());
   }
 }

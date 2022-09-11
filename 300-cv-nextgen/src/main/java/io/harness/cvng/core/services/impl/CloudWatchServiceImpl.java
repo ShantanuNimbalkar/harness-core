@@ -10,46 +10,54 @@ package io.harness.cvng.core.services.impl;
 import io.harness.cvng.beans.DataCollectionRequest;
 import io.harness.cvng.beans.DataCollectionRequestType;
 import io.harness.cvng.beans.cloudwatch.CloudWatchMetricFetchSampleDataRequest;
+import io.harness.cvng.client.RequestExecutor;
+import io.harness.cvng.client.VerificationManagerClient;
 import io.harness.cvng.core.beans.OnboardingRequestDTO;
 import io.harness.cvng.core.beans.OnboardingResponseDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
-import io.harness.cvng.core.services.CloudWatchService;
+import io.harness.cvng.core.services.api.CloudWatchService;
 import io.harness.cvng.core.services.api.OnboardingService;
 import io.harness.datacollection.exception.DataCollectionException;
+import io.harness.rest.RestResponse;
 import io.harness.serializer.JsonUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 @Slf4j
 public class CloudWatchServiceImpl implements CloudWatchService {
   @Inject private OnboardingService onboardingService;
+  @Inject private VerificationManagerClient verificationManagerClient;
+  @Inject private RequestExecutor requestExecutor;
 
   @Override
-  public LinkedHashMap fetchSampleData(
-      ProjectParams projectParams, String connectorIdentifier, String query, String tracingId) {
+  public LinkedHashMap fetchSampleData(ProjectParams projectParams, String connectorIdentifier, String tracingId,
+      String query, String region, String metricName, String metricIdentifier) {
     try {
-      // TODO: Add validations for cloudwatch config
-      //      Preconditions.checkNotNull(query);
-      //      query = query.trim();
-      //      Preconditions.checkState(!query.contains(" SINCE "),
-      //          "Query should not contain any time duration. Please remove SINCE or any time related keywords");
-      //      Preconditions.checkState(query.endsWith("TIMESERIES"), "Query should end with the TIMESERIES keyword");
+      Preconditions.checkNotNull(query);
+      query = query.trim();
 
       DataCollectionRequest request = CloudWatchMetricFetchSampleDataRequest.builder()
                                           .type(DataCollectionRequestType.CLOUDWATCH_METRIC_SAMPLE_DATA_REQUEST)
+                                          .metricName(metricName)
+                                          .metricIdentifier(metricIdentifier)
                                           .query(query)
+                                          .tracingId(tracingId)
                                           .build();
       OnboardingRequestDTO onboardingRequestDTO = OnboardingRequestDTO.builder()
                                                       .dataCollectionRequest(request)
                                                       .connectorIdentifier(connectorIdentifier)
                                                       .accountId(projectParams.getAccountIdentifier())
                                                       .orgIdentifier(projectParams.getOrgIdentifier())
-                                                      .tracingId(tracingId)
                                                       .projectIdentifier(projectParams.getProjectIdentifier())
                                                       .build();
 
@@ -62,5 +70,23 @@ public class CloudWatchServiceImpl implements CloudWatchService {
     } catch (DataCollectionException ex) {
       return null;
     }
+  }
+
+  @Override
+  public List<String> fetchRegions() {
+    LinkedHashMap rawResponse = requestExecutor.execute(verificationManagerClient.getAllAwsRegions());
+    Set<String> uniqueRegions = new HashSet<>();
+    if (Objects.nonNull(rawResponse)) {
+      JsonNode responseJson = JsonUtils.asTree(rawResponse);
+      ArrayNode arrayNode = (ArrayNode) responseJson.get("prices");
+      arrayNode.forEach(node -> {
+        JsonNode regionNode = node.get("attributes").get("aws:region");
+        if (Objects.nonNull(regionNode)) {
+          String region = regionNode.asText();
+          uniqueRegions.add(region);
+        }
+      });
+    }
+    return new ArrayList<>(uniqueRegions);
   }
 }

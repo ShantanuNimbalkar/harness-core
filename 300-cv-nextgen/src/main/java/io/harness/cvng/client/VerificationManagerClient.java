@@ -23,6 +23,7 @@ import io.harness.cvng.beans.change.HarnessCDCurrentGenEventMetadata;
 import io.harness.delegate.beans.connector.splunkconnector.SplunkConnectorDTO;
 import io.harness.rest.RestResponse;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -94,4 +95,7 @@ public interface VerificationManagerClient {
   Call<RestResponse<List<HarnessCDCurrentGenEventMetadata>>> getCDCurrentGenChangeEvents(
       @Query("accountId") String accountId, @Query("appId") String appId, @Query("serviceId") String serviceId,
       @Query("environmentId") String environmentId, @Query("startTime") Long startTime, @Query("endTime") Long endTime);
+
+  @GET("https://api.regional-table.region-services.aws.a2z.com/index.json")
+  Call<LinkedHashMap> getAllAwsRegions();
 }
