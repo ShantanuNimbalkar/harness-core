@@ -75,7 +75,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Produces({"application/json", "text/yaml", "text/html"})
 @Consumes({"application/json", "text/yaml", "text/html", "text/plain"})
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
-@Slf4j
 @Tag(name = "Git Sync", description = "Contains APIs for CRUD on Git Sync")
 @io.swagger.v3.oas.annotations.responses.
 ApiResponse(responseCode = BAD_REQUEST_CODE, description = BAD_REQUEST_PARAM_MESSAGE,
@@ -92,6 +91,7 @@ ApiResponse(responseCode = INTERNAL_SERVER_ERROR_CODE, description = INTERNAL_SE
       , @Content(mediaType = APPLICATION_YAML_MEDIA_TYPE, schema = @Schema(implementation = ErrorDTO.class))
     })
 @OwnedBy(DX)
+@Slf4j
 public class YamlGitConfigResource {
   private static final String TARGET_ACCOUNT_IDENTIFIER_KEY = "targetAccountIdentifier";
   private static final String TARGET_ORG_IDENTIFIER_KEY = "targetOrgIdentifier";
@@ -221,6 +221,7 @@ public class YamlGitConfigResource {
   }
 
   @POST
+  @Hidden
   @Path("/reset-cache")
   public void resetGitSyncSDKCache(
       @Parameter(description = "") @QueryParam(TARGET_ACCOUNT_IDENTIFIER_KEY) String targetAccountIdentifier,
