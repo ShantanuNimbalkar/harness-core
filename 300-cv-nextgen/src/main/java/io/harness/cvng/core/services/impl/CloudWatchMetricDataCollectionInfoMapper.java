@@ -21,27 +21,7 @@ public class CloudWatchMetricDataCollectionInfoMapper
             .metricPack(cvConfig.getMetricPack().toDTO())
             .build();
     cloudWatchMetricDataCollectionInfo.setDataCollectionDsl(cvConfig.getDataCollectionDsl());
-
-    if (cvConfig.isCustomQuery()) {
-      // TODO
-      //      cloudWatchMetricDataCollectionInfo.setGroupName(cvConfig.getGroupName());
-      //      cloudWatchMetricDataCollectionInfo.setCustomQuery(true);
-      //      List<NewRelicMetricInfoDTO> metricInfoDTOS = cvConfig.getMetricInfos()
-      //                                                       .stream()
-      //                                                       .map(newRelicMetricInfo ->
-      //                                                       generateInfoDTO(newRelicMetricInfo))
-      //                                                       .collect(Collectors.toList());
-      //      cloudWatchMetricDataCollectionInfo.setMetricInfoList(metricInfoDTOS);
-    }
+    // TODO: Add mapper code
     return cloudWatchMetricDataCollectionInfo;
   }
-
-  //  private NewRelicMetricInfoDTO generateInfoDTO(NewRelicMetricInfo newRelicMetricInfo) {
-  //    return NewRelicMetricInfoDTO.builder()
-  //        .metricName(newRelicMetricInfo.getMetricName())
-  //        .metricIdentifier(newRelicMetricInfo.getIdentifier())
-  //        .nrql(newRelicMetricInfo.getNrql())
-  //        .responseMapping(newRelicMetricInfo.getResponseMapping().toDto())
-  //        .build();
-  //  }
 }

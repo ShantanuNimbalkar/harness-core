@@ -10,8 +10,10 @@ package io.harness.cvng.beans;
 import io.harness.cvng.utils.CloudWatchUtils;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -45,46 +47,9 @@ public class CloudWatchMetricDataCollectionInfo extends TimeSeriesDataCollection
 
   @Override
   public Map<String, Object> getDslEnvVariables(AwsConnectorDTO awsConnectorDTO) {
-    // Todo: All queries are custom queries for now. Add check when we support other queries.
-//    return getEnvVariablesForCustomConfig();
+    // Todo: All queries are custom queries for now.
     return null;
   }
-
-//  private Map<String, Object> getEnvVariablesForCustomConfig() {
-//    Map<String, Object> dslEnvVariables = new HashMap<>();
-//    dslEnvVariables.put("region", region);
-//    dslEnvVariables.put("collectHostData", Boolean.toString(this.isCollectHostData()));
-//    dslEnvVariables.put("groupName", groupName);
-//    List<String> listOfQueries =
-//        getMetricInfoList().stream().map(CloudWatchMetricInfoDTO::getExpression).collect(Collectors.toList());
-//    List<String> metricNames =
-//        getMetricInfoList().stream().map(CloudWatchMetricInfoDTO::getMetricName).collect(Collectors.toList());
-//    List<String> metricValuePaths = getMetricInfoList()
-//                                        .stream()
-//                                        .map(infoDto -> infoDto.getResponseMapping().getMetricValueJsonPath())
-//                                        .collect(Collectors.toList());
-//    List<String> timestampPaths = getMetricInfoList()
-//                                      .stream()
-//                                      .map(infoDto -> infoDto.getResponseMapping().getTimestampJsonPath())
-//                                      .collect(Collectors.toList());
-//
-//    List<String> hostJsonPaths = getMetricInfoList()
-//                                     .stream()
-//                                     .map(infoDto -> infoDto.getResponseMapping().getServiceInstanceJsonPath())
-//                                     .collect(Collectors.toList());
-//
-//    List<String> metricIdentifiers =
-//        getMetricInfoList().stream().map(infoDto -> infoDto.getMetricIdentifier()).collect(Collectors.toList());
-//
-//    dslEnvVariables.put(QUERIES_KEY, listOfQueries);
-//    dslEnvVariables.put(METRIC_IDENTIFIERS_KEY, metricIdentifiers);
-//    dslEnvVariables.put(METRIC_JSON_PATH_KEY, metricValuePaths);
-//    dslEnvVariables.put(TIMESTAMP_JSON_PATH_KEY, timestampPaths);
-//    dslEnvVariables.put(METRIC_NAMES_KEY, metricNames);
-//    dslEnvVariables.put(HOST_JSON_PATH_KEY, hostJsonPaths);
-//
-//    return dslEnvVariables;
-//  }
 
   @Override
   public String getBaseUrl(AwsConnectorDTO awsConnectorDTO) {

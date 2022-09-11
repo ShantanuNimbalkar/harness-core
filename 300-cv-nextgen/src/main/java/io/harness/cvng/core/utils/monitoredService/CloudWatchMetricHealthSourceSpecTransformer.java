@@ -7,16 +7,16 @@
 
 package io.harness.cvng.core.utils.monitoredService;
 
-import com.google.common.base.Preconditions;
 import io.harness.cvng.core.beans.HealthSourceMetricDefinition;
 import io.harness.cvng.core.beans.RiskProfile;
 import io.harness.cvng.core.beans.monitoredService.TimeSeriesMetricPackDTO;
 import io.harness.cvng.core.beans.monitoredService.healthSouceSpec.CloudWatchMetricsHealthSourceSpec;
 import io.harness.cvng.core.entities.CloudWatchMetricCVConfig;
-import org.apache.commons.collections4.CollectionUtils;
 
+import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class CloudWatchMetricHealthSourceSpecTransformer
     implements CVConfigToHealthSourceTransformer<CloudWatchMetricCVConfig, CloudWatchMetricsHealthSourceSpec> {
@@ -38,10 +38,8 @@ public class CloudWatchMetricHealthSourceSpecTransformer
           configsWithoutCustom.stream().map(CloudWatchMetricCVConfig::getRegion).distinct().count() == 1,
           "Region should be same for List of all configs.");
     }
-    //    Long appId = CollectionUtils.isEmpty(configsWithoutCustom) ? null :
-    //    configsWithoutCustom.get(0).getApplicationId(); String appName = CollectionUtils.isEmpty(configsWithoutCustom)
-    //    ? null : configsWithoutCustom.get(0).getApplicationName();
-      //Todo
+
+    // TODO: Test for cloudwatch data-collection.
     String region = "";
     List<CloudWatchMetricsHealthSourceSpec.CloudWatchMetricDefinition> cloudWatchMetricDefinitions =
         cvConfigs.stream()
