@@ -18,10 +18,11 @@ public class CloudWatchUtils {
     return "https://" + serviceName + "." + region + ".amazonaws.com";
   }
 
-  public static List<Map<String, Object>> getRequestPayload(String query, String metricName, String metricIdentifier) {
+  public static List<Map<String, Object>> getRequestPayload(
+      String expression, String metricName, String metricIdentifier) {
     List<Map<String, Object>> metricQueries = new ArrayList<>();
     Map<String, Object> queryMap = new HashMap<>();
-    queryMap.put("Expression", query);
+    queryMap.put("Expression", expression);
     queryMap.put("Label", metricName);
     queryMap.put("Id", metricIdentifier);
     queryMap.put("Period", 60);
@@ -29,18 +30,18 @@ public class CloudWatchUtils {
     return metricQueries;
   }
 
-  public static Map<String, Object> getDslEnvVariables(String region, String group, String query, String metricName,
-      String metricIdentifier, String service, AwsConnectorDTO connectorDTO) {
+  public static Map<String, Object> getDslEnvVariables(String region, String group, String expression,
+      String metricName, String metricIdentifier, String service, AwsConnectorDTO connectorDTO) {
     AWSCredentials awsCredentials = getAwsCredentials(connectorDTO);
     Map<String, Object> dslEnvVariables = new HashMap<>();
     dslEnvVariables.put("region", region);
     dslEnvVariables.put("groupName", group);
     dslEnvVariables.put("awsSecretKey", awsCredentials.getAWSSecretKey());
     dslEnvVariables.put("awsAccessKey", awsCredentials.getAWSAccessKeyId());
-    dslEnvVariables.put("body", CloudWatchUtils.getRequestPayload(query, metricName, metricIdentifier));
+    dslEnvVariables.put("body", CloudWatchUtils.getRequestPayload(expression, metricName, metricIdentifier));
     dslEnvVariables.put("serviceName", service);
     dslEnvVariables.put("url", getBaseUrl(region, service));
-    dslEnvVariables.put("awsTarget","GraniteServiceVersion20100801.GetMetricData");
+    dslEnvVariables.put("awsTarget", "GraniteServiceVersion20100801.GetMetricData");
     return dslEnvVariables;
   }
 

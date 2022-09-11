@@ -15,7 +15,6 @@ import io.harness.cvng.utils.CloudWatchUtils;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
@@ -32,7 +31,7 @@ public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionReques
   public static final String DSL = DataCollectionRequest.readDSL(
       "cloudwatch-metrics-sample-fetch.datacollection", CloudWatchMetricFetchSampleDataRequest.class);
 
-  String query;
+  String expression;
   String region;
   String group;
   String metricName;
@@ -56,6 +55,6 @@ public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionReques
   @Override
   public Map<String, Object> fetchDslEnvVariables() {
     return CloudWatchUtils.getDslEnvVariables(
-        region, group, query, metricName, metricIdentifier, service, getConnectorConfigDTO());
+        region, group, expression, metricName, metricIdentifier, service, getConnectorConfigDTO());
   }
 }

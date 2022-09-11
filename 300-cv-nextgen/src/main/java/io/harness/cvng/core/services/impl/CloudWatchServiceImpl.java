@@ -18,20 +18,22 @@ import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.services.api.CloudWatchService;
 import io.harness.cvng.core.services.api.OnboardingService;
 import io.harness.datacollection.exception.DataCollectionException;
-import io.harness.rest.RestResponse;
 import io.harness.serializer.JsonUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 
 @Slf4j
 public class CloudWatchServiceImpl implements CloudWatchService {
@@ -41,17 +43,18 @@ public class CloudWatchServiceImpl implements CloudWatchService {
 
   @Override
   public LinkedHashMap fetchSampleData(ProjectParams projectParams, String connectorIdentifier, String tracingId,
-      String query, String region, String metricName, String metricIdentifier) {
+      String expression, String region, String metricName, String metricIdentifier) {
     try {
-      Preconditions.checkNotNull(query);
-      query = query.trim();
+      Preconditions.checkNotNull(expression);
+      expression = expression.trim();
 
       DataCollectionRequest request = CloudWatchMetricFetchSampleDataRequest.builder()
                                           .type(DataCollectionRequestType.CLOUDWATCH_METRIC_SAMPLE_DATA_REQUEST)
                                           .metricName(metricName)
                                           .metricIdentifier(metricIdentifier)
-                                          .query(query)
-                                          .tracingId(tracingId).region(region)
+                                          .expression(expression)
+                                          .tracingId(tracingId)
+                                          .region(region)
                                           .build();
       OnboardingRequestDTO onboardingRequestDTO = OnboardingRequestDTO.builder()
                                                       .dataCollectionRequest(request)
@@ -67,6 +70,7 @@ public class CloudWatchServiceImpl implements CloudWatchService {
 
       final Gson gson = new Gson();
       Type type = new TypeToken<LinkedHashMap>() {}.getType();
+      // Todo: Add validation for response data. Should not have multiple time-series responses.
       return gson.fromJson(JsonUtils.asJson(response.getResult()), type);
     } catch (DataCollectionException ex) {
       return null;

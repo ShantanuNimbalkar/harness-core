@@ -65,8 +65,7 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
                 && Objects.nonNull(metricDefinition.getAnalysis().getDeploymentVerification())
                 && Objects.nonNull(metricDefinition.getAnalysis().getDeploymentVerification().getEnabled())
                 && metricDefinition.getAnalysis().getDeploymentVerification().getEnabled()
-                && StringUtils.isEmpty(
-                    metricDefinition.getAnalysis().getDeploymentVerification().getServiceInstanceMetricPath())),
+                && StringUtils.isEmpty(metricDefinition.getResponseMapping().getServiceInstanceJsonPath())),
             "Service instance label/key/path shouldn't be empty for Deployment Verification"));
   }
 
@@ -160,19 +159,15 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
                            return cloudWatchMetricCVConfig;
                          })
                          .collect(Collectors.toList()));
-    //todo
-    //    cvConfigs.forEach(cloudWatchMetricCVConfig -> cloudWatchMetricCVConfig.addMetricThresholds(metricPacks));
+
+    cvConfigs.forEach(cvConfig -> cvConfig.addMetricThresholds(metricPacks));
     cvConfigs.stream()
         .filter(cvConfig -> CollectionUtils.isNotEmpty(cvConfig.getMetricInfos()))
         .flatMap(cvConfig -> cvConfig.getMetricInfos().stream())
         .forEach(metricInfo -> {
           if (metricInfo.getDeploymentVerification().isEnabled()) {
-            //todo
-            //            Preconditions.checkNotNull(metricInfo.getCompleteServiceInstanceMetricPath(),
-            //                "ServiceInstanceMetricPath should be set for Deployment Verification");
-            //            Preconditions.checkArgument(
-            //                metricInfo.getCompleteServiceInstanceMetricPath().contains("|Individual Nodes|*|"),
-            //                "ServiceInstanceMetricPath should contain |Individual Nodes|*|");
+            Preconditions.checkNotNull(metricInfo.getResponseMapping().getServiceInstanceJsonPath(),
+                "ServiceInstanceJsonPath should be set for Deployment Verification");
           }
         });
     return cvConfigs;

@@ -55,10 +55,10 @@ public class CloudWatchMetricsResource {
   public ResponseDTO<LinkedHashMap> getSampleDataForQuery(@NotNull @BeanParam ProjectParams projectParams,
       @QueryParam("connectorIdentifier") @NotNull String connectorIdentifier,
       @QueryParam("requestGuid") @NotNull String requestGuid, @QueryParam("region") @NotNull String region,
-      @QueryParam("query") @NotNull String query, @QueryParam("metricName") @NotNull String metricName,
+      @QueryParam("expression") @NotNull String expression, @QueryParam("metricName") @NotNull String metricName,
       @QueryParam("metricIdentifier") @NotNull String metricIdentifier) {
     return ResponseDTO.newResponse(cloudWatchService.fetchSampleData(
-        projectParams, connectorIdentifier, requestGuid, query, region, metricName, metricIdentifier));
+        projectParams, connectorIdentifier, requestGuid, expression, region, metricName, metricIdentifier));
   }
 
   @GET
