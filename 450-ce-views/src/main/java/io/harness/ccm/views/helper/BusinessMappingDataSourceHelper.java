@@ -49,23 +49,27 @@ public class BusinessMappingDataSourceHelper {
     return viewFieldIdentifiers;
   }
 
-  private Set<ViewFieldIdentifier> getCostTargetViewFieldIdentifiers(final List<CostTarget> costTargets) {
+  public Set<ViewFieldIdentifier> getCostTargetViewFieldIdentifiers(final List<CostTarget> costTargets) {
     final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
-    costTargets.forEach(costTarget -> {
-      if (Objects.nonNull(costTarget) && !Lists.isNullOrEmpty(costTarget.getRules())) {
-        viewFieldIdentifiers.addAll(getViewRulesViewFieldIdentifiers(costTarget.getRules()));
-      }
-    });
+    if (Objects.nonNull(costTargets)) {
+      costTargets.forEach(costTarget -> {
+        if (Objects.nonNull(costTarget) && !Lists.isNullOrEmpty(costTarget.getRules())) {
+          viewFieldIdentifiers.addAll(getViewRulesViewFieldIdentifiers(costTarget.getRules()));
+        }
+      });
+    }
     return viewFieldIdentifiers;
   }
 
-  private Set<ViewFieldIdentifier> getSharedCostViewFieldIdentifiers(final List<SharedCost> sharedCosts) {
+  public Set<ViewFieldIdentifier> getSharedCostViewFieldIdentifiers(final List<SharedCost> sharedCosts) {
     final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
-    sharedCosts.forEach(sharedCost -> {
-      if (Objects.nonNull(sharedCost) && !Lists.isNullOrEmpty(sharedCost.getRules())) {
-        viewFieldIdentifiers.addAll(getViewRulesViewFieldIdentifiers(sharedCost.getRules()));
-      }
-    });
+    if (Objects.nonNull(sharedCosts)) {
+      sharedCosts.forEach(sharedCost -> {
+        if (Objects.nonNull(sharedCost) && !Lists.isNullOrEmpty(sharedCost.getRules())) {
+          viewFieldIdentifiers.addAll(getViewRulesViewFieldIdentifiers(sharedCost.getRules()));
+        }
+      });
+    }
     return viewFieldIdentifiers;
   }
 
