@@ -242,11 +242,8 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
   @Override
   public List<String> getFilterValueStatsNg(BigQuery bigQuery, List<QLCEViewFilterWrapper> filters,
       String cloudProviderTableName, Integer limit, Integer offset, ViewQueryParams queryParams) {
-    boolean isClusterQuery = queryParams.isClusterQuery();
+    boolean isClusterQuery = isClusterTableQuery(filters, Collections.emptyList(), queryParams);
     String businessMappingId = viewsQueryHelper.getBusinessMappingIdFromFilters(filters);
-
-    // If filter values of business mapping are requested, query unified table
-    isClusterQuery = isClusterQuery && businessMappingId == null;
 
     List<ViewRule> viewRuleList = new ArrayList<>();
     Optional<QLCEViewFilterWrapper> viewMetadataFilter = getViewMetadataFilter(filters);
@@ -340,9 +337,6 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
         }
       });
     }
-
-    // If group by business mapping is present, query unified table
-    isClusterPerspective = isClusterPerspective && businessMappingId == null;
 
     // Conversion field is not null in case entity id to name conversion is required for a field
     String conversionField = null;
@@ -1611,7 +1605,7 @@ public class ViewsBillingServiceImpl implements ViewsBillingService {
             id = getUpdatedId(id, name);
             break;
           case FLOAT64:
-            if (field.getName().equalsIgnoreCase(COST) || field.getName().equalsIgnoreCase(BILLING_AMOUNT)) {
+            if (field.getName().equalsIgnoreCase(COST)) {
               cost = getNumericValue(row, field, skipRoundOff);
               dataPointBuilder.cost(cost);
             } else if (sharedCostBucketNames.contains(field.getName())) {
