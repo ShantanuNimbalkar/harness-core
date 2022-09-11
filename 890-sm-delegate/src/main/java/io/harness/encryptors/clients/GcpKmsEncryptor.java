@@ -40,6 +40,7 @@ import software.wings.beans.GcpKmsConfig;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.rpc.UnauthenticatedException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.kms.v1.CryptoKeyName;
 import com.google.cloud.kms.v1.DecryptResponse;
@@ -95,6 +96,15 @@ public class GcpKmsEncryptor implements KmsEncryptor {
       try {
         return HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(DEFAULT_GCP_KMS_TIMEOUT),
             () -> encryptInternal(accountId, value, gcpKmsConfig));
+      } catch (UnauthenticatedException e) {
+        log.warn("Unauthenticated exception thrown while encrypting secret");
+        if (!e.isRetryable()) {
+          String errorMsg = e.getMessage();
+          String errorCode = e.getStatusCode().toString();
+          String message = "Unauthenticated exception thrown while encrypting secret. Error code - " + errorCode
+              + " Error Msg - " + errorMsg;
+          throw new SecretManagementDelegateException(GCP_KMS_OPERATION_ERROR, message, USER);
+        }
       } catch (Exception e) {
         failedAttempts++;
         log.warn("Encryption failed. Trial Number {}", failedAttempts, e);
@@ -165,6 +175,15 @@ public class GcpKmsEncryptor implements KmsEncryptor {
           // Use HTimeLimiter.callInterruptible only if the KMS plain text key is not cached.
           return HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(DEFAULT_GCP_KMS_TIMEOUT),
               () -> decryptInternal(encryptedData, gcpKmsConfig));
+        }
+      } catch (UnauthenticatedException e) {
+        log.warn("Unauthenticated exception thrown while decrypting secret");
+        if (!e.isRetryable()) {
+          String errorMsg = e.getMessage();
+          String errorCode = e.getStatusCode().toString();
+          String message = "Unauthenticated exception thrown while decrypting secret. Error code - " + errorCode
+              + " Error Msg - " + errorMsg;
+          throw new SecretManagementDelegateException(GCP_KMS_OPERATION_ERROR, message, USER);
         }
       } catch (Exception e) {
         failedAttempts++;
