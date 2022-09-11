@@ -51,7 +51,7 @@ public class CloudWatchServiceImpl implements CloudWatchService {
                                           .metricName(metricName)
                                           .metricIdentifier(metricIdentifier)
                                           .query(query)
-                                          .tracingId(tracingId)
+                                          .tracingId(tracingId).region(region)
                                           .build();
       OnboardingRequestDTO onboardingRequestDTO = OnboardingRequestDTO.builder()
                                                       .dataCollectionRequest(request)
@@ -59,6 +59,7 @@ public class CloudWatchServiceImpl implements CloudWatchService {
                                                       .accountId(projectParams.getAccountIdentifier())
                                                       .orgIdentifier(projectParams.getOrgIdentifier())
                                                       .projectIdentifier(projectParams.getProjectIdentifier())
+                                                      .tracingId(tracingId)
                                                       .build();
 
       OnboardingResponseDTO response =

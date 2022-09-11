@@ -7,19 +7,20 @@
 
 package io.harness.cvng.beans.cloudwatch;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import static io.harness.annotations.dev.HarnessTeam.CV;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cvng.beans.DataCollectionRequest;
 import io.harness.cvng.utils.CloudWatchUtils;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Collections;
-import java.util.Map;
-
-import static io.harness.annotations.dev.HarnessTeam.CV;
 
 @JsonTypeName("CLOUDWATCH_METRIC_SAMPLE_DATA_REQUEST")
 @Data
@@ -49,7 +50,7 @@ public class CloudWatchMetricFetchSampleDataRequest extends DataCollectionReques
 
   @Override
   public Map<String, String> collectionHeaders() {
-    return Collections.emptyMap();
+    return new HashMap<>();
   }
 
   @Override

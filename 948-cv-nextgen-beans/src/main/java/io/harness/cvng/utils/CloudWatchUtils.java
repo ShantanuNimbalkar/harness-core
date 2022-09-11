@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CloudWatchUtils {
   public static String getBaseUrl(String region, String serviceName) {
-    return "https://" + serviceName + "." + region + "amazon.aws.com";
+    return "https://" + serviceName + "." + region + ".amazonaws.com";
   }
 
   public static List<Map<String, Object>> getRequestPayload(String query, String metricName, String metricIdentifier) {
@@ -40,6 +40,7 @@ public class CloudWatchUtils {
     dslEnvVariables.put("body", CloudWatchUtils.getRequestPayload(query, metricName, metricIdentifier));
     dslEnvVariables.put("serviceName", service);
     dslEnvVariables.put("url", getBaseUrl(region, service));
+    dslEnvVariables.put("awsTarget","GraniteServiceVersion20100801.GetMetricData");
     return dslEnvVariables;
   }
 
