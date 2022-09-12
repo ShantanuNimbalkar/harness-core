@@ -7,6 +7,4 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AsyncTimeoutResponseData implements ResponseData {
-  boolean timedOut;
-}
+public class AsyncTimeoutResponseData implements ResponseData {}

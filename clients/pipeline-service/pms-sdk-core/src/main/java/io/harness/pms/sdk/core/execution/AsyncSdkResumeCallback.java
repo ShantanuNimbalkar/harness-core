@@ -55,7 +55,7 @@ public class AsyncSdkResumeCallback implements OldNotifyCallback {
 
   @Override
   public void notifyTimeout(Map<String, ResponseData> responseMap) {
-    responseMap.put("timeoutData", AsyncTimeoutResponseData.builder().timedOut(true).build());
+    responseMap.put("timeoutData", AsyncTimeoutResponseData.builder().build());
     notifyWithError(responseMap, false);
   }
 }
