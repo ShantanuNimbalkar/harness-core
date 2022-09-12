@@ -65,14 +65,16 @@ public class SettingsCreationJob {
   }
 
   private void populateDefaultConfigs(SettingsConfig settingsConfig) {
-    settingsConfig.getSettings().forEach(settingConfiguration -> {
-      if (settingConfiguration.getAllowOverrides() == null) {
-        settingConfiguration.setAllowOverrides(true);
-      }
-    });
+    if (settingsConfig.getSettings() != null) {
+      settingsConfig.getSettings().forEach(settingConfiguration -> {
+        if (settingConfiguration.getAllowOverrides() == null) {
+          settingConfiguration.setAllowOverrides(true);
+        }
+      });
+    }
   }
 
-  private void validateConfig(SettingsConfig settingsConfig) {
+  public void validateConfig(SettingsConfig settingsConfig) {
     if (null == settingsConfig) {
       throw new InvalidRequestException("Missing settings config. Check settings.yml file");
     }
@@ -137,7 +139,7 @@ public class SettingsCreationJob {
         throw exception;
       }
     });
-    removedIdentifiers.forEach(settingsService::removeSettingFromConfiguration);
+    removedIdentifiers.forEach(settingsService::removeSetting);
     log.info("Updated the settings in the database");
 
     SettingsConfigurationState configurationState =

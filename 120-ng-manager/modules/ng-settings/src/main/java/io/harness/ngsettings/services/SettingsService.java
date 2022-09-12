@@ -25,7 +25,7 @@ public interface SettingsService {
   SettingValueResponseDTO get(
       String identifier, String accountIdentifier, String orgIdentifier, String projectIdentifier);
   List<SettingConfiguration> listDefaultSettings();
-  void removeSettingFromConfiguration(String identifier);
+  void removeSetting(String identifier);
   SettingConfiguration upsertSettingConfiguration(SettingConfiguration settingConfiguration);
 
   void deleteByScopeLevel(ScopeLevel scopeLevel, String identifier);

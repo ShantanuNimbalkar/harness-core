@@ -200,7 +200,7 @@ public class SettingsServiceImpl implements SettingsService {
   }
 
   @Override
-  public void removeSettingFromConfiguration(String identifier) {
+  public void removeSetting(String identifier) {
     Optional<SettingConfiguration> exisingSettingConfig = settingConfigurationRepository.findByIdentifier(identifier);
     exisingSettingConfig.ifPresent(settingConfigurationRepository::delete);
     List<Setting> existingSettings = settingRepository.findByIdentifier(identifier);

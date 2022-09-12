@@ -39,6 +39,15 @@ public class SettingsCreationJobTest extends NgSettingsTestBase {
   @Test
   @Owner(developers = TEJAS)
   @Category(UnitTests.class)
+  public void testSettingsValidation() {
+    SettingsConfig settingsConfig =
+        (SettingsConfig) ReflectionUtils.getFieldValue(settingsCreationJob, SETTINGS_CONFIG_FIELD);
+    settingsCreationJob.validateConfig(settingsConfig);
+  }
+
+  @Test
+  @Owner(developers = TEJAS)
+  @Category(UnitTests.class)
   public void testSave() {
     SettingsConfig settingsConfig =
         (SettingsConfig) ReflectionUtils.getFieldValue(settingsCreationJob, SETTINGS_CONFIG_FIELD);
