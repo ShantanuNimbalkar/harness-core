@@ -35,6 +35,10 @@ import io.harness.annotations.retry.RetryOnException;
 import io.harness.annotations.retry.RetryOnExceptionInterceptor;
 import io.harness.artifacts.gcr.service.GcrApiService;
 import io.harness.artifacts.gcr.service.GcrApiServiceImpl;
+import io.harness.artifacts.githubpackages.client.GithubPackagesRestClientFactory;
+import io.harness.artifacts.githubpackages.client.GithubPackagesRestClientFactoryImpl;
+import io.harness.artifacts.githubpackages.service.GithubPackagesRegistryService;
+import io.harness.artifacts.githubpackages.service.GithubPackagesRegistryServiceImpl;
 import io.harness.audit.client.remote.AuditClientModule;
 import io.harness.ccm.anomaly.service.impl.AnomalyServiceImpl;
 import io.harness.ccm.anomaly.service.itfc.AnomalyService;
@@ -529,7 +533,6 @@ import software.wings.service.impl.prometheus.PrometheusAnalysisServiceImpl;
 import software.wings.service.impl.scalyr.ScalyrServiceImpl;
 import software.wings.service.impl.security.AwsSecretsManagerServiceImpl;
 import software.wings.service.impl.security.AzureSecretsManagerServiceImpl;
-import software.wings.service.impl.security.CyberArkServiceImpl;
 import software.wings.service.impl.security.EncryptionServiceImpl;
 import software.wings.service.impl.security.GcpSecretsManagerServiceImpl;
 import software.wings.service.impl.security.GcpSecretsManagerServiceV2Impl;
@@ -733,7 +736,6 @@ import software.wings.service.intfc.security.AwsSecretsManagerService;
 import software.wings.service.intfc.security.AzureSecretsManagerService;
 import software.wings.service.intfc.security.CustomEncryptedDataDetailBuilder;
 import software.wings.service.intfc.security.CustomSecretsManagerService;
-import software.wings.service.intfc.security.CyberArkService;
 import software.wings.service.intfc.security.EncryptedSettingAttributes;
 import software.wings.service.intfc.security.EncryptionService;
 import software.wings.service.intfc.security.GcpSecretsManagerService;
@@ -1077,6 +1079,8 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(EcrClassicService.class).to(EcrClassicServiceImpl.class);
     bind(GcrApiService.class).to(GcrApiServiceImpl.class);
     bind(GcrBuildService.class).to(GcrBuildServiceImpl.class);
+    bind(GithubPackagesRestClientFactory.class).to(GithubPackagesRestClientFactoryImpl.class);
+    bind(GithubPackagesRegistryService.class).to(GithubPackagesRegistryServiceImpl.class);
     bind(AcrService.class).to(AcrServiceImpl.class);
     bind(AcrBuildService.class).to(AcrBuildServiceImpl.class);
     bind(AmiService.class).to(AmiServiceImpl.class);
@@ -1628,7 +1632,6 @@ public class WingsModule extends AbstractModule implements ServersModule {
     bind(SSHVaultService.class).to(SSHVaultServiceImpl.class);
     bind(AwsSecretsManagerService.class).to(AwsSecretsManagerServiceImpl.class);
     bind(KmsService.class).to(KmsServiceImpl.class);
-    bind(CyberArkService.class).to(CyberArkServiceImpl.class);
     bind(GcpSecretsManagerService.class).to(GcpSecretsManagerServiceImpl.class);
     bind(GcpSecretsManagerServiceV2.class).to(GcpSecretsManagerServiceV2Impl.class);
     bind(AzureSecretsManagerService.class).to(AzureSecretsManagerServiceImpl.class);
@@ -1659,11 +1662,6 @@ public class WingsModule extends AbstractModule implements ServersModule {
     binder()
         .bind(VaultEncryptor.class)
         .annotatedWith(Names.named(Encryptors.GCP_VAULT_ENCRYPTOR.getName()))
-        .to(ManagerVaultEncryptor.class);
-
-    binder()
-        .bind(VaultEncryptor.class)
-        .annotatedWith(Names.named(Encryptors.CYBERARK_VAULT_ENCRYPTOR.getName()))
         .to(ManagerVaultEncryptor.class);
 
     binder()

@@ -8,14 +8,8 @@
 package io.harness.cdng.creator.plan.service;
 
 import static io.harness.cdng.creator.plan.manifest.ManifestsPlanCreator.SERVICE_ENTITY_DEFINITION_TYPE_KEY;
-import static io.harness.cdng.manifest.ManifestType.SERVICE_OVERRIDE_SUPPORTED_MANIFEST_TYPES;
-import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-
-import static java.lang.String.format;
-import static java.util.Collections.EMPTY_LIST;
-import static java.util.Collections.emptyList;
 
 import io.harness.cdng.artifact.bean.yaml.ArtifactListConfig;
 import io.harness.cdng.azure.config.yaml.ApplicationSettingsConfiguration;
@@ -26,19 +20,17 @@ import io.harness.cdng.azure.webapp.ConnectionStringsParameters;
 import io.harness.cdng.azure.webapp.StartupCommandParameters;
 import io.harness.cdng.configfile.ConfigFileWrapper;
 import io.harness.cdng.creator.plan.PlanCreatorConstants;
-import io.harness.cdng.manifest.ManifestConfigType;
-import io.harness.cdng.manifest.yaml.ManifestConfig;
 import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
 import io.harness.cdng.service.beans.AzureWebAppServiceSpec;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
+import io.harness.cdng.service.steps.ServiceStepOverrideHelper;
 import io.harness.cdng.utilities.ArtifactsUtility;
 import io.harness.cdng.utilities.AzureConfigsUtility;
 import io.harness.cdng.utilities.ConfigFileUtility;
 import io.harness.cdng.utilities.ManifestsUtility;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.UUIDGenerator;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.environment.yaml.NGEnvironmentConfig;
 import io.harness.ng.core.service.yaml.NGServiceV2InfoConfig;
 import io.harness.ng.core.serviceoverride.yaml.NGServiceOverrideConfig;
@@ -57,14 +49,9 @@ import io.harness.serializer.KryoSerializer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -74,9 +61,6 @@ import org.jetbrains.annotations.NotNull;
  */
 @UtilityClass
 public class ServiceDefinitionPlanCreatorHelper {
-  private final String SERVICE_OVERRIDES = "service overrides";
-  private final String ENVIRONMENT_GLOBAL_OVERRIDES = "environment global overrides";
-
   public Map<String, ByteString> prepareMetadata(
       String planNodeId, ServiceConfig actualServiceConfig, KryoSerializer kryoSerializer) {
     Map<String, ByteString> metadataDependency = new HashMap<>();
@@ -96,6 +80,15 @@ public class ServiceDefinitionPlanCreatorHelper {
         YamlTypes.MANIFEST_LIST_CONFIG, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(finalManifests)));
     metadataDependency.put(
         SERVICE_ENTITY_DEFINITION_TYPE_KEY, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceDefinitionType)));
+    return metadataDependency;
+  }
+
+  public Map<String, ByteString> prepareMetadataConfigFilesV2(
+      String planNodeId, List<ConfigFileWrapper> finalConfigFiles, KryoSerializer kryoSerializer) {
+    Map<String, ByteString> metadataDependency = new HashMap<>();
+    metadataDependency.put(YamlTypes.UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(planNodeId)));
+    metadataDependency.put(
+        YamlTypes.CONFIG_FILES, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(finalConfigFiles)));
     return metadataDependency;
   }
 
@@ -238,6 +231,22 @@ public class ServiceDefinitionPlanCreatorHelper {
     return manifestsPlanNodeId;
   }
 
+  @VisibleForTesting
+  String addDependenciesForManifestV2(YamlNode serviceV2Node, Map<String, PlanCreationResponse> planCreationResponseMap,
+      NGServiceV2InfoConfig serviceV2Config, NGServiceOverrideConfig serviceOverrideConfig,
+      NGEnvironmentConfig ngEnvironmentConfig, KryoSerializer kryoSerializer) throws IOException {
+    if (isSvcOverridesManifestPresent(serviceOverrideConfig)
+        || isEnvGlobalManifestOverridesPresent(ngEnvironmentConfig)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForSvcAndSvcOverrideManifestsV2(serviceV2Node,
+          planCreationResponseMap, serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig, kryoSerializer);
+    } else if (ServiceDefinitionPlanCreatorHelper.shouldCreatePlanNodeForManifestsV2(serviceV2Config)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForServiceManifestsV2(
+          serviceV2Node, planCreationResponseMap, serviceV2Config, kryoSerializer);
+    } else {
+      return StringUtils.EMPTY;
+    }
+  }
+
   String addDependenciesForSvcAndSvcOverrideManifestsV2(YamlNode serviceV2Node,
       Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
       NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
@@ -245,7 +254,7 @@ public class ServiceDefinitionPlanCreatorHelper {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
 
     List<ManifestConfigWrapper> finalManifests =
-        prepareFinalManifests(serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig);
+        ServiceStepOverrideHelper.prepareFinalManifests(serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig);
 
     // in case no manifest is present no node should be created
     if (isEmpty(finalManifests)) {
@@ -289,125 +298,7 @@ public class ServiceDefinitionPlanCreatorHelper {
     return manifestsYamlField;
   }
 
-  @VisibleForTesting
-  @NotNull
-  List<ManifestConfigWrapper> prepareFinalManifests(NGServiceV2InfoConfig serviceV2Config,
-      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig) {
-    final List<ManifestConfigWrapper> svcManifests = getManifests(serviceV2Config);
-    final List<ManifestConfigWrapper> envGlobalManifests =
-        getAndValidateEnvGlobalManifests(serviceV2Config, ngEnvironmentConfig, svcManifests);
-    final List<ManifestConfigWrapper> svcOverrideManifests =
-        getAndValidateSvcOverrideManifests(serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig, svcManifests);
-    checkCrossLocationDuplicateIdentifiers(svcOverrideManifests, envGlobalManifests, serviceV2Config.getIdentifier(),
-        ngEnvironmentConfig.getNgEnvironmentInfoConfig().getIdentifier(), SERVICE_OVERRIDES);
-
-    final List<ManifestConfigWrapper> finalManifests = new ArrayList<>();
-
-    finalManifests.addAll(svcManifests);
-    finalManifests.addAll(envGlobalManifests);
-    finalManifests.addAll(svcOverrideManifests);
-    return finalManifests;
-  }
-
-  @NotNull
-  private List<ManifestConfigWrapper> getAndValidateEnvGlobalManifests(NGServiceV2InfoConfig serviceV2Config,
-      NGEnvironmentConfig ngEnvironmentConfig, List<ManifestConfigWrapper> svcManifests) {
-    final List<ManifestConfigWrapper> envGlobalManifests = getEnvGlobalManifests(ngEnvironmentConfig);
-
-    checkCrossLocationDuplicateIdentifiers(svcManifests, envGlobalManifests, serviceV2Config.getIdentifier(),
-        ngEnvironmentConfig.getNgEnvironmentInfoConfig().getIdentifier(),
-        ServiceDefinitionPlanCreatorHelper.ENVIRONMENT_GLOBAL_OVERRIDES);
-    validateAllowedManifestTypesInOverrides(
-        envGlobalManifests, ServiceDefinitionPlanCreatorHelper.ENVIRONMENT_GLOBAL_OVERRIDES);
-
-    return envGlobalManifests;
-  }
-
-  @NotNull
-  private List<ManifestConfigWrapper> getAndValidateSvcOverrideManifests(NGServiceV2InfoConfig serviceV2Config,
-      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
-      List<ManifestConfigWrapper> svcManifests) {
-    if (serviceOverrideConfig == null) {
-      return EMPTY_LIST;
-    }
-    List<ManifestConfigWrapper> svcOverrideManifests = getSvcOverrideManifests(serviceOverrideConfig);
-
-    checkCrossLocationDuplicateIdentifiers(svcManifests, svcOverrideManifests, serviceV2Config.getIdentifier(),
-        ngEnvironmentConfig.getNgEnvironmentInfoConfig().getIdentifier(), SERVICE_OVERRIDES);
-    validateAllowedManifestTypesInOverrides(svcOverrideManifests, SERVICE_OVERRIDES);
-
-    return svcOverrideManifests;
-  }
-
-  @NonNull
-  private static List<ManifestConfigWrapper> getEnvGlobalManifests(NGEnvironmentConfig ngEnvironmentConfig) {
-    if (checkManifestAvailability(ngEnvironmentConfig)) {
-      return EMPTY_LIST;
-    }
-    return ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getManifests();
-  }
-
-  private static boolean checkManifestAvailability(NGEnvironmentConfig ngEnvironmentConfig) {
-    return ngEnvironmentConfig == null || ngEnvironmentConfig.getNgEnvironmentInfoConfig() == null
-        || ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride() == null
-        || ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getManifests() == null;
-  }
-
-  private static void validateAllowedManifestTypesInOverrides(
-      List<ManifestConfigWrapper> svcOverrideManifests, String overrideLocation) {
-    if (isEmpty(svcOverrideManifests)) {
-      return;
-    }
-    Set<String> unsupportedManifestTypesUsed =
-        svcOverrideManifests.stream()
-            .map(ManifestConfigWrapper::getManifest)
-            .filter(Objects::nonNull)
-            .map(ManifestConfig::getType)
-            .map(ManifestConfigType::getDisplayName)
-            .filter(type -> !SERVICE_OVERRIDE_SUPPORTED_MANIFEST_TYPES.contains(type))
-            .collect(Collectors.toSet());
-    if (isNotEmpty(unsupportedManifestTypesUsed)) {
-      throw new InvalidRequestException(format("Unsupported Manifest Types: [%s] found for %s",
-          unsupportedManifestTypesUsed.stream().map(Object::toString).collect(Collectors.joining(",")),
-          overrideLocation));
-    }
-  }
-
-  private static void checkCrossLocationDuplicateIdentifiers(List<ManifestConfigWrapper> manifestsA,
-      List<ManifestConfigWrapper> manifestsB, String svcIdentifier, String envIdentifier, String overrideLocation) {
-    if (isEmpty(manifestsA) || isEmpty(manifestsB)) {
-      return;
-    }
-    Set<String> overridesIdentifiers = manifestsB.stream()
-                                           .map(ManifestConfigWrapper::getManifest)
-                                           .map(ManifestConfig::getIdentifier)
-                                           .collect(Collectors.toSet());
-    List<String> duplicateManifestIds = manifestsA.stream()
-                                            .map(ManifestConfigWrapper::getManifest)
-                                            .map(ManifestConfig::getIdentifier)
-                                            .filter(overridesIdentifiers::contains)
-                                            .collect(Collectors.toList());
-    if (isNotEmpty(duplicateManifestIds)) {
-      throw new InvalidRequestException(
-          format("Found duplicate manifest identifiers [%s] in %s for service [%s] and environment [%s]",
-              duplicateManifestIds.stream().map(Object::toString).collect(Collectors.joining(",")), overrideLocation,
-              svcIdentifier, envIdentifier));
-    }
-  }
-
-  private List<ManifestConfigWrapper> getManifests(NGServiceV2InfoConfig serviceV2Config) {
-    return emptyIfNull(serviceV2Config.getServiceDefinition().getServiceSpec().getManifests());
-  }
-
-  @NonNull
-  private List<ManifestConfigWrapper> getSvcOverrideManifests(@NonNull NGServiceOverrideConfig serviceOverrideConfigs) {
-    if (serviceOverrideConfigs.getServiceOverrideInfoConfig() == null) {
-      return emptyList();
-    }
-    return emptyIfNull(serviceOverrideConfigs.getServiceOverrideInfoConfig().getManifests());
-  }
-
-  String addDependenciesForConfigFilesV2(YamlNode serviceV2Node,
+  String addDependenciesForSvcConfigFilesV2(YamlNode serviceV2Node,
       Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
       KryoSerializer kryoSerializer) {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
@@ -429,6 +320,64 @@ public class ServiceDefinitionPlanCreatorHelper {
     planCreationResponseMap.put(configFilesPlanNodeId, configFilesPlanCreationResponse.build());
 
     return configFilesPlanNodeId;
+  }
+
+  @VisibleForTesting
+  String addDependenciesForConfigFilesV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
+      KryoSerializer kryoSerializer) throws IOException {
+    if (isSvcOverridesConfigFilesPresent(serviceOverrideConfig)
+        || isEnvGlobalConfigFileOverridesPresent(ngEnvironmentConfig)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForSvcAndSvcOverrideConfigFilesV2(serviceV2Node,
+          planCreationResponseMap, serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig, kryoSerializer);
+    } else if (ServiceDefinitionPlanCreatorHelper.shouldCreatePlanNodeForConfigFilesV2(serviceV2Config)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForSvcConfigFilesV2(
+          serviceV2Node, planCreationResponseMap, serviceV2Config, kryoSerializer);
+    } else {
+      return StringUtils.EMPTY;
+    }
+  }
+
+  String addDependenciesForSvcAndSvcOverrideConfigFilesV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
+      KryoSerializer kryoSerializer) throws IOException {
+    YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
+    List<ConfigFileWrapper> finalConfigFiles =
+        ServiceStepOverrideHelper.prepareFinalConfigFiles(serviceV2Config, serviceOverrideConfig, ngEnvironmentConfig);
+
+    // in case no config file is present no node should be created
+    if (isEmpty(finalConfigFiles)) {
+      return StringUtils.EMPTY;
+    }
+
+    YamlField configFilesYamlField = prepareFinalUuidInjectedConfigFileYamlField(serviceV2Node, finalConfigFiles);
+    PlanCreatorUtils.setYamlUpdate(configFilesYamlField, yamlUpdates);
+
+    String configFilesPlanNodeId = "configFiles-" + UUIDGenerator.generateUuid();
+    Map<String, ByteString> metadataDependency =
+        prepareMetadataConfigFilesV2(configFilesPlanNodeId, finalConfigFiles, kryoSerializer);
+    Map<String, YamlField> dependenciesMap = new HashMap<>();
+    dependenciesMap.put(configFilesPlanNodeId, configFilesYamlField);
+
+    PlanCreationResponseBuilder configFilesPlanCreationResponse = PlanCreationResponse.builder().dependencies(
+        getDependencies(configFilesPlanNodeId, metadataDependency, dependenciesMap));
+    if (yamlUpdates.getFqnToYamlCount() > 0) {
+      configFilesPlanCreationResponse.yamlUpdates(yamlUpdates.build());
+    }
+    planCreationResponseMap.put(configFilesPlanNodeId, configFilesPlanCreationResponse.build());
+
+    return configFilesPlanNodeId;
+  }
+
+  private static YamlField prepareFinalUuidInjectedConfigFileYamlField(
+      YamlNode serviceV2Node, List<ConfigFileWrapper> finalConfigFiles) throws IOException {
+    YamlField configFilesYamlField = YamlUtils.injectUuidInYamlField(YamlUtils.write(finalConfigFiles));
+    configFilesYamlField = new YamlField(YamlTypes.CONFIG_FILES,
+        new YamlNode(YamlTypes.CONFIG_FILES, configFilesYamlField.getNode().getCurrJsonNode(),
+            serviceV2Node.getField(YamlTypes.SERVICE_DEFINITION).getNode().getField(YamlTypes.SPEC).getNode()));
+    return configFilesYamlField;
   }
 
   private Dependencies getDependencies(
@@ -554,6 +503,49 @@ public class ServiceDefinitionPlanCreatorHelper {
 
   String addDependenciesForApplicationSettingsV2(YamlNode serviceV2Node,
       Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
+      KryoSerializer kryoSerializer) throws IOException {
+    if (isSvcOverridesApplicationSettingsPresent(serviceOverrideConfig)
+        || isEnvGlobalApplicationSettingsOverridesPresent(ngEnvironmentConfig)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForSvcAndSvcOverrideApplicationSettingsV2(
+          serviceV2Node, planCreationResponseMap, serviceOverrideConfig, ngEnvironmentConfig, kryoSerializer);
+    } else if (ServiceDefinitionPlanCreatorHelper.shouldCreatePlanNodeForApplicationSettingsV2(serviceV2Config)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForServiceApplicationSettingsV2(
+          serviceV2Node, planCreationResponseMap, serviceV2Config, kryoSerializer);
+    } else {
+      return StringUtils.EMPTY;
+    }
+  }
+
+  private String addDependenciesForSvcAndSvcOverrideApplicationSettingsV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceOverrideConfig serviceOverrideConfig,
+      NGEnvironmentConfig ngEnvironmentConfig, KryoSerializer kryoSerializer) throws IOException {
+    YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
+
+    ApplicationSettingsConfiguration finalAppSettingsConfig =
+        getFinalApplicationSettingsConfiguration(serviceOverrideConfig, ngEnvironmentConfig);
+    if (finalAppSettingsConfig == null) {
+      return StringUtils.EMPTY;
+    }
+
+    YamlField appSettingsConfigFilesYamlField =
+        prepareFinalUuidInjectedApplicationSettingYamlField(serviceV2Node, finalAppSettingsConfig);
+    PlanCreatorUtils.setYamlUpdate(appSettingsConfigFilesYamlField, yamlUpdates);
+
+    String applicationSettingsPlanNodeId = "applicationSettings-" + UUIDGenerator.generateUuid();
+    PlanCreationResponseBuilder applicationSettingsPlanCreationResponse =
+        PlanCreationResponse.builder().dependencies(getApplicationSettingDependencies(
+            applicationSettingsPlanNodeId, finalAppSettingsConfig, kryoSerializer, appSettingsConfigFilesYamlField));
+
+    if (yamlUpdates.getFqnToYamlCount() > 0) {
+      applicationSettingsPlanCreationResponse.yamlUpdates(yamlUpdates.build());
+    }
+    planCreationResponseMap.put(applicationSettingsPlanNodeId, applicationSettingsPlanCreationResponse.build());
+    return applicationSettingsPlanNodeId;
+  }
+
+  private String addDependenciesForServiceApplicationSettingsV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
       KryoSerializer kryoSerializer) {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
     YamlField applicationSettingsYamlField = AzureConfigsUtility.fetchAzureConfigYamlFieldAndSetYamlUpdates(
@@ -563,16 +555,9 @@ public class ServiceDefinitionPlanCreatorHelper {
     ApplicationSettingsConfiguration applicationSettings =
         ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getApplicationSettings();
 
-    Map<String, YamlField> dependenciesMap = new HashMap<>();
-    dependenciesMap.put(applicationSettingsPlanNodeId, applicationSettingsYamlField);
-    PlanCreationResponseBuilder applicationSettingsPlanCreationResponse = PlanCreationResponse.builder().dependencies(
-        DependenciesUtils.toDependenciesProto(dependenciesMap)
-            .toBuilder()
-            .putDependencyMetadata(applicationSettingsPlanNodeId,
-                AzureConfigsUtility.getDependencyMetadata(applicationSettingsPlanNodeId,
-                    ApplicationSettingsParameters.builder().applicationSettings(applicationSettings).build(),
-                    kryoSerializer, PlanCreatorConstants.APPLICATION_SETTINGS_STEP_PARAMETER))
-            .build());
+    PlanCreationResponseBuilder applicationSettingsPlanCreationResponse =
+        PlanCreationResponse.builder().dependencies(getApplicationSettingDependencies(
+            applicationSettingsPlanNodeId, applicationSettings, kryoSerializer, applicationSettingsYamlField));
     if (yamlUpdates.getFqnToYamlCount() > 0) {
       applicationSettingsPlanCreationResponse.yamlUpdates(yamlUpdates.build());
     }
@@ -580,7 +565,84 @@ public class ServiceDefinitionPlanCreatorHelper {
     return applicationSettingsPlanNodeId;
   }
 
+  private Dependencies getApplicationSettingDependencies(String applicationSettingsPlanNodeId,
+      ApplicationSettingsConfiguration appSettingsConfig, KryoSerializer kryoSerializer,
+      YamlField appSettingsConfigFilesYamlField) {
+    Map<String, YamlField> dependenciesMap = new HashMap<>();
+    dependenciesMap.put(applicationSettingsPlanNodeId, appSettingsConfigFilesYamlField);
+
+    return DependenciesUtils.toDependenciesProto(dependenciesMap)
+        .toBuilder()
+        .putDependencyMetadata(applicationSettingsPlanNodeId,
+            AzureConfigsUtility.getDependencyMetadata(applicationSettingsPlanNodeId,
+                ApplicationSettingsParameters.builder().applicationSettings(appSettingsConfig).build(), kryoSerializer,
+                PlanCreatorConstants.APPLICATION_SETTINGS_STEP_PARAMETER))
+        .build();
+  }
+
+  ApplicationSettingsConfiguration getFinalApplicationSettingsConfiguration(
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig) {
+    if (isSvcOverridesApplicationSettingsPresent(serviceOverrideConfig)) {
+      return serviceOverrideConfig.getServiceOverrideInfoConfig().getApplicationSettings();
+    } else if (isEnvGlobalApplicationSettingsOverridesPresent(ngEnvironmentConfig)) {
+      return ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getApplicationSettings();
+    } else {
+      return null;
+    }
+  }
+
+  private YamlField prepareFinalUuidInjectedApplicationSettingYamlField(
+      YamlNode serviceV2Node, ApplicationSettingsConfiguration appSettingsConfig) throws IOException {
+    YamlField appSettingsYamlField = YamlUtils.injectUuidInYamlField(YamlUtils.write(appSettingsConfig));
+    appSettingsYamlField = new YamlField(YamlTypes.APPLICATION_SETTINGS,
+        new YamlNode(YamlTypes.APPLICATION_SETTINGS, appSettingsYamlField.getNode().getCurrJsonNode(),
+            serviceV2Node.getField(YamlTypes.SERVICE_DEFINITION).getNode().getField(YamlTypes.SPEC).getNode()));
+    return appSettingsYamlField;
+  }
+
   String addDependenciesForConnectionStringsV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig,
+      KryoSerializer kryoSerializer) throws IOException {
+    if (isSvcOverridesConnectionStringsPresent(serviceOverrideConfig)
+        || isEnvGlobalConnectionStringsOverridesPresent(ngEnvironmentConfig)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForSvcAndSvcOverrideConnectionStringsV2(
+          serviceV2Node, planCreationResponseMap, serviceOverrideConfig, ngEnvironmentConfig, kryoSerializer);
+    } else if (ServiceDefinitionPlanCreatorHelper.shouldCreatePlanNodeForConnectionStringsV2(serviceV2Config)) {
+      return ServiceDefinitionPlanCreatorHelper.addDependenciesForConnectionStringsV2(
+          serviceV2Node, planCreationResponseMap, serviceV2Config, kryoSerializer);
+    } else {
+      return StringUtils.EMPTY;
+    }
+  }
+
+  private String addDependenciesForSvcAndSvcOverrideConnectionStringsV2(YamlNode serviceV2Node,
+      Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceOverrideConfig serviceOverrideConfig,
+      NGEnvironmentConfig ngEnvironmentConfig, KryoSerializer kryoSerializer) throws IOException {
+    YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
+
+    ConnectionStringsConfiguration finalConnectionStringsConfig =
+        getFinalConnectionStringsConfiguration(serviceOverrideConfig, ngEnvironmentConfig);
+    if (finalConnectionStringsConfig == null) {
+      return StringUtils.EMPTY;
+    }
+
+    YamlField connectionStringsYamlField =
+        prepareFinalUuidInjectedConnectionStringYamlField(serviceV2Node, finalConnectionStringsConfig);
+    PlanCreatorUtils.setYamlUpdate(connectionStringsYamlField, yamlUpdates);
+
+    String connectionStringsPlanNodeId = "connectionStrings-" + UUIDGenerator.generateUuid();
+    PlanCreationResponseBuilder connectionStringsPlanCreationResponse =
+        PlanCreationResponse.builder().dependencies(getConnectionStringsDependencies(
+            connectionStringsPlanNodeId, finalConnectionStringsConfig, kryoSerializer, connectionStringsYamlField));
+    if (yamlUpdates.getFqnToYamlCount() > 0) {
+      connectionStringsPlanCreationResponse.yamlUpdates(yamlUpdates.build());
+    }
+    planCreationResponseMap.put(connectionStringsPlanNodeId, connectionStringsPlanCreationResponse.build());
+    return connectionStringsPlanNodeId;
+  }
+
+  private String addDependenciesForConnectionStringsV2(YamlNode serviceV2Node,
       Map<String, PlanCreationResponse> planCreationResponseMap, NGServiceV2InfoConfig serviceV2Config,
       KryoSerializer kryoSerializer) {
     YamlUpdates.Builder yamlUpdates = YamlUpdates.newBuilder();
@@ -591,21 +653,50 @@ public class ServiceDefinitionPlanCreatorHelper {
     ConnectionStringsConfiguration connectionStrings =
         ((AzureWebAppServiceSpec) serviceV2Config.getServiceDefinition().getServiceSpec()).getConnectionStrings();
 
-    Map<String, YamlField> dependenciesMap = new HashMap<>();
-    dependenciesMap.put(connectionStringsPlanNodeId, connectionStringsYamlField);
-    PlanCreationResponseBuilder connectionStringsPlanCreationResponse = PlanCreationResponse.builder().dependencies(
-        DependenciesUtils.toDependenciesProto(dependenciesMap)
-            .toBuilder()
-            .putDependencyMetadata(connectionStringsPlanNodeId,
-                AzureConfigsUtility.getDependencyMetadata(connectionStringsPlanNodeId,
-                    ConnectionStringsParameters.builder().connectionStrings(connectionStrings).build(), kryoSerializer,
-                    PlanCreatorConstants.CONNECTION_STRINGS_STEP_PARAMETER))
-            .build());
+    PlanCreationResponseBuilder connectionStringsPlanCreationResponse =
+        PlanCreationResponse.builder().dependencies(getConnectionStringsDependencies(
+            connectionStringsPlanNodeId, connectionStrings, kryoSerializer, connectionStringsYamlField));
     if (yamlUpdates.getFqnToYamlCount() > 0) {
       connectionStringsPlanCreationResponse.yamlUpdates(yamlUpdates.build());
     }
     planCreationResponseMap.put(connectionStringsPlanNodeId, connectionStringsPlanCreationResponse.build());
     return connectionStringsPlanNodeId;
+  }
+
+  private Dependencies getConnectionStringsDependencies(String connectionStringsPlanNodeId,
+      ConnectionStringsConfiguration connectionStringsConfiguration, KryoSerializer kryoSerializer,
+      YamlField appSettingsConfigFilesYamlField) {
+    Map<String, YamlField> dependenciesMap = new HashMap<>();
+    dependenciesMap.put(connectionStringsPlanNodeId, appSettingsConfigFilesYamlField);
+
+    return DependenciesUtils.toDependenciesProto(dependenciesMap)
+        .toBuilder()
+        .putDependencyMetadata(connectionStringsPlanNodeId,
+            AzureConfigsUtility.getDependencyMetadata(connectionStringsPlanNodeId,
+                ConnectionStringsParameters.builder().connectionStrings(connectionStringsConfiguration).build(),
+                kryoSerializer, PlanCreatorConstants.CONNECTION_STRINGS_STEP_PARAMETER))
+        .build();
+  }
+
+  private ConnectionStringsConfiguration getFinalConnectionStringsConfiguration(
+      NGServiceOverrideConfig serviceOverrideConfig, NGEnvironmentConfig ngEnvironmentConfig) {
+    if (isSvcOverridesConnectionStringsPresent(serviceOverrideConfig)) {
+      return serviceOverrideConfig.getServiceOverrideInfoConfig().getConnectionStrings();
+    } else if (isEnvGlobalConnectionStringsOverridesPresent(ngEnvironmentConfig)) {
+      return ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getConnectionStrings();
+    } else {
+      return null;
+    }
+  }
+
+  private YamlField prepareFinalUuidInjectedConnectionStringYamlField(
+      YamlNode serviceV2Node, ConnectionStringsConfiguration finalConnectionStringsConfig) throws IOException {
+    YamlField connectionStringsYamlField =
+        YamlUtils.injectUuidInYamlField(YamlUtils.write(finalConnectionStringsConfig));
+    connectionStringsYamlField = new YamlField(YamlTypes.CONNECTION_STRINGS,
+        new YamlNode(YamlTypes.CONNECTION_STRINGS, connectionStringsYamlField.getNode().getCurrJsonNode(),
+            serviceV2Node.getField(YamlTypes.SERVICE_DEFINITION).getNode().getField(YamlTypes.SPEC).getNode()));
+    return connectionStringsYamlField;
   }
 
   boolean shouldCreatePlanNodeForManifests(ServiceConfig actualServiceConfig) {
@@ -632,5 +723,87 @@ public class ServiceDefinitionPlanCreatorHelper {
     List<ConfigFileWrapper> configFiles = serviceV2InfoConfig.getServiceDefinition().getServiceSpec().getConfigFiles();
 
     return isNotEmpty(configFiles);
+  }
+
+  private boolean isServiceOverridePresent(NGServiceOverrideConfig serviceOverrideConfig) {
+    return serviceOverrideConfig != null && serviceOverrideConfig.getServiceOverrideInfoConfig() != null;
+  }
+
+  private boolean isEnvGlobalOverridesPresent(NGEnvironmentConfig ngEnvironmentConfig) {
+    return ngEnvironmentConfig != null && ngEnvironmentConfig.getNgEnvironmentInfoConfig() != null
+        && ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride() != null;
+  }
+
+  private boolean isEnvGlobalConfigFileOverridesPresent(NGEnvironmentConfig ngEnvironmentConfig) {
+    if (!isEnvGlobalOverridesPresent(ngEnvironmentConfig)) {
+      return false;
+    }
+    return isNotEmpty(
+        ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getConfigFiles());
+  }
+
+  private boolean isSvcOverridesConfigFilesPresent(NGServiceOverrideConfig serviceOverrideConfig) {
+    if (!isServiceOverridePresent(serviceOverrideConfig)) {
+      return false;
+    }
+    return isNotEmpty(serviceOverrideConfig.getServiceOverrideInfoConfig().getConfigFiles());
+  }
+
+  private boolean isEnvGlobalManifestOverridesPresent(NGEnvironmentConfig ngEnvironmentConfig) {
+    if (!isEnvGlobalOverridesPresent(ngEnvironmentConfig)) {
+      return false;
+    }
+    return isNotEmpty(ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getManifests());
+  }
+
+  private boolean isSvcOverridesManifestPresent(NGServiceOverrideConfig serviceOverrideConfig) {
+    if (!isServiceOverridePresent(serviceOverrideConfig)) {
+      return false;
+    }
+    return isNotEmpty(serviceOverrideConfig.getServiceOverrideInfoConfig().getManifests());
+  }
+
+  private boolean isSvcOverridesApplicationSettingsPresent(NGServiceOverrideConfig serviceOverrideConfig) {
+    if (!isServiceOverridePresent(serviceOverrideConfig)) {
+      return false;
+    }
+    return serviceOverrideConfig.getServiceOverrideInfoConfig().getApplicationSettings() != null;
+  }
+
+  private boolean isEnvGlobalApplicationSettingsOverridesPresent(NGEnvironmentConfig ngEnvironmentConfig) {
+    if (!isEnvGlobalOverridesPresent(ngEnvironmentConfig)) {
+      return false;
+    }
+    return ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getApplicationSettings()
+        != null;
+  }
+
+  private boolean shouldCreatePlanNodeForApplicationSettingsV2(NGServiceV2InfoConfig serviceV2InfoConfig) {
+    AzureWebAppServiceSpec azureWebAppServiceSpec =
+        (AzureWebAppServiceSpec) serviceV2InfoConfig.getServiceDefinition().getServiceSpec();
+    ApplicationSettingsConfiguration applicationSettings = azureWebAppServiceSpec.getApplicationSettings();
+    return applicationSettings != null;
+  }
+
+  private boolean isSvcOverridesConnectionStringsPresent(NGServiceOverrideConfig serviceOverrideConfig) {
+    if (!isServiceOverridePresent(serviceOverrideConfig)) {
+      return false;
+    }
+    return serviceOverrideConfig.getServiceOverrideInfoConfig().getConnectionStrings() != null;
+  }
+
+  private boolean isEnvGlobalConnectionStringsOverridesPresent(NGEnvironmentConfig ngEnvironmentConfig) {
+    if (!isEnvGlobalOverridesPresent(ngEnvironmentConfig)) {
+      return false;
+    }
+    return ngEnvironmentConfig.getNgEnvironmentInfoConfig().getNgEnvironmentGlobalOverride().getConnectionStrings()
+        != null;
+  }
+
+  private boolean shouldCreatePlanNodeForConnectionStringsV2(NGServiceV2InfoConfig serviceV2InfoConfig) {
+    AzureWebAppServiceSpec azureWebAppServiceSpec =
+        (AzureWebAppServiceSpec) serviceV2InfoConfig.getServiceDefinition().getServiceSpec();
+    ConnectionStringsConfiguration connectionStrings = azureWebAppServiceSpec.getConnectionStrings();
+    return connectionStrings != null;
   }
 }

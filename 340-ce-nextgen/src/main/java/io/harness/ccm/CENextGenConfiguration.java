@@ -15,6 +15,7 @@ import io.harness.AccessControlClientConfiguration;
 import io.harness.accesscontrol.AccessControlAdminClientConfiguration;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ccm.commons.beans.config.AwsConfig;
+import io.harness.ccm.commons.beans.config.AwsGovCloudConfig;
 import io.harness.ccm.commons.beans.config.GcpConfig;
 import io.harness.cf.CfClientConfig;
 import io.harness.configuration.DeployMode;
@@ -110,6 +111,7 @@ public class CENextGenConfiguration extends Configuration {
   @JsonProperty(value = "ceAzureSetupConfig") @ConfigSecret private CEAzureSetupConfig ceAzureSetupConfig;
   @JsonProperty(value = "ceGcpSetupConfig") @ConfigSecret private CEGcpSetupConfig ceGcpSetupConfig;
   @JsonProperty(value = "awsConfig") @ConfigSecret private AwsConfig awsConfig;
+  @JsonProperty(value = "awsGovCloudConfig") @ConfigSecret private AwsGovCloudConfig awsGovCloudConfig;
 
   @JsonProperty("segmentConfiguration") @ConfigSecret private SegmentConfiguration segmentConfiguration;
 
@@ -127,6 +129,9 @@ public class CENextGenConfiguration extends Configuration {
 
   @JsonProperty("secretsConfiguration") private SecretsConfiguration secretsConfiguration;
   @JsonProperty("notificationClient") private NotificationClientConfiguration notificationClientConfiguration;
+
+  @JsonProperty("lightwingAutoCUDClientConfig") private ServiceHttpClientConfig lightwingAutoCUDClientConfig;
+  @JsonProperty(value = "enableLightwingAutoCUDDC") private boolean enableLightwingAutoCUDDC;
 
   public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
     SwaggerBundleConfiguration defaultSwaggerConf = new SwaggerBundleConfiguration();
@@ -206,5 +211,13 @@ public class CENextGenConfiguration extends Configuration {
         .prettyPrint(true)
         .resourceClasses(resourceClasses)
         .scannerClass("io.swagger.v3.jaxrs2.integration.JaxrsAnnotationScanner");
+  }
+
+  public List<String> getDbAliases() {
+    List<String> dbAliases = new ArrayList<>();
+    if (eventsMongoConfig != null) {
+      dbAliases.add(eventsMongoConfig.getAliasDBName());
+    }
+    return dbAliases;
   }
 }
