@@ -130,7 +130,7 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
     assertThat(sloDashboardWidget.getSloTargetPercentage()).isCloseTo(80, offset(.0001));
     assertThat(sloDashboardWidget.getErrorBudgetRemainingPercentage()).isCloseTo(100, offset(0.0001));
     assertThat(sloDashboardWidget.getErrorBudgetRisk()).isEqualTo(ErrorBudgetRisk.HEALTHY);
-    assertThat(sloDashboardWidget.isRecalculatingSLI()).isTrue();
+    assertThat(sloDashboardWidget.isRecalculatingSLI()).isFalse();
     assertThat(sloDashboardWidget.isCalculatingSLI()).isTrue();
     assertThat(sloDashboardWidget.getTimeRemainingDays()).isEqualTo(0);
     assertThat(sloDashboardWidget.getServiceIdentifier()).isEqualTo(monitoredServiceDTO.getServiceRef());
@@ -320,6 +320,7 @@ public class SLODashboardServiceImplTest extends CvNextGenTestBase {
     assertThat(sloDashboardWidget.getEnvironmentIdentifier()).isEqualTo(monitoredServiceDTO.getEnvironmentRef());
     assertThat(sloDashboardWidget.getServiceName()).isEqualTo("Mocked service name");
     assertThat(sloDashboardWidget.getEnvironmentName()).isEqualTo("Mocked env name");
+    assertThat(sloDashboardWidget.getUserJourneyIdentifier()).isEqualTo("userJourney");
   }
 
   @Test
