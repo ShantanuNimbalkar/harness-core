@@ -73,8 +73,8 @@ public class MetricPackServiceImpl implements MetricPackService {
   static final List<String> SPLUNK_METRICS_METRICPACK_FILES =
       Lists.newArrayList("/splunk/metric-packs/default-custom-pack.yaml");
   static final List<String> CLOUDWATCH_METRICS_METRICPACK_FILES =
-      Lists.newArrayList("/cloudwatch/metric-packs/default-error-pack.yml",
-          "/cloudwatch/metric-packs/default-performance-pack.yml", "/cloudwatch/metric-packs/default-infra-pack.yml");
+      Lists.newArrayList("/cloudwatch/metric-packs/default-error-pack.yaml",
+          "/cloudwatch/metric-packs/default-performance-pack.yaml", "/cloudwatch/metric-packs/default-infra-pack.yaml");
   private static final URL APPDYNAMICS_PERFORMANCE_PACK_DSL_PATH =
       MetricPackServiceImpl.class.getResource("/appdynamics/dsl/performance-pack.datacollection");
   public static final String APPDYNAMICS_PERFORMANCE_PACK_DSL;

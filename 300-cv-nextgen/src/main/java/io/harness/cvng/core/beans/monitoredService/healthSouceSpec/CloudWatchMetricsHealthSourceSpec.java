@@ -104,7 +104,7 @@ public class CloudWatchMetricsHealthSourceSpec extends MetricHealthSourceSpec {
 
   @Override
   public DataSourceType getType() {
-    return DataSourceType.APP_DYNAMICS;
+    return DataSourceType.CLOUDWATCH_METRICS;
   }
 
   private List<CloudWatchMetricCVConfig> toCVConfigs(String accountId, String orgIdentifier, String projectIdentifier,
