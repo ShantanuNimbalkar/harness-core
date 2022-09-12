@@ -204,7 +204,7 @@ public class EcsStepCommonHelper extends EcsStepUtils {
   }
 
   private TaskChainResponse prepareEcsRunTaskTaskDefinitionGitFetchTask(Ambiance ambiance,
-                                                           StepElementParameters stepElementParameters, InfrastructureOutcome infrastructureOutcome,
+                                                           StepElementParameters stepElementParameters, InfrastructureOutcome infrastructureOutcome
                                                            ,EcsStepHelper ecsStepHelper) {
 
     EcsRunTaskStepParameters ecsRunTaskStepParameters = (EcsRunTaskStepParameters) stepElementParameters.getSpec();
@@ -212,10 +212,8 @@ public class EcsStepCommonHelper extends EcsStepUtils {
     EcsGitFetchPassThroughData ecsGitFetchPassThroughData =
             EcsGitFetchPassThroughData.builder().infrastructureOutcome(infrastructureOutcome).build();
 
-    ManifestOutcome ecsRunTaskManifest 
-
     return getGitFetchFileTaskResponse(ambiance, true, stepElementParameters, ecsGitFetchPassThroughData,
-            ecsTaskDefinitionGitFetchFileConfig, null,
+            null, null,
             null, null);
   }
 
