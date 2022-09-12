@@ -133,7 +133,9 @@ public interface DelegateService extends OwnedByAccount {
 
   void deleteDelegateGroupV2(String accountId, String orgId, String projectId, String identifier);
 
-  DelegateRegisterResponse register(@Valid Delegate delegate);
+  //DelegateRegisterResponse register(@Valid Delegate delegate);
+
+  void handleDelegateHeartBeat(Delegate delegate);
 
   DelegateRegisterResponse register(@Valid DelegateParams delegateParams, boolean isConnectedUsingMtls);
 

@@ -285,7 +285,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Request.Builder;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -355,6 +354,10 @@ public class DelegateServiceImpl implements DelegateService {
   private static final long MAX_GRPC_HB_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
 
   private static final Duration HEARTBEAT_EXPIRY_TIME = ofMinutes(5);
+
+  private long now() {
+    return clock.millis();
+  }
 
   static {
     templateConfiguration.setTemplateLoader(new ClassTemplateLoader(DelegateServiceImpl.class, "/delegatetemplates"));
@@ -1133,22 +1136,10 @@ public class DelegateServiceImpl implements DelegateService {
 
   @Override
   public Delegate updateHeartbeatForDelegateWithPollingEnabled(Delegate delegate) {
-    persistence.update(persistence.createQuery(Delegate.class)
-                           .filter(DelegateKeys.accountId, delegate.getAccountId())
-                           .filter(DelegateKeys.uuid, delegate.getUuid()),
-        persistence.createUpdateOperations(Delegate.class)
-            .set(DelegateKeys.lastHeartBeat, currentTimeMillis())
-            .set(DelegateKeys.validUntil, Date.from(OffsetDateTime.now().plusDays(Delegate.TTL.toDays()).toInstant())));
-    delegateTaskService.touchExecutingTasks(
-        delegate.getAccountId(), delegate.getUuid(), delegate.getCurrentlyExecutingDelegateTasks());
-
+    handleDelegateHeartBeat(delegate);
     Delegate existingDelegate = delegateCache.get(delegate.getAccountId(), delegate.getUuid(), false);
 
-    if (existingDelegate == null) {
-      register(delegate);
-      existingDelegate = delegateCache.get(delegate.getAccountId(), delegate.getUuid(), true);
-    }
-
+    // ??? why set status useCdn and jre version after reading from cache in a HB call.
     if (licenseService.isAccountDeleted(existingDelegate.getAccountId())) {
       existingDelegate.setStatus(DelegateInstanceStatus.DELETED);
     }
@@ -2502,31 +2493,34 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
-  public DelegateRegisterResponse register(Delegate delegate) {
+  public void handleDelegateHeartBeat(Delegate delegate) {
     if (licenseService.isAccountDeleted(delegate.getAccountId())) {
       delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_DESTROYED);
       broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(SELF_DESTRUCT);
       log.warn("Sending self destruct command from register delegate because the account is deleted.");
-      delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
-      return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
+      return;
+      //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
+      //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
     }
 
     if (isNotBlank(delegate.getDelegateGroupId())) {
       DelegateGroup delegateGroup = persistence.get(DelegateGroup.class, delegate.getDelegateGroupId());
       if (delegateGroup == null || DelegateGroupStatus.DELETED == delegateGroup.getStatus()) {
         log.warn("Sending self destruct command from register delegate because the delegate group is deleted.");
-        delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
-        return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
+        return;
+        //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
+        //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
       }
     }
 
     if (accountService.isAccountMigrated(delegate.getAccountId())) {
       String migrateMsg = MIGRATE + accountService.get(delegate.getAccountId()).getMigratedToClusterUrl();
       broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(migrateMsg);
-      return DelegateRegisterResponse.builder()
-          .action(DelegateRegisterResponse.Action.MIGRATE)
-          .migrateUrl(accountService.get(delegate.getAccountId()).getMigratedToClusterUrl())
-          .build();
+      return;
+//      return DelegateRegisterResponse.builder()
+//          .action(DelegateRegisterResponse.Action.MIGRATE)
+//          .migrateUrl(accountService.get(delegate.getAccountId()).getMigratedToClusterUrl())
+//          .build();
     }
 
     final Delegate existingDelegate = getExistingDelegate(
@@ -2538,7 +2532,8 @@ public class DelegateServiceImpl implements DelegateService {
       log.warn(
           "Sending self destruct command from register delegate because the existing delegate has status deleted.");
       delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
-      return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
+      return;
+      //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
     }
 
     if (existingDelegate != null) {
@@ -2548,11 +2543,33 @@ public class DelegateServiceImpl implements DelegateService {
       log.info("Registering delegate for Hostname: {} IP: {}", delegate.getHostName(), delegate.getIp());
     }
 
-    if (ECS.equals(delegate.getDelegateType())) {
-      return registerResponseFromDelegate(handleEcsDelegateRequest(delegate));
-    } else {
-      return registerResponseFromDelegate(upsertDelegateOperation(existingDelegate, delegate));
+    long delegateHeartbeat = delegate.getLastHeartBeat();
+    long skew = Math.abs(now() - delegateHeartbeat);
+    if (skew > TimeUnit.MINUTES.toMillis(2L)) {
+      log.debug("Delegate {} has clock skew of {}", delegate.getUuid(), Misc.getDurationString(skew));
     }
+
+    if (ECS.equals(delegate.getDelegateType())) {
+      handleEcsDelegateRequest(delegate);
+    } else {
+      updateDelegateHeartBeatInfo(existingDelegate);
+    }
+  }
+
+  private void updateDelegateHeartBeatInfo(final Delegate existingDelegate) {
+    existingDelegate.setLastHeartBeat(now());
+    existingDelegate.setValidUntil(Date.from(OffsetDateTime.now().plusDays(Delegate.TTL.toDays()).toInstant()));
+    final UpdateOperations<Delegate> updateOperations = persistence.createUpdateOperations(Delegate.class);
+    setUnset(updateOperations, DelegateKeys.lastHeartBeat, existingDelegate.getLastHeartBeat());
+    setUnset(updateOperations, DelegateKeys.validUntil, existingDelegate.getValidUntil());
+    updateDelegate(existingDelegate, updateOperations);
+/*
+Plan to remove this but concern is whether the removal will break grouped delegates in CG
+We should update the group level metadata in only one entity instead of iterating and updating every delegate
+    if (isGroupedCgDelegate(delegate)) {
+      updateDelegateWithConfigFromGroup(delegate);
+    }
+ */
   }
 
   @Override

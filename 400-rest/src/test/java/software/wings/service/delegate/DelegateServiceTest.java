@@ -1127,25 +1127,6 @@ public class DelegateServiceTest extends WingsBaseTest {
   }
 
   @Test
-  @Owner(developers = BRETT)
-  @Category(UnitTests.class)
-  public void shouldRegister() {
-    String accountId = generateUuid();
-    Delegate delegate = createDelegateBuilder().build();
-    delegate.setAccountId(accountId);
-    DelegateProfile primaryDelegateProfile =
-        createDelegateProfileBuilder().accountId(delegate.getAccountId()).primary(true).build();
-
-    delegate.setDelegateProfileId(primaryDelegateProfile.getUuid());
-    when(delegateProfileService.fetchCgPrimaryProfile(delegate.getAccountId())).thenReturn(primaryDelegateProfile);
-    when(delegatesFeature.getMaxUsageAllowedForAccount(accountId)).thenReturn(Integer.MAX_VALUE);
-
-    DelegateRegisterResponse registerResponse = delegateService.register(delegate);
-    Delegate delegateFromDb = delegateCache.get(accountId, registerResponse.getDelegateId(), true);
-    assertThat(delegateFromDb).isEqualTo(delegate);
-  }
-
-  @Test
   @Owner(developers = SANJA)
   @Category(UnitTests.class)
   public void shouldRegisterDelegateParams() {
@@ -1367,7 +1348,8 @@ public class DelegateServiceTest extends WingsBaseTest {
     assertThat(delegateFromDb.isNg()).isEqualTo(params.isNg());
     assertThat(delegateFromDb.isMtls()).isFalse();
   }
-
+/*
+why register existing delegate ? Maybe we can remove this test
   @Test
   @Owner(developers = BRETT)
   @Category(UnitTests.class)
@@ -1390,7 +1372,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     assertThat(registeredDelegate).isEqualToIgnoringGivenFields(delegate, DelegateKeys.validUntil);
     assertThat(registeredDelegate.isMtls()).isTrue();
   }
-
+*/
   @Test
   @Owner(developers = BRETT)
   @Category(UnitTests.class)
@@ -1743,6 +1725,8 @@ public class DelegateServiceTest extends WingsBaseTest {
     assertThat(delegateFromDb.isMtls()).isFalse();
   }
 
+  /*
+  TODO: move to heartbeat test
   @Test
   @Owner(developers = BRETT)
   @Category(UnitTests.class)
@@ -1771,7 +1755,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     DelegateRegisterResponse registerResponse = delegateService.register(delegate);
     assertThat(registerResponse.getAction()).isEqualTo(DelegateRegisterResponse.Action.SELF_DESTRUCT);
   }
-
+*/
   @Test
   @Owner(developers = BRETT)
   @Category(UnitTests.class)
@@ -1787,6 +1771,8 @@ public class DelegateServiceTest extends WingsBaseTest {
     DelegateRegisterResponse registerResponse = delegateService.register(delegateParams, false);
     assertThat(registerResponse.getAction()).isEqualTo(DelegateRegisterResponse.Action.SELF_DESTRUCT);
   }
+/*
+  TODO: move to heartbeat test
 
   @Test
   @Owner(developers = MARKO)
@@ -1811,7 +1797,7 @@ public class DelegateServiceTest extends WingsBaseTest {
     DelegateRegisterResponse registerResponse = delegateService.register(delegate);
     assertThat(registerResponse.getAction()).isEqualTo(DelegateRegisterResponse.Action.SELF_DESTRUCT);
   }
-
+*/
   @Test
   @Owner(developers = MARKO)
   @Category(UnitTests.class)
@@ -3545,7 +3531,8 @@ public class DelegateServiceTest extends WingsBaseTest {
     assertThat(persistence.get(Delegate.class, d2.getUuid())).isNull();
     verify(eventProducer, times(2)).send(any());
   }
-
+/*
+  TODO: move to heartbeat test
   @Test
   @Owner(developers = ARPIT)
   @Category(UnitTests.class)
@@ -3562,6 +3549,8 @@ public class DelegateServiceTest extends WingsBaseTest {
     assertThat(registerResponse.getAction()).isEqualTo(Action.SELF_DESTRUCT);
     assertThat(registerResponse.getDelegateId()).isNull();
   }
+
+ */
 
   @Test
   @Owner(developers = ARPIT)

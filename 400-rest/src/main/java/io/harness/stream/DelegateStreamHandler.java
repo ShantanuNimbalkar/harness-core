@@ -73,6 +73,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
     String agentMtlsAuthority = req.getHeader(HEADER_AGENT_MTLS_AUTHORITY);
     boolean isConnectedUsingMtls = isAgentConnectedUsingMtls(agentMtlsAuthority);
 
+    // ??? can we remove one of POST or GET completely
     if (req.getMethod().equals("GET")) {
       String accountId;
       String delegateId;
@@ -98,7 +99,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
 
           updateIfEcsDelegate(delegate, sequenceNum, delegateToken);
 
-          delegateService.register(delegate);
+          delegateService.handleDelegateHeartBeat(delegate);
           delegateService.registerHeartbeat(accountId, delegateId,
               DelegateConnectionHeartbeat.builder()
                   .delegateConnectionId(delegateConnectionId)
@@ -114,7 +115,8 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
                    AutoLogContext ignore3 = new WebsocketLogContext(event.getResource().uuid(), OVERRIDE_ERROR)) {
                 log.info("delegate socket disconnected");
                 Delegate delegate = delegateCache.get(accountId, delegateId, true);
-                delegateService.register(delegate);
+                // ??? why register on disconnect ?
+                //delegateService.register(delegate);
                 delegateService.delegateDisconnected(accountId, delegateId, delegateConnectionId);
               }
             }
@@ -141,6 +143,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
         resource.suspend();
       }
     } else if (req.getMethod().equalsIgnoreCase("POST")) {
+      log.info("delegate socket POST request");
       List<String> pathSegments = SPLITTER.splitToList(req.getPathInfo());
       String accountId = pathSegments.get(1);
       String delegateId = req.getParameter("delegateId");
@@ -158,7 +161,7 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
         Delegate delegate = Delegate.getDelegateFromParams(delegateParams, isConnectedUsingMtls);
         delegate.setUuid(delegateId);
 
-        delegateService.register(delegate);
+        delegateService.handleDelegateHeartBeat(delegate);
         delegateService.registerHeartbeat(accountId, delegateId,
             DelegateConnectionHeartbeat.builder()
                 .delegateConnectionId(delegateConnectionId)
