@@ -1118,7 +1118,7 @@ public class NativeHelmStepHelperTest extends CategoryTest {
   @Test
   @Owner(developers = PRATYUSH)
   @Category(UnitTests.class)
-  public void testShouldPrepareHelmGitValuesFetchTaskWithHarnessStore() {
+  public void testShouldExecuteHelmTaskForHarnessStore() {
     List<String> files = asList("org:/path/to/helm/chart");
     K8sDirectInfrastructureOutcome k8sDirectInfrastructureOutcome =
         K8sDirectInfrastructureOutcome.builder().namespace("default").build();
@@ -1174,7 +1174,7 @@ public class NativeHelmStepHelperTest extends CategoryTest {
                     .manifestFiles(asList(manifestFiles))
                     .lastActiveUnitProgressData(null)
                     .build()),
-            eq(false), eq(null));
+            eq(false), eq(UnitProgressData.builder().build()));
     List<String> valuesFilesContent = valuesFilesContentCaptor.getValue();
     assertThat(valuesFilesContent).isNotEmpty();
     assertThat(valuesFilesContent.size()).isEqualTo(2);
@@ -1551,11 +1551,13 @@ public class NativeHelmStepHelperTest extends CategoryTest {
         StepElementParameters.builder().spec(HelmDeployStepParams.infoBuilder().build()).build();
 
     StoreConfig store = CustomRemoteStoreConfig.builder().build();
-    K8sStepPassThroughData passThroughData =
-        K8sStepPassThroughData.builder()
-            .manifestOutcome(HelmChartManifestOutcome.builder().store(store).build())
-            .infrastructure(K8sDirectInfrastructureOutcome.builder().build())
-            .build();
+    HelmChartManifestOutcome helmChartManifestOutcome =
+        HelmChartManifestOutcome.builder().identifier("id").store(store).build();
+    K8sStepPassThroughData passThroughData = K8sStepPassThroughData.builder()
+                                                 .manifestOutcome(helmChartManifestOutcome)
+                                                 .manifestFiles(new ArrayList<>())
+                                                 .infrastructure(K8sDirectInfrastructureOutcome.builder().build())
+                                                 .build();
     Map<String, Collection<CustomSourceFile>> valuesFilesContentMap = new HashMap<>();
     valuesFilesContentMap.put("id",
         asList(CustomSourceFile.builder().fileContent("values yaml payload").filePath("path/to/values.yaml").build()));
@@ -1579,9 +1581,15 @@ public class NativeHelmStepHelperTest extends CategoryTest {
             .customFetchContent(customManifestValuesFetchResponse.getValuesFilesContentMap())
             .zippedManifestFileId(customManifestValuesFetchResponse.getZippedManifestFileId())
             .build();
-    verify(nativeHelmStepHelper, times(1))
-        .executeValuesFetchTask(eq(ambiance), eq(stepElementParams), eq(emptyList()), eq(emptyMap()),
-            eq(updatedK8sStepPassThroughData), eq(true));
+    NativeHelmExecutionPassThroughData nativeHelmExecutionPassThroughData =
+        NativeHelmExecutionPassThroughData.builder()
+            .infrastructure(updatedK8sStepPassThroughData.getInfrastructure())
+            .manifestFiles(new ArrayList<>())
+            .zippedManifestId(updatedK8sStepPassThroughData.getZippedManifestFileId())
+            .build();
+    verify(nativeHelmStepExecutor, times(1))
+        .executeHelmTask(eq(helmChartManifestOutcome), eq(ambiance), eq(stepElementParams),
+            eq(asList("values yaml payload")), eq(nativeHelmExecutionPassThroughData), eq(false), eq(unitProgressData));
   }
 
   @Test

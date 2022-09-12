@@ -57,6 +57,7 @@ import io.harness.cdng.K8sHelmCommonStepHelper;
 import io.harness.cdng.common.beans.SetupAbstractionKeys;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.helm.HelmDeployStepParams;
+import io.harness.cdng.helm.beans.NativeHelmExecutionPassThroughData;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome.K8sDirectInfrastructureOutcomeBuilder;
 import io.harness.cdng.k8s.beans.CustomFetchResponsePassThroughData;
@@ -2006,11 +2007,12 @@ public class K8sStepHelperTest extends CategoryTest {
         StepElementParameters.builder().spec(K8sRollingStepParameters.infoBuilder().build()).build();
 
     StoreConfig store = CustomRemoteStoreConfig.builder().build();
-    K8sStepPassThroughData passThroughData =
-        K8sStepPassThroughData.builder()
-            .manifestOutcome(HelmChartManifestOutcome.builder().store(store).build())
-            .infrastructure(K8sDirectInfrastructureOutcome.builder().build())
-            .build();
+    HelmChartManifestOutcome helmChartManifestOutcome =
+        HelmChartManifestOutcome.builder().identifier("id").store(store).build();
+    K8sStepPassThroughData passThroughData = K8sStepPassThroughData.builder()
+                                                 .manifestOutcome(helmChartManifestOutcome)
+                                                 .infrastructure(K8sDirectInfrastructureOutcome.builder().build())
+                                                 .build();
     Map<String, Collection<CustomSourceFile>> valuesFilesContentMap = new HashMap<>();
     valuesFilesContentMap.put("id",
         asList(CustomSourceFile.builder().fileContent("values yaml payload").filePath("path/to/values.yaml").build()));
@@ -2033,9 +2035,20 @@ public class K8sStepHelperTest extends CategoryTest {
             .customFetchContent(customManifestValuesFetchResponse.getValuesFilesContentMap())
             .zippedManifestFileId(customManifestValuesFetchResponse.getZippedManifestFileId())
             .build();
-    verify(k8sStepHelper, times(1))
-        .executeValuesFetchTask(eq(ambiance), eq(stepElementParams), eq(emptyList()), eq(emptyMap()),
-            eq(updatedK8sStepPassThroughData), eq(false));
+    ArgumentCaptor<List> valuesFilesContentCaptor = ArgumentCaptor.forClass(List.class);
+    K8sExecutionPassThroughData k8sExecutionPassThroughData =
+        K8sExecutionPassThroughData.builder()
+            .infrastructure(updatedK8sStepPassThroughData.getInfrastructure())
+            .zippedManifestId(updatedK8sStepPassThroughData.getZippedManifestFileId())
+            .manifestFiles(updatedK8sStepPassThroughData.getManifestFiles())
+            .lastActiveUnitProgressData(null)
+            .build();
+    verify(k8sStepExecutor, times(1))
+        .executeK8sTask(eq(helmChartManifestOutcome), eq(ambiance), eq(stepElementParams),
+            valuesFilesContentCaptor.capture(), eq(k8sExecutionPassThroughData), eq(false), eq(null));
+    List<String> valuesFilesContent = valuesFilesContentCaptor.getValue();
+    assertThat(valuesFilesContent).isNotEmpty();
+    assertThat(valuesFilesContent.size()).isEqualTo(1);
   }
 
   @Test
