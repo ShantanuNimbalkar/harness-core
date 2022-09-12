@@ -1353,7 +1353,7 @@ public class HelmTaskHelperTest extends WingsBaseTest {
     assertThatThrownBy(()
                            -> helmTaskHelper.getValuesYamlFromChart(
                                helmChartConfigParams, LONG_TIMEOUT_INTERVAL, null, mapK8sValuesLocationToFilePaths))
-        .isInstanceOf(HelmClientRuntimeException.class)
+        .isInstanceOf(HelmClientException.class)
         .hasMessageContaining("Failed to fetch chart")
         .hasMessageContaining("something went wrong executing command");
   }
