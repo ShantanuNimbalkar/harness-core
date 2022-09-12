@@ -13,6 +13,7 @@ import io.harness.delegate.task.artifacts.S3ArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.artifactory.ArtifactoryGenericArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.azure.AcrArtifactDelegateResponse;
+import io.harness.delegate.task.artifacts.custom.CustomArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.docker.DockerArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.ecr.EcrArtifactDelegateResponse;
 import io.harness.delegate.task.artifacts.gcr.GcrArtifactDelegateResponse;
@@ -49,6 +50,8 @@ public class ArtifactCollectionUtilsNg {
         return ((S3ArtifactDelegateResponse) artifactDelegateResponse).getFilePath();
       case JENKINS:
         return ((JenkinsArtifactDelegateResponse) artifactDelegateResponse).getBuild();
+      case CUSTOM_ARTIFACT:
+        return ((CustomArtifactDelegateResponse) artifactDelegateResponse).getVersion();
       default:
         throw new InvalidRequestException(
             String.format("Source type %s not supported", artifactDelegateResponse.getSourceType()));

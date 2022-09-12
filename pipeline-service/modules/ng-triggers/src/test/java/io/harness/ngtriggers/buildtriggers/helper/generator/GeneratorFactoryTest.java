@@ -21,6 +21,7 @@ import io.harness.ngtriggers.buildtriggers.helpers.BuildTriggerHelper;
 import io.harness.ngtriggers.buildtriggers.helpers.dtos.BuildTriggerOpsData;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.AcrPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.ArtifactoryRegistryPollingItemGenerator;
+import io.harness.ngtriggers.buildtriggers.helpers.generator.CustomPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.DockerRegistryPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.EcrPollingItemGenerator;
 import io.harness.ngtriggers.buildtriggers.helpers.generator.GCSHelmPollingItemGenerator;
@@ -76,12 +77,13 @@ public class GeneratorFactoryTest extends CategoryTest {
         new DockerRegistryPollingItemGenerator(buildTriggerHelper);
     JenkinsPollingItemGenerator jenkinsPollingItemGenerator = new JenkinsPollingItemGenerator(buildTriggerHelper);
     AcrPollingItemGenerator acrPollingItemGenerator = new AcrPollingItemGenerator(buildTriggerHelper);
+    CustomPollingItemGenerator customPollingItemGenerator = new CustomPollingItemGenerator(buildTriggerHelper);
     ArtifactoryRegistryPollingItemGenerator artifactoryRegistryPollingItemGenerator =
         new ArtifactoryRegistryPollingItemGenerator(buildTriggerHelper);
     generatorFactory = new GeneratorFactory(buildTriggerHelper, httpHelmPollingItemGenerator,
         s3HelmPollingItemGenerator, s3PollingItemGenerator, gcsHelmPollingItemGenerator, gcrPollingItemGenerator,
         ecrPollingItemGenerator, dockerRegistryPollingItemGenerator, artifactoryRegistryPollingItemGenerator,
-        acrPollingItemGenerator, jenkinsPollingItemGenerator, gitPollingItemGenerator);
+        acrPollingItemGenerator, jenkinsPollingItemGenerator, gitPollingItemGenerator, customPollingItemGenerator);
     classLoader = getClass().getClassLoader();
   }
 

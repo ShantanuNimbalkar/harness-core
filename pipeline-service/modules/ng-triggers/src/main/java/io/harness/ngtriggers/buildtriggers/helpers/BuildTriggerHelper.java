@@ -37,6 +37,7 @@ import io.harness.polling.contracts.AcrPayload;
 import io.harness.polling.contracts.AmazonS3Payload;
 import io.harness.polling.contracts.ArtifactoryRegistryPayload;
 import io.harness.polling.contracts.BuildInfo;
+import io.harness.polling.contracts.CustomPayload;
 import io.harness.polling.contracts.DockerHubPayload;
 import io.harness.polling.contracts.EcrPayload;
 import io.harness.polling.contracts.GcrPayload;
@@ -234,7 +235,7 @@ public class BuildTriggerHelper {
 
   public void validatePollingItemForArtifact(PollingItem pollingItem) {
     String error = checkFiledValueError("ConnectorRef", pollingItem.getPollingPayloadData().getConnectorRef());
-    if (isNotBlank(error)) {
+    if (isNotBlank(error) && !pollingItem.getPollingPayloadData().hasCustomPayload()) {
       throw new InvalidRequestException(error);
     }
 
@@ -253,6 +254,8 @@ public class BuildTriggerHelper {
       validatePollingItemForS3(pollingItem);
     } else if (pollingPayloadData.hasJenkinsPayload()) {
       validatePollingItemForJenkins(pollingItem);
+    } else if (pollingPayloadData.hasCustomPayload()) {
+      validatePollingItemForCustom(pollingItem);
     } else {
       throw new InvalidRequestException("Invalid Polling Type");
     }
@@ -270,6 +273,15 @@ public class BuildTriggerHelper {
     JenkinsPayload jenkinsPayload = pollingItem.getPollingPayloadData().getJenkinsPayload();
 
     String error = checkFiledValueError("jobName", jenkinsPayload.getJobName());
+    if (isNotBlank(error)) {
+      throw new InvalidRequestException(error);
+    }
+  }
+
+  private void validatePollingItemForCustom(PollingItem pollingItem) {
+    CustomPayload customPayload = pollingItem.getPollingPayloadData().getCustomPayload();
+
+    String error = checkFiledValueError("version", customPayload.getVersion());
     if (isNotBlank(error)) {
       throw new InvalidRequestException(error);
     }

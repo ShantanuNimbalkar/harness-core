@@ -22,7 +22,8 @@ public enum ArtifactType {
   @JsonProperty("ArtifactoryRegistry") ARTIFACTORY_REGISTRY("ArtifactoryRegistry"),
   @JsonProperty("Acr") ACR("Acr"),
   @JsonProperty("AmazonS3") AMAZON_S3("AmazonS3"),
-  @JsonProperty("Jenkins") JENKINS("Jenkins");
+  @JsonProperty("Jenkins") JENKINS("Jenkins"),
+  @JsonProperty("CustomArtifact") CUSTOM_ARTIFACT("CustomArtifact");
 
   private String value;
 
