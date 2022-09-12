@@ -60,4 +60,49 @@ public class GARArtifactResource {
         connectorRef, region, repositoryName, project, pkg, version, versionRegex, orgIdentifier, projectIdentifier);
     return ResponseDTO.newResponse(buildDetails);
   }
+  @GET
+  @Path("getRegions")
+  @ApiOperation(value = "Gets google artifact registry regions", nickname = "getRegionsForGoogleArtifactRegistry")
+  public ResponseDTO<List<regionGar>> getRegions() {
+    List<regionGar> regions = new ArrayList<>();
+    regions.add(new regionGar("asia", "asia"));
+    regions.add(new regionGar("asia-east1", "asia-east1"));
+    regions.add(new regionGar("asia-east2", "asia-east2"));
+    regions.add(new regionGar("asia-northeast1", "asia-northeast1"));
+    regions.add(new regionGar("asia-northeast2", "asia-northeast2"));
+    regions.add(new regionGar("asia-northeast3", "asia-northeast3"));
+    regions.add(new regionGar("asia-south1", "asia-south1"));
+    regions.add(new regionGar("asia-south2", "asia-south2"));
+    regions.add(new regionGar("asia-southeast1", "asia-southeast1"));
+    regions.add(new regionGar("asia-southeast2", "asia-southeast2"));
+    regions.add(new regionGar("australia-southeast1", "australia-southeast1"));
+    regions.add(new regionGar("australia-southeast2", "australia-southeast2"));
+    regions.add(new regionGar("europe", "europe"));
+    regions.add(new regionGar("europe-central2", "europe-central2"));
+    regions.add(new regionGar("europe-north1", "europe-north1"));
+    regions.add(new regionGar("europe-southwest1", "europe-southwest1"));
+    regions.add(new regionGar("europe-west1", "europe-west1"));
+    regions.add(new regionGar("europe-west2", "europe-west2"));
+    regions.add(new regionGar("europe-west3", "europe-west3"));
+    regions.add(new regionGar("europe-west4", "europe-west4"));
+    regions.add(new regionGar("europe-west6", "europe-west6"));
+    regions.add(new regionGar("europe-west8", "europe-west8"));
+    regions.add(new regionGar("europe-west9", "europe-west9"));
+    regions.add(new regionGar("northamerica-northeast1", "northamerica-northeast1"));
+    regions.add(new regionGar("northamerica-northeast2", "northamerica-northeast2"));
+    regions.add(new regionGar("southamerica-east1", "southamerica-east1"));
+    regions.add(new regionGar("southamerica-west1", "southamerica-west1"));
+    regions.add(new regionGar("us", "us"));
+    regions.add(new regionGar("us-central1", "us-central1"));
+    regions.add(new regionGar("us-east1", "us-east1"));
+    regions.add(new regionGar("us-east4", "us-east4"));
+    regions.add(new regionGar("us-east5", "us-east5"));
+    regions.add(new regionGar("us-south1", "us-south1"));
+    regions.add(new regionGar("us-west1", "us-west1"));
+    regions.add(new regionGar("us-west2", "us-west2"));
+    regions.add(new regionGar("us-west3", "us-west3"));
+    regions.add(new regionGar("us-west4", "us-west4"));
+
+    return ResponseDTO.newResponse(regions);
+  }
 }
