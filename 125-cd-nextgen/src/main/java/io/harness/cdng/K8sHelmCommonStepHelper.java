@@ -143,6 +143,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class K8sHelmCommonStepHelper {
   private static final Set<String> VALUES_YAML_SUPPORTED_MANIFEST_TYPES =
       ImmutableSet.of(ManifestType.K8Manifest, ManifestType.HelmChart);
+  protected static final Set<String> HELM_SPECIFIC_STORE_TYPES =
+      ImmutableSet.of(ManifestStoreType.S3, ManifestStoreType.GCS, ManifestStoreType.HTTP);
   @Inject protected CDFeatureFlagHelper cdFeatureFlagHelper;
   @Inject private EngineExpressionService engineExpressionService;
   @Inject private K8sEntityHelper k8sEntityHelper;
@@ -233,7 +235,7 @@ public class K8sHelmCommonStepHelper {
 
   protected TaskChainResponse prepareCustomFetchManifestAndValuesTaskChainResponse(StoreConfig storeConfig,
       Ambiance ambiance, StepElementParameters stepElementParameters, List<ManifestOutcome> paramsOrValuesManifests,
-      K8sStepPassThroughData k8sStepPassThroughData) {
+      K8sStepPassThroughData k8sStepPassThroughData, boolean shouldOpenLogStream, boolean closeLogStream) {
     String accountId = AmbianceUtils.getAccountId(ambiance);
     ManifestOutcome manifestOutcome = k8sStepPassThroughData.getManifestOutcome();
     ParameterField<List<TaskSelectorYaml>> stepLevelSelectors = null;
@@ -268,7 +270,9 @@ public class K8sHelmCommonStepHelper {
                                                          .accountId(accountId)
                                                          .build())
                                .build());
-        delegateSelectors.addAll(store.getDelegateSelectors().getValue());
+        if (!isEmpty(store.getDelegateSelectors().getValue())) {
+          delegateSelectors.addAll(getParameterFieldValue(store.getDelegateSelectors()));
+        }
       }
     }
 
@@ -323,6 +327,8 @@ public class K8sHelmCommonStepHelper {
                                                                            .commandUnitName("Fetch Files")
                                                                            .accountId(accountId)
                                                                            .customManifestSource(customManifestSource)
+                                                                           .shouldOpenLogStream(shouldOpenLogStream)
+                                                                           .closeLogStream(closeLogStream)
                                                                            .build();
 
     final TaskData taskData = TaskData.builder()
@@ -414,7 +420,7 @@ public class K8sHelmCommonStepHelper {
 
   protected TaskChainResponse prepareHelmFetchValuesTaskChainResponse(Ambiance ambiance,
       StepElementParameters stepElementParameters, List<ValuesManifestOutcome> aggregatedValuesManifests,
-      K8sStepPassThroughData k8sStepPassThroughData, boolean shouldOpenLogStream) {
+      K8sStepPassThroughData k8sStepPassThroughData, boolean shouldOpenLogStream, boolean closeLogStream) {
     String accountId = AmbianceUtils.getAccountId(ambiance);
     HelmChartManifestOutcome helmChartManifestOutcome =
         (HelmChartManifestOutcome) k8sStepPassThroughData.getManifestOutcome();
@@ -426,15 +432,14 @@ public class K8sHelmCommonStepHelper {
             getParameterFieldValue(helmChartManifestOutcome.getValuesPaths()), helmChartManifestOutcome.getType());
 
     helmFetchFileConfigList.addAll(mapValuesManifestsToHelmFetchFileConfig(aggregatedValuesManifests));
-    HelmValuesFetchRequest helmValuesFetchRequest =
-        HelmValuesFetchRequest.builder()
-            .accountId(accountId)
-            .helmChartManifestDelegateConfig(helmManifest)
-            .timeout(CDStepHelper.getTimeoutInMillis(stepElementParameters))
-            .helmFetchFileConfigList(helmFetchFileConfigList)
-            .openNewLogStream(shouldOpenLogStream)
-            .closeLogStream(!shouldExecuteGitFetchTask(aggregatedValuesManifests))
-            .build();
+    HelmValuesFetchRequest helmValuesFetchRequest = HelmValuesFetchRequest.builder()
+                                                        .accountId(accountId)
+                                                        .helmChartManifestDelegateConfig(helmManifest)
+                                                        .timeout(CDStepHelper.getTimeoutInMillis(stepElementParameters))
+                                                        .helmFetchFileConfigList(helmFetchFileConfigList)
+                                                        .openNewLogStream(shouldOpenLogStream)
+                                                        .closeLogStream(closeLogStream)
+                                                        .build();
 
     final TaskData taskData = TaskData.builder()
                                   .async(true)
@@ -740,9 +745,19 @@ public class K8sHelmCommonStepHelper {
   }
 
   public boolean shouldCloseLogStreamForLocalStore(List<? extends ManifestOutcome> manifestOutcomes) {
-    boolean retVal = false;
+    boolean retVal = true;
     for (ManifestOutcome manifestOutcome : manifestOutcomes) {
       retVal = retVal && ManifestStoreType.HARNESS.equals(manifestOutcome.getStore().getKind());
+    }
+    return retVal;
+  }
+
+  public boolean shouldCloseLogStreamForCustomRemote(List<? extends ManifestOutcome> manifestOutcomes) {
+    boolean retVal = true;
+    for (ManifestOutcome manifestOutcome : manifestOutcomes) {
+      retVal = retVal
+          && (ManifestStoreType.HARNESS.equals(manifestOutcome.getStore().getKind())
+              || ManifestStoreType.CUSTOM_REMOTE.equals(manifestOutcome.getStore().getKind()));
     }
     return retVal;
   }
@@ -757,13 +772,13 @@ public class K8sHelmCommonStepHelper {
 
     else if (ManifestType.HelmChart.equals(manifestOutcome.getType())) {
       if (((HelmChartManifestOutcome) manifestOutcome).getValuesPaths().getValue() != null) {
-        ((HelmChartManifestOutcome) manifestOutcome).getValuesPaths().getValue();
+        return ((HelmChartManifestOutcome) manifestOutcome).getValuesPaths().getValue();
       }
     }
 
     else if (ManifestType.OpenshiftTemplate.equals(manifestOutcome.getType())) {
       if (((OpenshiftManifestOutcome) manifestOutcome).getParamsPaths().getValue() != null) {
-        ((OpenshiftManifestOutcome) manifestOutcome).getParamsPaths().getValue();
+        return ((OpenshiftManifestOutcome) manifestOutcome).getParamsPaths().getValue();
       }
     }
 

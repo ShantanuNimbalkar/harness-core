@@ -91,8 +91,8 @@ public class CustomManifestFetchTaskNG extends AbstractDelegateRunnableTask {
   public DelegateResponseData run(TaskParameters parameters) {
     CommandUnitsProgress commandUnitsProgress = CommandUnitsProgress.builder().build();
     CustomManifestValuesFetchParams fetchParams = (CustomManifestValuesFetchParams) parameters;
-    LogCallback logCallback = new NGDelegateLogCallback(
-        getLogStreamingTaskClient(), fetchParams.getCommandUnitName(), true, commandUnitsProgress);
+    LogCallback logCallback = new NGDelegateLogCallback(getLogStreamingTaskClient(), fetchParams.getCommandUnitName(),
+        fetchParams.isShouldOpenLogStream(), commandUnitsProgress);
 
     String defaultSourceWorkingDirectory = null;
     DelegateFile delegateFile = null;
@@ -150,6 +150,7 @@ public class CustomManifestFetchTaskNG extends AbstractDelegateRunnableTask {
       valuesFetchResponse =
           customManifestFetchTaskHelper.fetchValuesTask(fetchParams, logCallback, defaultSourceWorkingDirectory, false);
       if (valuesFetchResponse.getCommandExecutionStatus() == FAILURE) {
+        valuesFetchResponse.setUnitProgressData(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress));
         return valuesFetchResponse;
       }
     } catch (Exception e) {
@@ -162,7 +163,9 @@ public class CustomManifestFetchTaskNG extends AbstractDelegateRunnableTask {
     }
 
     logCallback.saveExecutionLog(color("Successfully completed custom values fetch task \n \n", White, Bold), INFO);
-
+    if (fetchParams.isCloseLogStream()) {
+      logCallback.saveExecutionLog("Done.", INFO, CommandExecutionStatus.SUCCESS);
+    }
     return CustomManifestValuesFetchResponse.builder()
         .commandExecutionStatus(SUCCESS)
         .unitProgressData(UnitProgressDataMapper.toUnitProgressData(commandUnitsProgress))
