@@ -4,9 +4,12 @@ import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.beans.ExecutionStatus.SUCCESS;
 import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static java.util.Arrays.asList;
+import static io.harness.exception.WingsException.USER_SRE;
+
 import static software.wings.api.EnvStateExecutionData.Builder.anEnvStateExecutionData;
 import static software.wings.sm.StateType.FORK;
+
+import static java.util.Arrays.asList;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
@@ -15,12 +18,13 @@ import io.harness.beans.ExecutionStatus;
 import io.harness.beans.FeatureName;
 import io.harness.beans.OrchestrationWorkflowType;
 import io.harness.beans.RepairActionCode;
-
 import io.harness.beans.SweepingOutputInstance;
 import io.harness.beans.WorkflowType;
 import io.harness.delegate.beans.DelegateResponseData;
+import io.harness.exception.InvalidArgumentsException;
 import io.harness.ff.FeatureFlagService;
 import io.harness.tasks.ResponseData;
+
 import software.wings.api.ArtifactCollectionExecutionData;
 import software.wings.api.EnvStateExecutionData;
 import software.wings.api.artifact.ServiceArtifactElement;
@@ -30,6 +34,8 @@ import software.wings.api.artifact.ServiceArtifactVariableElements;
 import software.wings.api.helm.ServiceHelmElement;
 import software.wings.api.helm.ServiceHelmElements;
 import software.wings.beans.NameValuePair;
+import software.wings.beans.PipelineExecution;
+import software.wings.beans.PipelineStageExecution;
 import software.wings.beans.WorkflowExecution;
 import software.wings.beans.appmanifest.ApplicationManifest;
 import software.wings.beans.appmanifest.HelmChart;
@@ -46,13 +52,17 @@ import software.wings.sm.ExecutionContext;
 import software.wings.sm.ExecutionContextImpl;
 import software.wings.sm.ExecutionResponse;
 import software.wings.sm.State;
+import software.wings.sm.StateExecutionData;
+import software.wings.sm.StateExecutionInstance;
+import software.wings.sm.StateMachine;
+import software.wings.sm.StateType;
+import software.wings.sm.rollback.RollbackStateMachineGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.reinert.jjschema.Attributes;
 import com.github.reinert.jjschema.SchemaIgnore;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,11 +73,6 @@ import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.annotations.Transient;
 import org.slf4j.Logger;
-import software.wings.sm.StateExecutionData;
-import software.wings.sm.StateExecutionInstance;
-import software.wings.sm.StateMachine;
-import software.wings.sm.StateType;
-import software.wings.sm.rollback.RollbackStateMachineGenerator;
 
 @OwnedBy(CDC)
 @Attributes(title = "EnvRollback")
@@ -105,24 +110,34 @@ public class EnvRollbackState extends State implements WorkflowState {
 
   @Override
   public ExecutionResponse execute(ExecutionContext context) {
+    String workflowExecutionId;
     ExecutionContextImpl executionContext = (ExecutionContextImpl) context;
     String workflowId = context.getWorkflowId();
 
     EnvStateExecutionData envStateExecutionData = anEnvStateExecutionData().withWorkflowId(workflowId).build();
 
-    EnvStateExecutionData stateExecutionData = (EnvStateExecutionData) executionContext.getStateExecutionInstance().getStateExecutionMap().get(this.getName().replace(ROLLBACK_PREFIX, ""));
+    EnvStateExecutionData stateExecutionData =
+        (EnvStateExecutionData) executionContext.getStateExecutionInstance().getStateExecutionMap().get(
+            this.getName().replace(ROLLBACK_PREFIX, ""));
     if (stateExecutionData == null) {
-      executionContext.getStateExecutionInstance().getStateExecutionMap().entrySet().stream().filter(entry -> {
-        if (entry.getValue().getStateType() == FORK.getType()) {
-          ForkState.ForkStateExecutionData forkState = (ForkState.ForkStateExecutionData) entry.getValue();
-          forkState.get
-          return forkState.getForkStateNames().contains(this.getName().replace(ROLLBACK_PREFIX, ""));
-        }
-        return false;
-      }).map(it -> it.getValue()).findFirst();
+      String pipelineId = executionContext.getStateExecutionInstance().getExecutionUuid();
+      PipelineExecution pipelineExecution =
+          executionService.getWorkflowExecution(context.getAppId(), pipelineId).getPipelineExecution();
+      PipelineStageExecution pipelineStageExecution =
+          pipelineExecution.getPipelineStageExecutions()
+              .stream()
+              .filter(it -> it.getStateName().equals(this.getName().replace(ROLLBACK_PREFIX, "")))
+              .findFirst()
+              .orElseThrow(() -> { throw new InvalidArgumentsException(String.format("Placeholder")); });
+      workflowExecutionId = pipelineStageExecution.getWorkflowExecutions().get(0).getUuid();
+    } else {
+      workflowExecutionId = stateExecutionData.getWorkflowExecutionId();
     }
-    WorkflowExecution workflowExecution = executionService.getWorkflowExecution(executionContext.getAppId(), stateExecutionData.getWorkflowExecutionId());
-    WorkflowExecution rollbackExecution = executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution, true);
+
+    WorkflowExecution workflowExecution =
+        executionService.getWorkflowExecution(executionContext.getAppId(), workflowExecutionId);
+    WorkflowExecution rollbackExecution =
+        executionService.triggerRollbackExecutionWorkflow(executionContext.getAppId(), workflowExecution, true);
 
     envStateExecutionData.setWorkflowExecutionId(rollbackExecution.getUuid());
     envStateExecutionData.setOrchestrationWorkflowType(rollbackExecution.getOrchestrationType());
@@ -135,7 +150,8 @@ public class EnvRollbackState extends State implements WorkflowState {
 
   @Override
   public ExecutionResponse handleAsyncResponse(ExecutionContext context, Map<String, ResponseData> response) {
-    EnvState.EnvExecutionResponseData responseData = (EnvState.EnvExecutionResponseData) response.values().iterator().next();
+    EnvState.EnvExecutionResponseData responseData =
+        (EnvState.EnvExecutionResponseData) response.values().iterator().next();
     ExecutionResponse.ExecutionResponseBuilder executionResponseBuilder =
         ExecutionResponse.builder().executionStatus(responseData.getStatus());
 
@@ -209,8 +225,7 @@ public class EnvRollbackState extends State implements WorkflowState {
     return WorkflowState.super.checkDisableAssertion(context, workflowService, log);
   }
 
-  public static class EnvRollbackExecutionResponseData implements DelegateResponseData
-  {
+  public static class EnvRollbackExecutionResponseData implements DelegateResponseData {
     private String workflowExecutionId;
     private ExecutionStatus status;
 

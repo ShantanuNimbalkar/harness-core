@@ -3326,11 +3326,11 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
           + workflowExecution.getName());
     }
 
-    if (!workflowExecutionList.get(0).getUuid().equals(workflowExecution.getUuid())) {
-      log.info("Last successful execution found: {} ", workflowExecutionList.get(0));
-      throw new InvalidRequestException(
-          "This is not the latest successful Workflow Execution: " + workflowExecution.getName());
-    }
+//    if (!workflowExecutionList.get(0).getUuid().equals(workflowExecution.getUuid())) {
+//      log.info("Last successful execution found: {} ", workflowExecutionList.get(0));
+//      throw new InvalidRequestException(
+//          "This is not the latest successful Workflow Execution: " + workflowExecution.getName());
+//    }
 
     if (workflowExecutionList.size() < 2) {
       throw new InvalidRequestException(
