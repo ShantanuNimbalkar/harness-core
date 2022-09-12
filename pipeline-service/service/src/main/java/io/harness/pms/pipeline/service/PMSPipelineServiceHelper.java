@@ -292,7 +292,7 @@ public class PMSPipelineServiceHelper {
 
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
     // Adding GitConfig to expanded Yaml
-
+    GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
     ExpansionResponseProto gitConfig = ExpansionResponseProto.newBuilder()
                                            .setFqn("pipeline")
                                            .setKey("gitConfig")
