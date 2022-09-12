@@ -23,6 +23,7 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.walktree.visitor.SimpleVisitorHelper;
 import io.harness.walktree.visitor.Visitable;
 import io.harness.yaml.core.variables.CustomDeploymentNGVariable;
+import io.harness.yaml.core.variables.CustomDeploymentNGVariableType;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.ArrayList;
@@ -46,9 +47,9 @@ import org.springframework.data.annotation.TypeAlias;
 public class CustomDeploymentInfrastructure
     extends InfrastructureDetailsAbstract implements Infrastructure, Visitable, WithConnectorRef {
   @NotNull @NotEmpty @Wither List<CustomDeploymentNGVariable> variables;
-  @NotNull @NotEmpty @Wither String instancesListPath;
-  @NotNull @NotEmpty @Wither Map<String, String> instanceAttributes;
-  @NotNull @NotEmpty @Wither String instanceFetchScript;
+  //  @NotNull @NotEmpty @Wither String instancesListPath;
+  //  @NotNull @NotEmpty @Wither Map<String, String> instanceAttributes;
+  //  @NotNull @NotEmpty @Wither String instanceFetchScript;
   @NotNull @NotEmpty StepTemplateRef customDeploymentRef;
   @Override
   public InfraMapping getInfraMapping() {
@@ -63,6 +64,17 @@ public class CustomDeploymentInfrastructure
   public ParameterField<String> getConnectorReference() {
     // TODO - need to figure out connector ref details
     return null;
+  }
+
+  @Override
+  public List<ParameterField<String>> getConnectorReferences() {
+    List<ParameterField<String>> connectorRefs = new ArrayList<>();
+    for (CustomDeploymentNGVariable variable : variables) {
+      if (variable.getType() == CustomDeploymentNGVariableType.CONNECTOR) {
+        connectorRefs.add((ParameterField<String>) variable.getCurrentValue());
+      }
+    }
+    return connectorRefs;
   }
 
   @Override

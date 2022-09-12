@@ -37,7 +37,6 @@ import org.springframework.data.annotation.TypeAlias;
 @AllArgsConstructor
 @JsonTypeName(CustomDeploymentNGVariableConstants.CONNECTOR_TYPE)
 @TypeAlias("io.harness.yaml.core.variables.CustomDeploymentConnectorNGVariable")
-@RecasterAlias("io.harness.yaml.core.variables.CustomDeploymentConnectorNGVariable")
 @OwnedBy(CDP)
 public class CustomDeploymentConnectorNGVariable implements CustomDeploymentNGVariable {
   @NGVariableName
@@ -50,7 +49,7 @@ public class CustomDeploymentConnectorNGVariable implements CustomDeploymentNGVa
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
   @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD, skipInnerObjectTraversal = true)
-  ParameterField<String> value;
+  String value;
   @NotNull
   @ApiModelProperty(hidden = true)
   @VariableExpression(policy = REGULAR)
@@ -60,6 +59,6 @@ public class CustomDeploymentConnectorNGVariable implements CustomDeploymentNGVa
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
   @Override
   public ParameterField<?> getCurrentValue() {
-    return value;
+    return ParameterField.createValueField(value);
   }
 }

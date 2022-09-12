@@ -33,6 +33,7 @@ import io.harness.cdng.infra.beans.K8sAzureInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
 import io.harness.cdng.infra.yaml.AzureWebAppInfrastructure;
+import io.harness.cdng.infra.yaml.CustomDeploymentInfrastructure;
 import io.harness.cdng.infra.yaml.EcsInfrastructure;
 import io.harness.cdng.infra.yaml.Infrastructure;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
@@ -93,6 +94,7 @@ import io.harness.steps.shellscript.WinRmInfraDelegateConfigOutput;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -295,54 +297,52 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
       return;
     }
 
-    ConnectorInfoDTO connectorInfo =
-        infrastructureStepHelper.validateAndGetConnector(infrastructure.getConnectorReference(), ambiance, logCallback);
-
+    List<ConnectorInfoDTO> connectorInfo = infrastructureStepHelper.validateAndGetConnectors(
+        infrastructure.getConnectorReferences(), ambiance, logCallback);
     if (InfrastructureKind.KUBERNETES_GCP.equals(infrastructure.getKind())) {
-      if (!(connectorInfo.getConnectorConfig() instanceof GcpConnectorDTO)) {
+      if (!(connectorInfo.get(0).getConnectorConfig() instanceof GcpConnectorDTO)) {
         throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-            connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+            connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
             ConnectorType.GCP.name()));
       }
     }
 
     if (InfrastructureKind.SERVERLESS_AWS_LAMBDA.equals(infrastructure.getKind())) {
-      if (!(connectorInfo.getConnectorConfig() instanceof AwsConnectorDTO)) {
+      if (!(connectorInfo.get(0).getConnectorConfig() instanceof AwsConnectorDTO)) {
         throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-            connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+            connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
             ConnectorType.AWS.name()));
       }
     }
 
     if (InfrastructureKind.KUBERNETES_AZURE.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 
     if (InfrastructureKind.SSH_WINRM_AZURE.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 
     if (InfrastructureKind.AZURE_WEB_APP.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 
     if (InfrastructureKind.ECS.equals(infrastructure.getKind())) {
-      if (!(connectorInfo.getConnectorConfig() instanceof AwsConnectorDTO)) {
+      if (!(connectorInfo.get(0).getConnectorConfig() instanceof AwsConnectorDTO)) {
         throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-            connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+            connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
             ConnectorType.AWS.name()));
       }
     }
-
     saveExecutionLogSafely(logCallback, color("Connector validated", Green));
   }
 
@@ -366,6 +366,13 @@ public class InfrastructureStep implements SyncExecutableWithRbac<Infrastructure
           saveExecutionLogSafely(logCallback,
               color(format(k8sNamespaceLogLine, k8SDirectInfrastructure.getNamespace().getValue()), Yellow));
         }
+        break;
+
+      case InfrastructureKind.CUSTOM_DEPLOYMENT:
+        CustomDeploymentInfrastructure customDeploymentInfrastructure = (CustomDeploymentInfrastructure) infrastructure;
+        infrastructureStepHelper.validateExpression(customDeploymentInfrastructure.getConnectorReference(),
+            ParameterField.createValueField(customDeploymentInfrastructure.getCustomDeploymentRef().getTemplateRef()),
+            ParameterField.createValueField(customDeploymentInfrastructure.getCustomDeploymentRef().getVersionLabel()));
         break;
 
       case InfrastructureKind.KUBERNETES_GCP:

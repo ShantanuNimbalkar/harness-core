@@ -51,12 +51,12 @@ public class CustomDeploymentNumberNGVariable implements CustomDeploymentNGVaria
   @YamlSchemaTypes({numberString})
   @ApiModelProperty(dataType = SwaggerConstants.DOUBLE_CLASSPATH)
   @VariableExpression(policy = REGULAR, skipInnerObjectTraversal = true)
-  ParameterField<Double> value;
+  Double value;
   @VariableExpression(skipVariableExpression = true) String description;
   @VariableExpression(skipVariableExpression = true) boolean required;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
   @Override
   public ParameterField<?> getCurrentValue() {
-    return value;
+    return ParameterField.createValueField(value);
   }
 }

@@ -241,9 +241,6 @@ public class InfrastructureMapper {
         CustomDeploymentInfrastructureOutcome customDeploymentInfrastructureOutcome =
             CustomDeploymentInfrastructureOutcome.builder()
                 .variables(convertListVariablesToMap(customDeploymentInfrastructure.getVariables()))
-                .instanceAttributes(customDeploymentInfrastructure.getInstanceAttributes())
-                .instanceFetchScript(customDeploymentInfrastructure.getInstanceFetchScript())
-                .instancesListPath(customDeploymentInfrastructure.getInstancesListPath())
                 .environment(environmentOutcome)
                 .infrastructureKey(InfrastructureKey.generate(
                     service, environmentOutcome, customDeploymentInfrastructure.getInfrastructureKeyValues()))

@@ -8,9 +8,8 @@
 package io.harness.yaml.core.variables;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
-import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR;
+import static io.harness.yaml.core.VariableExpression.IteratePolicy.REGULAR_WITH_CUSTOM_FIELD;
 
-import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.pms.yaml.ParameterField;
@@ -37,7 +36,6 @@ import org.springframework.data.annotation.TypeAlias;
 @AllArgsConstructor
 @JsonTypeName(CustomDeploymentNGVariableConstants.STRING_TYPE)
 @TypeAlias("io.harness.yaml.core.variables.CustomDeploymentStringNGVariable")
-@RecasterAlias("io.harness.yaml.core.variables.CustomDeploymentStringNGVariable")
 @OwnedBy(CDP)
 public class CustomDeploymentStringNGVariable implements CustomDeploymentNGVariable {
   @NGVariableName
@@ -49,8 +47,8 @@ public class CustomDeploymentStringNGVariable implements CustomDeploymentNGVaria
   CustomDeploymentNGVariableType type = CustomDeploymentNGVariableType.STRING;
   @NotNull
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
-  @VariableExpression(policy = REGULAR, skipInnerObjectTraversal = true)
-  ParameterField<String> value;
+  @VariableExpression(policy = REGULAR_WITH_CUSTOM_FIELD, skipInnerObjectTraversal = true)
+  String value;
   @VariableExpression(skipVariableExpression = true) String description;
   @VariableExpression(skipVariableExpression = true) boolean required;
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) }) @ApiModelProperty(hidden = true) String metadata;
@@ -60,6 +58,6 @@ public class CustomDeploymentStringNGVariable implements CustomDeploymentNGVaria
   String uuid;
   @Override
   public ParameterField<?> getCurrentValue() {
-    return value;
+    return ParameterField.createValueField(value);
   }
 }

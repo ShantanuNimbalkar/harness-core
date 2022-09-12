@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Harness Inc. All rights reserved.
+ * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+ * that can be found in the licenses directory at the root of this repository, also available at
+ * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+ */
+
 package io.harness.cdng.infra.steps;
 
 import static io.harness.cdng.stepsdependency.constants.OutcomeExpressionConstants.INFRA_TASK_EXECUTABLE_STEP_V2;
@@ -558,43 +565,43 @@ abstract class AbstractInfrastructureTaskExecutableStep {
       return;
     }
 
-    ConnectorInfoDTO connectorInfo =
-        infrastructureStepHelper.validateAndGetConnector(infrastructure.getConnectorReference(), ambiance, logCallback);
+    List<ConnectorInfoDTO> connectorInfo = infrastructureStepHelper.validateAndGetConnectors(
+        infrastructure.getConnectorReferences(), ambiance, logCallback);
 
     if (InfrastructureKind.KUBERNETES_GCP.equals(infrastructure.getKind())) {
-      if (!(connectorInfo.getConnectorConfig() instanceof GcpConnectorDTO)) {
+      if (!(connectorInfo.get(0).getConnectorConfig() instanceof GcpConnectorDTO)) {
         throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-            connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+            connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
             ConnectorType.GCP.name()));
       }
     }
 
     if (InfrastructureKind.SERVERLESS_AWS_LAMBDA.equals(infrastructure.getKind())) {
-      if (!(connectorInfo.getConnectorConfig() instanceof AwsConnectorDTO)) {
+      if (!(connectorInfo.get(0).getConnectorConfig() instanceof AwsConnectorDTO)) {
         throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-            connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+            connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
             ConnectorType.AWS.name()));
       }
     }
 
     if (InfrastructureKind.KUBERNETES_AZURE.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 
     if (InfrastructureKind.SSH_WINRM_AZURE.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 
     if (InfrastructureKind.AZURE_WEB_APP.equals(infrastructure.getKind())
-        && !(connectorInfo.getConnectorConfig() instanceof AzureConnectorDTO)) {
+        && !(connectorInfo.get(0).getConnectorConfig() instanceof AzureConnectorDTO)) {
       throw new InvalidRequestException(format("Invalid connector type [%s] for identifier: [%s], expected [%s]",
-          connectorInfo.getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
+          connectorInfo.get(0).getConnectorType().name(), infrastructure.getConnectorReference().getValue(),
           ConnectorType.AZURE.name()));
     }
 

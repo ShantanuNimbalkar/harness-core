@@ -36,7 +36,6 @@ import org.springframework.data.annotation.TypeAlias;
 @AllArgsConstructor
 @JsonTypeName(CustomDeploymentNGVariableConstants.SECRET_TYPE)
 @TypeAlias("io.harness.yaml.core.variables.CustomDeploymentSecretNGVariable")
-@RecasterAlias("io.harness.yaml.core.variables.CustomDeploymentSecretNGVariable")
 @OwnedBy(CDP)
 public class CustomDeploymentSecretNGVariable implements CustomDeploymentNGVariable {
   @NGVariableName
