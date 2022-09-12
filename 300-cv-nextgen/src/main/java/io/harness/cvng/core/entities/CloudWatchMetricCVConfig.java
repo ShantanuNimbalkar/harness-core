@@ -29,7 +29,6 @@ import io.harness.cvng.core.utils.analysisinfo.SLIMetricTransformer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,6 @@ import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import org.apache.commons.collections4.CollectionUtils;
 import org.mongodb.morphia.query.UpdateOperations;
 
 @JsonTypeName("CLOUDWATCH_METRICS")
@@ -75,15 +73,7 @@ public class CloudWatchMetricCVConfig extends MetricCVConfig<CloudWatchMetricInf
 
   @Override
   protected void validateParams() {
-    boolean regionPresent = false, customMetricPresent = false;
-    if (CollectionUtils.isEmpty(metricInfos)) {
-      checkNotNull(region, generateErrorMessageFromParam(CloudWatchMetricCVConfigKeys.region));
-      regionPresent = true;
-    } else {
-      customMetricPresent = true;
-    }
-    Preconditions.checkState(regionPresent || customMetricPresent,
-        "CVConfig should have either application based setup or custom metric setup or both.");
+    checkNotNull(region, generateErrorMessageFromParam(CloudWatchMetricCVConfigKeys.region));
   }
 
   @Override

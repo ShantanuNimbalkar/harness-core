@@ -13,8 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface CloudWatchService {
-  LinkedHashMap fetchSampleData(ProjectParams projectParams, String connectorIdentifier, String tracingId, String expression,
-      String region, String metricName, String metricIdentifier);
+  LinkedHashMap fetchSampleData(ProjectParams projectParams, String connectorIdentifier, String tracingId,
+      String expression, String region, String metricName, String metricIdentifier);
 
   List<String> fetchRegions();
 }
