@@ -51,7 +51,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -299,7 +298,12 @@ public class ClusterResource {
   @GET
   @Path("/listFromGitops")
   @ApiOperation(value = "Gets cluster list from Gitops Service ", nickname = "getClusterListFromSource")
-  @Hidden
+  @Operation( operationId = "getClusterListFromSource", summary = "Gets cluster list from Gitops Service",
+          description = "Gets cluster list from Gitops Service.",
+          responses =
+          {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns the list of cluster from Gitops Service")
+          })
   public ResponseDTO<PageResponse<ClusterFromGitops>> listFromGitopsService(
       @Parameter(description = NGCommonEntityConstants.PAGE_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.PAGE) @DefaultValue("0") int page,
