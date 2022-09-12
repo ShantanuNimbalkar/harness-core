@@ -54,10 +54,6 @@ public abstract class AbstractStepNode {
   @NotNull @EntityIdentifier @Pattern(regexp = NGRegexValidatorConstants.IDENTIFIER_PATTERN) String identifier;
   @NotNull @EntityName @Pattern(regexp = NGRegexValidatorConstants.NAME_PATTERN) String name;
   String description;
-  @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH)
-  @Pattern(regexp = NGRegexValidatorConstants.TIMEOUT_PATTERN)
-  @VariableExpression(skipInnerObjectTraversal = true)
-  ParameterField<Timeout> timeout;
 
   StepWhenCondition when;
 
