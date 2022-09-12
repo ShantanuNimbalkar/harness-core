@@ -295,6 +295,7 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
     assertThat(taskNGParameters.getTemplateBody()).isEqualTo("template");
     assertThat(taskNGParameters.getParametersBody()).isEqualTo("file");
     assertThat(taskNGParameters.getResourceGroupName()).isEqualTo("abc");
+    assertThat(taskNGParameters.getDeploymentName()).isEqualTo("name");
     assertThat(taskNGParameters).isNotNull();
     assertThat(taskNGParameters.getAzureARMTaskType()).isEqualTo(AzureARMTaskType.ARM_DEPLOYMENT);
     assertThat(taskDataArgumentCaptor.getValue().getTaskType()).isEqualTo(TaskType.AZURE_NG_ARM.name());
@@ -523,6 +524,7 @@ public class AzureCreateARMResourceStepTest extends CategoryTest {
         break;
     }
     stepParameters.setConfigurationParameters(AzureCreateARMResourceStepConfigurationParameters.builder()
+                                                  .deploymentName(ParameterField.createValueField("name"))
                                                   .templateFile(templateFileBuilder)
                                                   .parameters(parameterFileBuilder)
                                                   .connectorRef(ParameterField.createValueField("azure"))
