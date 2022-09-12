@@ -294,9 +294,9 @@ public class NGTemplateRepositoryCustomImpl implements NGTemplateRepositoryCusto
   @Override
   public TemplateEntity updateTemplateYaml(TemplateEntity templateToUpdate, TemplateEntity oldTemplateEntity,
       ChangeType changeType, String comments, TemplateUpdateEventType templateUpdateEventType, boolean skipAudits) {
-    if (templateToUpdate.getStoreType() == StoreType.REMOTE
-        && gitSyncSdkService.isGitSimplificationEnabled(templateToUpdate.getAccountIdentifier(),
-            templateToUpdate.getOrgIdentifier(), templateToUpdate.getProjectIdentifier())) {
+    GitAwareContextHelper.initDefaultScmGitMetaData();
+    GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
+    if (isNewGitXEnabled(templateToUpdate, gitEntityInfo)) {
       Scope scope = TemplateUtils.buildScope(templateToUpdate);
       gitAwareEntityHelper.updateEntityOnGit(templateToUpdate, templateToUpdate.getYaml(), scope);
     } else if (templateToUpdate.getStoreType() == StoreType.REMOTE) {

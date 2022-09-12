@@ -221,8 +221,8 @@ public class NGTemplateServiceImpl implements NGTemplateService {
     try {
       TemplateMergeResponseDTO templateMergeResponseDTO = null;
       if (TemplateRefHelper.hasTemplateRef(templateEntity.getYaml())) {
-        setupGitParentEntityDetails(templateEntity.getAccountIdentifier(), templateEntity.getOrgIdentifier(),
-            templateEntity.getProjectIdentifier());
+        TemplateUtils.setupGitParentEntityDetails(templateEntity.getAccountIdentifier(),
+            templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier());
         templateMergeResponseDTO = templateMergeService.applyTemplatesToYamlV2(templateEntity.getAccountId(),
             templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(), templateEntity.getYaml(), false);
         populateLinkedTemplatesModules(templateEntity, templateMergeResponseDTO);
@@ -984,7 +984,8 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   private TemplateEntity getAndValidateOldTemplateEntity(
       TemplateEntity templateEntity, String oldOrgIdentifier, String oldProjectIdentifier) {
-    setupGitParentEntityDetails(templateEntity.getAccountIdentifier(), oldOrgIdentifier, oldProjectIdentifier);
+    TemplateUtils.setupGitParentEntityDetails(
+        templateEntity.getAccountIdentifier(), oldOrgIdentifier, oldProjectIdentifier);
     Optional<TemplateEntity> optionalTemplate =
         templateServiceHelper.getTemplateWithVersionLabel(templateEntity.getAccountId(), oldOrgIdentifier,
             oldProjectIdentifier, templateEntity.getIdentifier(), templateEntity.getVersionLabel(), false, false);
@@ -1037,25 +1038,5 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         .templateInputs(templateInputs)
         .templateResponseDTO(templateResponseDTO)
         .build();
-  }
-
-  private void setupGitParentEntityDetails(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
-    GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
-    if (null != gitEntityInfo) {
-      if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getRepoName())) {
-        gitEntityInfo.setParentEntityRepoName(gitEntityInfo.getRepoName());
-      }
-      if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getConnectorRef())) {
-        gitEntityInfo.setParentEntityConnectorRef(gitEntityInfo.getConnectorRef());
-      }
-      if (!GitAwareContextHelper.isNullOrDefault(orgIdentifier)) {
-        gitEntityInfo.setParentEntityOrgIdentifier(orgIdentifier);
-      }
-      if (!GitAwareContextHelper.isNullOrDefault(projectIdentifier)) {
-        gitEntityInfo.setParentEntityProjectIdentifier(projectIdentifier);
-      }
-      gitEntityInfo.setParentEntityAccountIdentifier(accountIdentifier);
-      GitAwareContextHelper.updateGitEntityContext(gitEntityInfo);
-    }
   }
 }
