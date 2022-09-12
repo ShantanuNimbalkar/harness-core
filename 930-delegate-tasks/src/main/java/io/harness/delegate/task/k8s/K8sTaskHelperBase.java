@@ -2670,6 +2670,9 @@ public class K8sTaskHelperBase {
         deleteDirectoryAndItsContentIfExists(dest.getAbsolutePath());
         FileUtils.copyDirectory(src, dest);
         FileIo.waitForDirectoryToBeAccessibleOutOfProcess(dest.getPath(), 10);
+        logCallback.saveExecutionLog(color("Successfully fetched following files:", White, Bold));
+        logCallback.saveExecutionLog(getManifestFileNamesInLogFormat(destinationDirectory));
+        logCallback.saveExecutionLog("Done.", INFO, SUCCESS);
         return true;
       }
       HelmChartManifestDelegateConfig helmChartManifestConfig =
