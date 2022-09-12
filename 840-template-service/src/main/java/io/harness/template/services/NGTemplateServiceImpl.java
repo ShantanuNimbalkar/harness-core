@@ -222,7 +222,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       TemplateMergeResponseDTO templateMergeResponseDTO = null;
       if (TemplateRefHelper.hasTemplateRef(templateEntity.getYaml())) {
         setupGitParentEntityDetails(templateEntity.getAccountIdentifier(), templateEntity.getOrgIdentifier(),
-            templateEntity.getProjectIdentifier());
+            templateEntity.getProjectIdentifier(), templateEntity.getRepo(), templateEntity.getConnectorRef());
         templateMergeResponseDTO = templateMergeService.applyTemplatesToYamlV2(templateEntity.getAccountId(),
             templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(), templateEntity.getYaml(), false);
         populateLinkedTemplatesModules(templateEntity, templateMergeResponseDTO);
@@ -984,7 +984,8 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
   private TemplateEntity getAndValidateOldTemplateEntity(
       TemplateEntity templateEntity, String oldOrgIdentifier, String oldProjectIdentifier) {
-    setupGitParentEntityDetails(templateEntity.getAccountIdentifier(), oldOrgIdentifier, oldProjectIdentifier);
+    setupGitParentEntityDetails(templateEntity.getAccountIdentifier(), oldOrgIdentifier, oldProjectIdentifier,
+        templateEntity.getRepo(), templateEntity.getConnectorRef());
     Optional<TemplateEntity> optionalTemplate =
         templateServiceHelper.getTemplateWithVersionLabel(templateEntity.getAccountId(), oldOrgIdentifier,
             oldProjectIdentifier, templateEntity.getIdentifier(), templateEntity.getVersionLabel(), false, false);
@@ -1039,18 +1040,28 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         .build();
   }
 
-  private void setupGitParentEntityDetails(String accountIdentifier, String orgIdentifier, String projectIdentifier) {
+  public void setupGitParentEntityDetails(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String repoFromTemplate, String connectorFromTemplate) {
     GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
     if (null != gitEntityInfo) {
-      if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getRepoName())) {
+      // Set Parent's Repo
+      if (EmptyPredicate.isNotEmpty(repoFromTemplate)) {
+        gitEntityInfo.setParentEntityRepoName(repoFromTemplate);
+      } else if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getRepoName())) {
         gitEntityInfo.setParentEntityRepoName(gitEntityInfo.getRepoName());
       }
-      if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getConnectorRef())) {
+
+      // Set Parent's ConnectorRef
+      if (EmptyPredicate.isNotEmpty(repoFromTemplate)) {
+        gitEntityInfo.setParentEntityConnectorRef(connectorFromTemplate);
+      } else if (!GitAwareContextHelper.isNullOrDefault(gitEntityInfo.getConnectorRef())) {
         gitEntityInfo.setParentEntityConnectorRef(gitEntityInfo.getConnectorRef());
       }
+      // Set Parent's Org identifier
       if (!GitAwareContextHelper.isNullOrDefault(orgIdentifier)) {
         gitEntityInfo.setParentEntityOrgIdentifier(orgIdentifier);
       }
+      // Set Parent's Project Identifier
       if (!GitAwareContextHelper.isNullOrDefault(projectIdentifier)) {
         gitEntityInfo.setParentEntityProjectIdentifier(projectIdentifier);
       }
