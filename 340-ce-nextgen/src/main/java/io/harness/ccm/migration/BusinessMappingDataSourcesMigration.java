@@ -13,16 +13,13 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ccm.views.businessMapping.dao.BusinessMappingDao;
 import io.harness.ccm.views.businessMapping.entities.BusinessMapping;
-import io.harness.ccm.views.entities.ViewFieldIdentifier;
 import io.harness.ccm.views.helper.BusinessMappingDataSourceHelper;
 import io.harness.migration.NGMigration;
 import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,7 +39,7 @@ public class BusinessMappingDataSourcesMigration implements NGMigration {
         try {
           migrateBusinessMappingDataSources(businessMapping);
         } catch (final Exception e) {
-          log.error("Migration Failed for Account {}, ViewId {}", businessMapping.getAccountId(),
+          log.error("Migration Failed for Account {}, businessMappingId {}", businessMapping.getAccountId(),
               businessMapping.getUuid(), e);
         }
       }
