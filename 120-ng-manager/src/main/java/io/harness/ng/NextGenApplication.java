@@ -174,6 +174,7 @@ import io.harness.service.deploymentevent.DeploymentEventListenerRegistrar;
 import io.harness.service.impl.DelegateAsyncServiceImpl;
 import io.harness.service.impl.DelegateProgressServiceImpl;
 import io.harness.service.impl.DelegateSyncServiceImpl;
+import io.harness.service.stats.retention.InstanceStatsRetentionNG;
 import io.harness.service.stats.statscollector.InstanceStatsIteratorHandler;
 import io.harness.springdata.HMongoTemplate;
 import io.harness.telemetry.NGTelemetryRecordsJob;
@@ -435,6 +436,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
       GitSyncSdkInitHelper.initGitSyncSdk(injector, environment, getGitSyncConfiguration(appConfig));
     }
     registerMigrations(injector);
+    injector.getInstance(InstanceStatsRetentionNG.class).addRetentionPolicy();
 
     log.info("NextGenApplication DEPLOY_VERSION = " + System.getenv().get(DEPLOY_VERSION));
     if (DeployVariant.isCommunity(System.getenv().get(DEPLOY_VERSION))) {
