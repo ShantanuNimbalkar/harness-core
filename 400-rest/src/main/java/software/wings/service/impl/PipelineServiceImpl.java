@@ -1044,7 +1044,7 @@ public class PipelineServiceImpl implements PipelineService {
             cloned.setRuntimeInput(false);
             pipelineVariables.add(cloned);
           } else {
-            handleNonEntityVariables(pipelineVariables, variable, variable.getValue(), false);
+            mergeNonEntityPipelineVariables(variable, false, pipelineVariables, variable.getName());
           }
         });
       }
@@ -1209,29 +1209,33 @@ public class PipelineServiceImpl implements PipelineService {
         newVar = variable.cloneInternal();
         newVar.setName(variableName);
       }
+      mergeNonEntityPipelineVariables(newVar, isRuntime, pipelineVariables, variableName);
+    }
+  }
 
-      if (newVar != null) {
-        if (!contains(pipelineVariables, variableName)) {
-          pipelineVariables.add(newVar);
-          newVar.setRuntimeInput(isRuntime);
-        } else {
-          String finalVariableName = variableName;
-          Variable existingVar =
-              pipelineVariables.stream().filter(t -> t.getName().equals(finalVariableName)).findFirst().orElse(null);
-          if (existingVar != null) {
-            mergeRequired(existingVar, newVar);
-            mergeAllowedValuesAndList(existingVar, newVar);
-            if (checkRuntime(existingVar, isRuntime)) {
-              throw new InvalidRequestException(
-                  String.format("Variable %s is not marked as runtime in all pipeline stages", variable.getName()));
-            }
-            if (!checkFixed(existingVar, newVar.isFixed())) {
-              throw new InvalidRequestException(
-                  String.format("Variable %s is not marked as fixed in all pipeline stages", variable.getName()));
-            }
-          }
+  void mergeNonEntityPipelineVariables(
+      Variable newVar, boolean isRuntime, List<Variable> pipelineVariables, String variableName) {
+    if (newVar != null) {
+      if (!contains(pipelineVariables, variableName)) {
+        pipelineVariables.add(newVar);
+        newVar.setRuntimeInput(isRuntime);
+      } else {
+        Variable existingVar =
+            pipelineVariables.stream().filter(t -> t.getName().equals(variableName)).findFirst().orElse(null);
+        if (existingVar != null) {
+          mergeRequired(existingVar, newVar);
+          mergeAllowedValuesAndList(existingVar, newVar);
+          checkRuntime(existingVar, isRuntime);
+          checkFixed(existingVar, newVar.isFixed());
+          overWriteDefaultvalue(existingVar, newVar.getValue());
         }
       }
+    }
+  }
+
+  private void overWriteDefaultvalue(Variable existingVar, String value) {
+    if (!value.equals("")) {
+      existingVar.setValue(value);
     }
   }
 
@@ -1245,18 +1249,20 @@ public class PipelineServiceImpl implements PipelineService {
     }
   }
 
-  private boolean checkFixed(Variable existingVar, boolean fixed) {
-    return existingVar.isFixed() == fixed;
+  private void checkFixed(Variable existingVar, boolean fixed) {
+    if (existingVar.isFixed() != fixed) {
+      throw new InvalidRequestException(
+          String.format("Variable %s is not marked as fixed in all pipeline stages", existingVar.getName()));
+    }
   }
 
-  private boolean checkRuntime(Variable existingVar, boolean isRuntime) {
+  private void checkRuntime(Variable existingVar, boolean isRuntime) {
     if (existingVar.getRuntimeInput() == null) {
       existingVar.setRuntimeInput(isRuntime);
-      return false;
     } else if (existingVar.getRuntimeInput() != isRuntime) {
-      return true;
+      throw new InvalidRequestException(
+          String.format("Variable %s is not marked as runtime in all pipeline stages", existingVar.getName()));
     }
-    return false;
   }
 
   private void mergeRequired(Variable existingVar, Variable newVar) {
