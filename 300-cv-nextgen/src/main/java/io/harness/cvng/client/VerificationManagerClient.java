@@ -96,6 +96,5 @@ public interface VerificationManagerClient {
       @Query("accountId") String accountId, @Query("appId") String appId, @Query("serviceId") String serviceId,
       @Query("environmentId") String environmentId, @Query("startTime") Long startTime, @Query("endTime") Long endTime);
 
-  @GET("https://api.regional-table.region-services.aws.a2z.com/index.json")
-  Call<LinkedHashMap> getAllAwsRegions();
+  @GET("https://api.regional-table.region-services.aws.a2z.com/index.json") Call<LinkedHashMap> getAllAwsRegions();
 }
