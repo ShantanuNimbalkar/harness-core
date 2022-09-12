@@ -827,6 +827,7 @@ import org.jetbrains.annotations.NotNull;
 @TargetModule(_360_CG_MANAGER)
 public class WingsModule extends AbstractModule implements ServersModule {
   private static final int OPEN_CENSUS_EXPORT_INTERVAL_MINUTES = 5;
+  private static final String RETENTION_PERIOD_FORMAT = "%s months";
   private final String hashicorpvault = "hashicorpvault";
   private final MainConfiguration configuration;
   private final StartupMode startupMode;
@@ -1769,5 +1770,10 @@ public class WingsModule extends AbstractModule implements ServersModule {
   @Singleton
   public ObjectMapper getYamlSchemaObjectMapperWithoutNamed() {
     return Jackson.newObjectMapper();
+  }
+  @Provides
+  @Singleton
+  public String cdRetentionPeriod() {
+    return String.format(RETENTION_PERIOD_FORMAT, configuration.getCdRetentionPeriod());
   }
 }

@@ -15,19 +15,17 @@ import io.harness.timescaledb.retention.RetentionManager;
 import com.google.inject.Inject;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.CDP)
 public class CDRetentionHandlerNG extends BaseRetentionHandler {
-  private RetentionManager retentionManager;
+  @Inject private String cdRetentionPeriod;
   private static final String NG_INSTANCE_STATS = "ng_instance_stats";
   private static final String NG_INSTANCE_STATS_DAY = "ng_instance_stats_day";
   private static final String NG_INSTANCE_STATS_HOUR = "ng_instance_stats_hour";
-  private static final String RETENTION_PERIOD = "7 months";
 
   @Override
   public void configureRetentionPolicy() {
-    retentionManager.addPolicy(NG_INSTANCE_STATS, RETENTION_PERIOD);
-    retentionManager.addPolicy(NG_INSTANCE_STATS_DAY, RETENTION_PERIOD);
-    retentionManager.addPolicy(NG_INSTANCE_STATS_HOUR, RETENTION_PERIOD);
+    getRetentionManager().addPolicy(NG_INSTANCE_STATS, cdRetentionPeriod);
+    getRetentionManager().addPolicy(NG_INSTANCE_STATS_DAY, cdRetentionPeriod);
+    getRetentionManager().addPolicy(NG_INSTANCE_STATS_HOUR, cdRetentionPeriod);
   }
 }

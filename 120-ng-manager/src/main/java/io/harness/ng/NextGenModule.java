@@ -324,6 +324,7 @@ import ru.vyarus.guice.validator.ValidationModule;
 public class NextGenModule extends AbstractModule {
   public static final String SECRET_MANAGER_CONNECTOR_SERVICE = "secretManagerConnectorService";
   public static final String CONNECTOR_DECORATOR_SERVICE = "connectorDecoratorService";
+  private static final String RETENTION_PERIOD_FORMAT = "%s months";
   private final NextGenConfiguration appConfig;
   public NextGenModule(NextGenConfiguration appConfig) {
     this.appConfig = appConfig;
@@ -454,6 +455,12 @@ public class NextGenModule extends AbstractModule {
   @Singleton
   public AsyncWaitEngine asyncWaitEngine(WaitNotifyEngine waitNotifyEngine) {
     return new AsyncWaitEngineImpl(waitNotifyEngine, NG_ORCHESTRATION);
+  }
+
+  @Provides
+  @Singleton
+  public String cdRetentionPeriod() {
+    return String.format(RETENTION_PERIOD_FORMAT, this.appConfig.getCdRetentionPeriod());
   }
 
   @Override
