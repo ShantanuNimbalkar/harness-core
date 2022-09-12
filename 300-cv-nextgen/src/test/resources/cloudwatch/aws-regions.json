@@ -1,0 +1,12 @@
+{
+  "prices": [
+    {
+      "attributes": {
+        "aws:region": "ap-east-1",
+        "aws:serviceName": "Amazon Translate",
+        "aws:serviceUrl": "https://aws.amazon.com/translate/"
+      },
+      "id": "translate:ap-east-1"
+    }
+  ]
+}
