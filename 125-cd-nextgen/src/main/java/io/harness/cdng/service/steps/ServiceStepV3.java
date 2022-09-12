@@ -139,8 +139,10 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
       throw new InvalidRequestException("Environment ref not found in pipeline yaml");
     }
 
-    List<Object> toResolve = new ArrayList<>();
-    toResolve.add(envRef);
+    final List<Object> toResolve = new ArrayList<>();
+    if (envRef.isExpression()) {
+      toResolve.add(envRef);
+    }
     toResolve.add(envInputs);
     expressionResolver.updateExpressions(ambiance, toResolve);
 
@@ -225,7 +227,7 @@ public class ServiceStepV3 implements ChildrenExecutable<ServiceStepV3Parameters
         StepResponse.StepOutcome.builder()
             .name(OutcomeExpressionConstants.SERVICE)
             .outcome(ServiceStepOutcome.fromServiceStepV2(ngServiceV2InfoConfig.getIdentifier(),
-                ngServiceV2InfoConfig.getName(), ngServiceV2InfoConfig.getServiceDefinition().getType().name(),
+                ngServiceV2InfoConfig.getName(), ngServiceV2InfoConfig.getServiceDefinition().getType().getYamlName(),
                 ngServiceV2InfoConfig.getDescription(), ngServiceV2InfoConfig.getTags(),
                 ngServiceV2InfoConfig.getGitOpsEnabled()))
             .group(StepCategory.STAGE.name())
