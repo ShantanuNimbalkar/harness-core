@@ -87,6 +87,8 @@ public class NGTemplateSchemaServiceImpl implements NGTemplateSchemaService {
       templateChildType = EntityTypeConstants.PIPELINES;
     } else if (TemplateEntityType.CUSTOM_DEPLOYMENT_TEMPLATE.equals(templateEntityType)) {
       templateChildType = EntityTypeConstants.TEMPLATE_CUSTOM_DEPLOYMENT;
+    } else if (TemplateEntityType.ARTIFACT_SOURCE_TEMPLATE.equals(templateEntityType)) {
+      templateChildType = EntityTypeConstants.ARTIFACT_SOURCE_TEMPLATE;
     }
 
     if (templateChildType == null || !schemaValidationSupported(templateEntityType)) {

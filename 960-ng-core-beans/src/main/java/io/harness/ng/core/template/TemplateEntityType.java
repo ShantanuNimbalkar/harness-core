@@ -10,6 +10,8 @@ package io.harness.ng.core.template;
 import static io.harness.NGCommonEntityConstants.IDENTIFIER_KEY;
 import static io.harness.NGCommonEntityConstants.NAME_KEY;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.ng.core.template.TemplateEntityConstants.ARTIFACT_SOURCE;
+import static io.harness.ng.core.template.TemplateEntityConstants.ARTIFACT_SOURCE_ROOT_FIELD;
 import static io.harness.ng.core.template.TemplateEntityConstants.CUSTOM_DEPLOYMENT;
 import static io.harness.ng.core.template.TemplateEntityConstants.CUSTOM_DEPLOYMENT_ROOT_FIELD;
 import static io.harness.ng.core.template.TemplateEntityConstants.MONITORED_SERVICE;
@@ -49,7 +51,10 @@ public enum TemplateEntityType {
       MONITORED_SERVICE, MONITORED_SERVICE_ROOT_FIELD, asList(IDENTIFIER_KEY, NAME_KEY), HarnessTeam.CV),
 
   @JsonProperty(SECRET_MANAGER)
-  SECRET_MANAGER_TEMPLATE(SECRET_MANAGER, SECRET_MANAGER_ROOT_FIELD, asList(IDENTIFIER_KEY, NAME_KEY), HarnessTeam.PL);
+  SECRET_MANAGER_TEMPLATE(SECRET_MANAGER, SECRET_MANAGER_ROOT_FIELD, asList(IDENTIFIER_KEY, NAME_KEY), HarnessTeam.PL),
+
+  @JsonProperty(ARTIFACT_SOURCE)
+  ARTIFACT_SOURCE_TEMPLATE(ARTIFACT_SOURCE, ARTIFACT_SOURCE_ROOT_FIELD, asList(IDENTIFIER_KEY, NAME_KEY), CDC);
 
   private final String yamlType;
   private String rootYamlName;
