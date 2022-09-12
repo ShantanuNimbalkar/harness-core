@@ -80,7 +80,7 @@ public class HelmCommandTaskNGTest extends CategoryTest {
         .when(helmDeployServiceNG)
         .ensureHelmInstalled(any(HelmCommandRequestNG.class));
     when(k8sGlobalConfigService.getOcPath()).thenReturn("/tmp");
-    when(helmTaskHelperBase.newGetWorkingDirFromEnv()).thenReturn("");
+    when(helmTaskHelperBase.getWorkingDirFromEnv()).thenReturn("");
   }
 
   @Test

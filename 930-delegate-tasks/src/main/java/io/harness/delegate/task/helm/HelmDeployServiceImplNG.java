@@ -280,7 +280,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
         logCallback.saveExecutionLog("Deployment failed.");
         deleteAndPurgeHelmRelease(commandRequest, logCallback);
       }
-      if (isEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv())) {
+      if (isEmpty(helmTaskHelperBase.getWorkingDirFromEnv())) {
         cleanUpWorkingDirectory(initWorkingDir);
       }
       if (isNotEmpty(commandRequest.getGcpKeyPath())) {
@@ -547,7 +547,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
       throw sanitizedException;
 
     } finally {
-      if (isEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv())) {
+      if (isEmpty(helmTaskHelperBase.getWorkingDirFromEnv())) {
         cleanUpWorkingDirectory(commandRequest.getWorkingDir());
       }
       if (isNotEmpty(commandRequest.getGcpKeyPath())) {
@@ -767,7 +767,7 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
     String chartName = helmChartManifestDelegateConfig.getChartName();
     String workingDir = Paths.get(commandRequestNG.getWorkingDir()).toString();
 
-    if (!helmTaskHelperBase.newDoesChartExist(workingDir, chartName)) {
+    if (!helmTaskHelperBase.doesChartExist(workingDir, chartName)) {
       downloadFilesFromChartRepo(
           commandRequestNG.getManifestDelegateConfig(), workingDir, commandRequestNG.getLogCallback(), timeoutInMillis);
     }

@@ -41,6 +41,7 @@ import static io.harness.logging.LogLevel.WARN;
 import static io.harness.rule.OwnerRule.ABHINAV2;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.ACASIAN;
+import static io.harness.rule.OwnerRule.ACHYUTH;
 import static io.harness.rule.OwnerRule.ADWAIT;
 import static io.harness.rule.OwnerRule.ANSHUL;
 import static io.harness.rule.OwnerRule.ARVIND;
@@ -2905,7 +2906,7 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = ABOSII)
+  @Owner(developers = ACHYUTH)
   @Category(UnitTests.class)
   public void testFetchManifestFilesAndWriteToDirectoryHttpHelmEnvVar() throws Exception {
     K8sTaskHelperBase spyTaskHelperBase = spy(k8sTaskHelperBase);
@@ -2922,9 +2923,9 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
                                                                  .helmVersion(HelmVersion.V3)
                                                                  .build();
 
-    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).newGetWorkingDirFromEnv();
-    doReturn("/helm-working-dir/repoName").when(helmTaskHelperBase).newGetWorkingDirectory(any(), any());
-    doReturn(true).when(helmTaskHelperBase).newDoesChartExist(any(), any());
+    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).getWorkingDirFromEnv();
+    doReturn("/helm-working-dir/repoName").when(helmTaskHelperBase).getCompleteWorkingDirectory(any(), any(), any(), any());
+    doReturn(true).when(helmTaskHelperBase).doesChartExist(any(), any());
     doNothing().when(spyTaskHelperBase).copyHelmChartFolderToWorkingDir(any(), any());
     doReturn("list of files").when(spyTaskHelperBase).getManifestFileNamesInLogFormat("manifest");
 

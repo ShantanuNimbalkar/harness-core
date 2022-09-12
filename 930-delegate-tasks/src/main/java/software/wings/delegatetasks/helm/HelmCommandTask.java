@@ -151,18 +151,13 @@ public class HelmCommandTask extends AbstractDelegateRunnableTask {
     executionLogCallback.saveExecutionLog(
         "Setting KubeConfig\nKUBECONFIG_PATH=" + configLocation, LogLevel.INFO, CommandExecutionStatus.RUNNING);
 
-    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
     String workingDir = "";
-    boolean isNotReleaseHistCmd = helmCommandRequest instanceof HelmReleaseHistoryCommandRequest;
+    boolean isNotReleaseHistCmd = !(helmCommandRequest instanceof HelmReleaseHistoryCommandRequest);
 
     if (isNotReleaseHistCmd) {
       if (!isEnvVarSet) {
-        workingDir = Paths
-                         .get(replace(WORKING_DIR,
-                             "${"
-                                 + "ACTIVITY_ID"
-                                 + "}",
-                             helmCommandRequest.getActivityId()))
+        workingDir = Paths.get(replace(WORKING_DIR, "${ACTIVITY_ID}", helmCommandRequest.getActivityId()))
                          .normalize()
                          .toAbsolutePath()
                          .toString();

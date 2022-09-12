@@ -34,6 +34,7 @@ import io.harness.delegate.task.ManifestDelegateConfigHelper;
 import io.harness.delegate.task.TaskParameters;
 import io.harness.delegate.task.k8s.ContainerDeploymentDelegateBaseHelper;
 import io.harness.delegate.task.k8s.GcpK8sInfraDelegateConfig;
+import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.ExplanationException;
 import io.harness.exception.HintException;
@@ -100,7 +101,7 @@ public class HelmCommandTaskNG extends AbstractDelegateRunnableTask {
     HelmCommandResponseNG helmCommandResponseNG;
 
     try {
-      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
       String workingDirectory = "";
       if (!isEnvVarSet) {
         workingDirectory =
@@ -114,8 +115,10 @@ public class HelmCommandTaskNG extends AbstractDelegateRunnableTask {
       } else {
         String repoName =
             helmTaskHelperBase.getRepoNameNG(helmCommandRequestNG.getManifestDelegateConfig().getStoreDelegateConfig());
-        workingDirectory =
-            helmTaskHelperBase.newGetWorkingDirectory(helmTaskHelperBase.newGetWorkingDirFromEnv(), repoName);
+        HelmChartManifestDelegateConfig helmChartConfig =
+            (HelmChartManifestDelegateConfig) helmCommandRequestNG.getManifestDelegateConfig();
+        workingDirectory = helmTaskHelperBase.getCompleteWorkingDirectory(helmTaskHelperBase.getWorkingDirFromEnv(),
+            repoName, helmChartConfig.getChartName(), helmChartConfig.getChartVersion());
       }
       helmCommandRequestNG.setWorkingDir(workingDirectory);
       decryptRequestDTOs(helmCommandRequestNG);

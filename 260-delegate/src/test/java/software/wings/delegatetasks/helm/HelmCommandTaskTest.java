@@ -81,7 +81,7 @@ public class HelmCommandTaskTest extends WingsBaseTest {
     when(k8sGlobalConfigService.getOcPath()).thenReturn("/tmp");
     when(containerDeploymentDelegateHelper.getKubernetesConfig(any())).thenReturn(KubernetesConfig.builder().build());
     when(containerDeploymentDelegateHelper.createKubeConfig(any())).thenReturn(".kube/config");
-    when(helmTaskHelperBase.newGetWorkingDirFromEnv()).thenReturn("helm-dir");
+    when(helmTaskHelperBase.getWorkingDirFromEnv()).thenReturn("helm-dir");
   }
 
   @Test

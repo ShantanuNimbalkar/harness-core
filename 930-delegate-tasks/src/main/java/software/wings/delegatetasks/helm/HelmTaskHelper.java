@@ -25,6 +25,7 @@ import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CACHE_HOME_PATH;
 import static io.harness.helm.HelmConstants.V3Commands.HELM_CHART_VERSION_FLAG;
 import static io.harness.helm.HelmConstants.VALUES_YAML;
+import static io.harness.logging.LogLevel.WARN;
 import static io.harness.state.StateConstants.DEFAULT_STEADY_STATE_TIMEOUT;
 
 import static java.lang.String.format;
@@ -45,8 +46,8 @@ import io.harness.delegate.chartmuseum.CgChartmuseumClientFactory;
 import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.helm.HelmCommandFlag;
 import io.harness.delegate.task.helm.HelmTaskHelperBase;
+import io.harness.exception.ExceptionUtils;
 import io.harness.exception.HelmClientException;
-import io.harness.exception.HelmClientRuntimeException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
@@ -208,34 +209,46 @@ public class HelmTaskHelper {
     unzipManifestFiles(destDir, zipInputStream);
   }
 
+  private void populateChartToLocalHelmRepo(HelmChartConfigParams helmChartConfig, long timeoutInMillis,
+      String workingDirectory, HelmCommandFlag helmCommandFlag) throws Exception {
+    try {
+      if (!helmTaskHelperBase.doesChartExist(workingDirectory, helmChartConfig.getChartName())) {
+        synchronized (this) {
+          if (!helmTaskHelperBase.doesChartExist(workingDirectory, helmChartConfig.getChartName())) {
+            log.info("Did not find the chart and version in local repo: " + workingDirectory);
+            fetchChartFiles(helmChartConfig, workingDirectory, timeoutInMillis, helmCommandFlag);
+          } else {
+            log.info("Found the chart at local repo at path: " + workingDirectory);
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.info("Failed to fetch chart. Reason: " + ExceptionUtils.getMessage(e), WARN);
+      throw e;
+    }
+  }
+
   public Map<String, List<String>> getValuesYamlFromChart(HelmChartConfigParams helmChartConfigParams,
       long timeoutInMillis, HelmCommandFlag helmCommandFlag, Map<String, List<String>> mapK8sValuesLocationToFilePaths)
       throws Exception {
-    helmTaskHelperBase.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
-    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
-    boolean isChartPresent = false;
+    helmTaskHelperBase.modifyRepoNameToIncludeBucket(helmChartConfigParams);
+    boolean useLocalHelmRepo = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
     String workingDir;
-    if (isEnvVarSet) {
-      workingDir = helmTaskHelperBase.newGetWorkingDirectory(
-          helmTaskHelperBase.newGetWorkingDirFromEnv(), helmChartConfigParams.getRepoName());
+    if (useLocalHelmRepo) {
+      workingDir = helmTaskHelperBase.getCompleteWorkingDirectory(helmTaskHelperBase.getWorkingDirFromEnv(),
+          helmChartConfigParams.getRepoName(), helmChartConfigParams.getChartName(),
+          helmChartConfigParams.getChartVersion());
       createDirectoryIfDoesNotExist(workingDir);
       waitForDirectoryToBeAccessibleOutOfProcess(workingDir, 10);
-      if (helmTaskHelperBase.newDoesChartExist(workingDir, helmChartConfigParams.getChartName())) {
-        isChartPresent = true;
-      }
+      populateChartToLocalHelmRepo(helmChartConfigParams, timeoutInMillis, workingDir, helmCommandFlag);
     } else {
       workingDir = createNewDirectoryAtPath(
           Paths.get(HELM_FETCH_OLD_WORKING_DIR_BASE.replace("${REPO_NAME}", helmChartConfigParams.getRepoName()))
               .toString());
+      fetchChartFiles(helmChartConfigParams, workingDir, timeoutInMillis, helmCommandFlag);
     }
+
     Map<String, List<String>> mapK8sValuesLocationToContents = new HashMap<>();
-    if (!isChartPresent) {
-      try {
-        fetchChartFiles(helmChartConfigParams, workingDir, timeoutInMillis, helmCommandFlag);
-      } catch (HelmClientException ex) {
-        throw new HelmClientRuntimeException((HelmClientException) ExceptionMessageSanitizer.sanitizeException(ex));
-      }
-    }
 
     String workingDirectory = workingDir;
 
@@ -294,7 +307,7 @@ public class HelmTaskHelper {
       log.info("values yaml file not found", ExceptionMessageSanitizer.sanitizeException(ex));
       return null;
     } finally {
-      if (!isEnvVarSet) {
+      if (!useLocalHelmRepo) {
         cleanup(workingDirectory);
       }
     }
@@ -825,6 +838,6 @@ public class HelmTaskHelper {
   }
 
   public void newModifyRepoNameToIncludeBucket(HelmChartConfigParams helmChartConfigParams) {
-    helmTaskHelperBase.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
+    helmTaskHelperBase.modifyRepoNameToIncludeBucket(helmChartConfigParams);
   }
 }

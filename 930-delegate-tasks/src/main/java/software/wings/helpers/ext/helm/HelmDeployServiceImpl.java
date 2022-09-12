@@ -434,14 +434,15 @@ public class HelmDeployServiceImpl implements HelmDeployService {
   @VisibleForTesting
   void fetchChartRepo(HelmCommandRequest commandRequest, long timeoutInMillis) throws Exception {
     HelmChartConfigParams helmChartConfigParams = commandRequest.getRepoConfig().getHelmChartConfigParams();
-    helmTaskHelperBase.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
-    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+    helmTaskHelperBase.modifyRepoNameToIncludeBucket(helmChartConfigParams);
+    boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
     boolean isChartPresent = false;
     String workingDirectory;
     if (isEnvVarSet) {
-      workingDirectory = helmTaskHelperBase.newGetWorkingDirectory(
-          helmTaskHelperBase.newGetWorkingDirFromEnv(), helmChartConfigParams.getRepoName());
-      if (helmTaskHelperBase.newDoesChartExist(workingDirectory, helmChartConfigParams.getChartName())) {
+      workingDirectory = helmTaskHelperBase.getCompleteWorkingDirectory(helmTaskHelperBase.getWorkingDirFromEnv(),
+          helmChartConfigParams.getRepoName(), helmChartConfigParams.getChartName(),
+          helmChartConfigParams.getChartVersion());
+      if (helmTaskHelperBase.doesChartExist(workingDirectory, helmChartConfigParams.getChartName())) {
         isChartPresent = true;
       }
     } else {

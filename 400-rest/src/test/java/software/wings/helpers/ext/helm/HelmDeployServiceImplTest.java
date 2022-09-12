@@ -212,7 +212,7 @@ public class HelmDeployServiceImplTest extends WingsBaseTest {
     when(helmClient.repoUpdate(any())).thenReturn(HelmCliResponse.builder().build());
     when(helmTaskHelperBase.parseHelmReleaseCommandOutput(eq(""), eq(RELEASE_HISTORY)))
         .thenReturn(Collections.emptyList());
-    when(helmTaskHelperBase.newGetWorkingDirFromEnv()).thenReturn("");
+    when(helmTaskHelperBase.getWorkingDirFromEnv()).thenReturn("");
   }
 
   @Test

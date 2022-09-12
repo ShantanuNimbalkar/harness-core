@@ -2652,24 +2652,25 @@ public class K8sTaskHelperBase {
     }
 
     try {
-      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
       boolean isChartPresent = false;
       String chartName = ((HelmChartManifestDelegateConfig) manifestDelegateConfig).getChartName();
+      String chartVersion = ((HelmChartManifestDelegateConfig) manifestDelegateConfig).getChartVersion();
       String repoName = helmTaskHelperBase.getRepoNameNG(manifestDelegateConfig.getStoreDelegateConfig());
       if (isEnvVarSet) {
-        String localChartDirectory =
-            helmTaskHelperBase.newGetWorkingDirectory(helmTaskHelperBase.newGetWorkingDirFromEnv(), repoName);
+        String localChartDirectory = helmTaskHelperBase.getCompleteWorkingDirectory(
+            helmTaskHelperBase.getWorkingDirFromEnv(), repoName, chartName, chartVersion);
         localChartDirectory = Paths.get(localChartDirectory).toAbsolutePath().toString();
-        if (helmTaskHelperBase.newDoesChartExist(localChartDirectory, chartName)) {
+        if (helmTaskHelperBase.doesChartExist(localChartDirectory, chartName)) {
           isChartPresent = true;
           localChartDirectory = helmTaskHelperBase.getChartDirectory(localChartDirectory, chartName);
         }
         if (!isChartPresent) {
           throw new InvalidRequestException(
-              "Env Variable $HELM_WORKING_DIR set, expecting chart directory to exist locally after helm fetch but did not find it \n");
+              "Env Variable HELM_LOCAL_REPOSITORY set, expecting chart directory to exist locally after helm fetch but did not find it \n");
         }
         String workingDirectory =
-            helmTaskHelperBase.createDirectory(Paths.get(destinationDirectory, chartName).toString());
+            helmTaskHelperBase.createDirectoryIfNotExist(Paths.get(destinationDirectory, chartName).toString());
         log.info("Copying locally present chart from directory: %s to current working directory: %s \n",
             localChartDirectory, workingDirectory);
         copyHelmChartFolderToWorkingDir(workingDirectory, localChartDirectory);

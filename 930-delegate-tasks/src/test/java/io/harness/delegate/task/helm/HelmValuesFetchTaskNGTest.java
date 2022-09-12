@@ -13,6 +13,7 @@ import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType
 import static io.harness.delegate.beans.connector.helm.HttpHelmAuthType.USER_PASSWORD;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
 import static io.harness.rule.OwnerRule.ACASIAN;
+import static io.harness.rule.OwnerRule.ACHYUTH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -242,7 +243,7 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = ACASIAN)
+  @Owner(developers = ACHYUTH)
   @Category(UnitTests.class)
   public void shouldExecuteHelmValueFetchWorkingDirFromEnv() throws Exception {
     String valuesYaml = "values-file-content";
@@ -270,10 +271,12 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
             .helmVersion(HelmVersion.V380)
             .build();
 
-    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).newGetWorkingDirFromEnv();
-    doReturn("/helm-working-dir/repoName").when(helmTaskHelperBase).newGetWorkingDirectory(any(), any());
-    doReturn(true).when(helmTaskHelperBase).newDoesChartExist(any(), any());
-    doReturn("workingDir").when(helmTaskHelperBase).createDirectory(any());
+    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).getWorkingDirFromEnv();
+    doReturn("/helm-working-dir/repoName")
+        .when(helmTaskHelperBase)
+        .getCompleteWorkingDirectory(any(), any(), any(), any());
+    doReturn(true).when(helmTaskHelperBase).doesChartExist(any(), any());
+    doReturn("workingDir").when(helmTaskHelperBase).createDirectoryIfNotExist(any());
 
     doNothing().when(helmValuesFetchTaskNG).printHelmBinaryPathAndVersion(any(), any());
     doReturn(decryptableEntity).when(decryptionService).decrypt(any(), anyList());

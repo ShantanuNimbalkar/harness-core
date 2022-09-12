@@ -197,7 +197,7 @@ public class K8sTaskHelperTest extends CategoryTest {
     LoggingInitializer.initializeLogging();
     spyHelper = Mockito.spy(helper);
     spyHelperBase = Mockito.spy(k8sTaskHelperBase);
-    when(helmTaskHelperBase.newGetWorkingDirFromEnv()).thenReturn("");
+    when(helmTaskHelperBase.getWorkingDirFromEnv()).thenReturn("");
   }
 
   @Test

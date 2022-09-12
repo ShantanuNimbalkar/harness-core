@@ -49,7 +49,6 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.filesystem.FileIo;
-import io.harness.helm.HelmConstants;
 import io.harness.k8s.kubectl.Kubectl;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.K8sDelegateTaskParams;
@@ -495,20 +494,21 @@ public class K8sTaskHelper {
       executionLogCallback.saveExecutionLog(color(format("%nFetching files from helm chart repo"), White, Bold));
       helmTaskHelper.printHelmChartInfoInExecutionLogs(helmChartConfigParams, executionLogCallback);
       helmTaskHelper.newModifyRepoNameToIncludeBucket(helmChartConfigParams);
-      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.newGetWorkingDirFromEnv());
+      boolean isEnvVarSet = isNotEmpty(helmTaskHelperBase.getWorkingDirFromEnv());
       boolean isChartPresent = false;
       if (isEnvVarSet) {
-        String localChartDirectory = helmTaskHelperBase.newGetWorkingDirectory(
-            HelmConstants.WORKING_DIR_BASE, helmChartConfigParams.getRepoName());
+        String localChartDirectory = helmTaskHelperBase.getCompleteWorkingDirectory(
+            helmTaskHelperBase.getWorkingDirFromEnv(), helmChartConfigParams.getRepoName(),
+            helmChartConfigParams.getChartName(), helmChartConfigParams.getChartVersion());
         localChartDirectory = Paths.get(localChartDirectory).toAbsolutePath().toString();
-        if (helmTaskHelperBase.newDoesChartExist(localChartDirectory, helmChartConfigParams.getChartName())) {
+        if (helmTaskHelperBase.doesChartExist(localChartDirectory, helmChartConfigParams.getChartName())) {
           isChartPresent = true;
           localChartDirectory =
               helmTaskHelperBase.getChartDirectory(localChartDirectory, helmChartConfigParams.getChartName());
         }
         if (!isChartPresent) {
           throw new InvalidRequestException(
-              "Env Variable $HELM_WORKING_DIR set, expecting chart directory to exist locally after helm fetch but did not find it \n");
+              "Env Variable HELM_LOCAL_REPOSITORY set, expecting chart directory to exist locally after helm fetch but did not find it \n");
         }
         String workingDirectory = helmTaskHelper.createDirectory(
             Paths.get(destinationDirectory, helmChartConfigParams.getChartName()).toString());
