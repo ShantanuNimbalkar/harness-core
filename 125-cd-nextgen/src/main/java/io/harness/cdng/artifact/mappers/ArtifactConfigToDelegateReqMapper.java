@@ -91,13 +91,13 @@ public class ArtifactConfigToDelegateReqMapper {
   public GithubPackagesArtifactDelegateRequest getGithubPackagesDelegateRequest(
       GithubPackagesArtifactConfig artifactConfig, GithubConnectorDTO connectorDTO,
       List<EncryptedDataDetail> encryptedDataDetails, String connectorRef) {
-    String versionRegex = artifactConfig.getVersionRegex().getValue();
+    String versionRegex = artifactConfig.getVersionRegex() != null ? artifactConfig.getVersionRegex().getValue() : "";
 
     if (StringUtils.isBlank(versionRegex)) {
       versionRegex = "";
     }
 
-    String version = artifactConfig.getVersion().getValue();
+    String version = artifactConfig.getVersion() != null ? artifactConfig.getVersion().getValue() : "";
 
     if (StringUtils.isBlank(version)) {
       version = "";

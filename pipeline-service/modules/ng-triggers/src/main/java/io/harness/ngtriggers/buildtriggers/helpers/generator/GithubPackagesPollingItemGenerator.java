@@ -27,14 +27,17 @@ public class GithubPackagesPollingItemGenerator implements PollingItemGenerator 
     String connectorRef = buildTriggerHelper.validateAndFetchFromJsonNode(buildTriggerOpsData, "spec.connectorRef");
     String packageName = buildTriggerHelper.validateAndFetchFromJsonNode(buildTriggerOpsData, "spec.packageName");
     String org = buildTriggerHelper.validateAndFetchFromJsonNode(buildTriggerOpsData, "spec.org");
+    String packageType = buildTriggerHelper.validateAndFetchFromJsonNode(buildTriggerOpsData, "spec.packageType");
     return builder
-        .setPollingPayloadData(
-            PollingPayloadData.newBuilder()
-                .setConnectorRef(connectorRef)
-                .setType(Type.GITHUB_PACKAGES)
-                .setGithubPackagesPollingPayload(
-                    GithubPackagesPollingPayload.newBuilder().setOrg(org).setPackageName(packageName).build())
-                .build())
+        .setPollingPayloadData(PollingPayloadData.newBuilder()
+                                   .setConnectorRef(connectorRef)
+                                   .setType(Type.GITHUB_PACKAGES)
+                                   .setGithubPackagesPollingPayload(GithubPackagesPollingPayload.newBuilder()
+                                                                        .setOrg(org)
+                                                                        .setPackageName(packageName)
+                                                                        .setPackageType(packageType)
+                                                                        .build())
+                                   .build())
         .build();
   }
 }

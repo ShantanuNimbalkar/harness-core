@@ -20,6 +20,7 @@ public class GithubPackagesSpec implements ArtifactTypeSpec {
   List<TriggerEventDataCondition> eventConditions;
   String org;
   String packageName;
+  String packageType;
 
   @Override
   public String fetchConnectorRef() {

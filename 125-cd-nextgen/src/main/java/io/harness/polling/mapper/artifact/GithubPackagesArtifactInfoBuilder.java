@@ -21,7 +21,8 @@ public class GithubPackagesArtifactInfoBuilder implements PollingInfoBuilder {
     return GithubPackagesArtifactInfo.builder()
         .connectorRef(pollingPayloadData.getConnectorRef())
         .packageName(pollingPayloadData.getGithubPackagesPollingPayload().getPackageName())
-        .org(pollingPayloadData.getGithubPackagesPollingPayload().getPackageName())
+        .org(pollingPayloadData.getGithubPackagesPollingPayload().getOrg())
+        .packageType(pollingPayloadData.getGithubPackagesPollingPayload().getPackageType())
         .build();
   }
 }

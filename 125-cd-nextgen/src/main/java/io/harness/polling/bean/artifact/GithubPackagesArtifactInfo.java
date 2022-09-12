@@ -17,6 +17,7 @@ public class GithubPackagesArtifactInfo implements ArtifactInfo {
   String connectorRef;
   String packageName;
   String org;
+  String packageType;
   @Override
   public ArtifactSourceType getType() {
     return ArtifactSourceType.GITHUB_PACKAGES;
@@ -28,6 +29,7 @@ public class GithubPackagesArtifactInfo implements ArtifactInfo {
         .connectorRef(ParameterField.<String>builder().value(connectorRef).build())
         .packageName(ParameterField.<String>builder().value(packageName).build())
         .org(ParameterField.<String>builder().value(org).build())
+        .packageType(ParameterField.<String>builder().value(packageType).build())
         .build();
   }
 }

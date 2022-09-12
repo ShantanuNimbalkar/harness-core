@@ -126,4 +126,5 @@ message GitPollingPayload {
 message GithubPackagesPollingPayload {
   string org = 1;
   string packageName = 2;
+  string packageType = 3;
 }
