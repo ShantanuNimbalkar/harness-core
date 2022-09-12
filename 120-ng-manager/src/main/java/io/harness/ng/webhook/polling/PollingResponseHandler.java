@@ -375,6 +375,7 @@ public class PollingResponseHandler {
       case GITHUB_PACKAGES:
         polledResponseResultBuilder.name(((GithubPackagesArtifactInfo) artifactInfo).getPackageName());
         polledResponseResultBuilder.type(GITHUB_PACKAGES);
+        break;
       default:
         throw new InvalidRequestException("Unsupported Artifact Type " + artifactInfo.getType().getDisplayName());
     }
