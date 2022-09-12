@@ -14,6 +14,9 @@ import static io.harness.telemetry.Destination.AMPLITUDE;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import io.harness.ModuleType;
 import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
@@ -293,10 +296,18 @@ public class PMSPipelineServiceHelper {
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
     // Adding GitConfig to expanded Yaml
     GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
+    ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    String json="";
+    try {
+      json = objectWriter.writeValueAsString(gitEntityInfo);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+
     ExpansionResponseProto gitConfig = ExpansionResponseProto.newBuilder()
                                            .setFqn("pipeline")
                                            .setKey("gitConfig")
-                                           .setValue("{\"isMainBranch\": true}")
+                                           .setValue(json)
                                            .setSuccess(true)
                                            .setPlacement(APPEND)
                                            .build();
