@@ -24,4 +24,5 @@ public class AzureCreateARMResourceStepConfigurationParameters {
   AzureTemplateFile templateFile;
   AzureCreateARMResourceParameterFile parameters;
   AzureCreateARMResourceStepScope scope;
+  ParameterField<String> deploymentName;
 }

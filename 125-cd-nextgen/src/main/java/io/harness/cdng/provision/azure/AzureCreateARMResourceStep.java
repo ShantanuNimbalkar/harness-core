@@ -334,6 +334,9 @@ public class AzureCreateARMResourceStep extends TaskChainExecutableWithRollbackA
         .templateBody(azureCreatePassThroughData.getTemplateBody())
         .connectorDTO(connectorConfig)
         .parametersBody(azureCreatePassThroughData.getParametersBody())
+        .deploymentName(stepConfigurationParameters.getDeploymentName() != null
+                ? stepConfigurationParameters.getDeploymentName().getValue()
+                : "")
         .timeoutInMs(StepUtils.getTimeoutMillis(stepElementParameters.getTimeout(), DEFAULT_TIMEOUT));
 
     setScopeTypeValues(builder, stepConfigurationParameters);
