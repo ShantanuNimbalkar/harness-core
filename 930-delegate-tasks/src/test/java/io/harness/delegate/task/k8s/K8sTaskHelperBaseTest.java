@@ -2907,6 +2907,37 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
+  public void testFetchManifestFilesAndWriteToDirectoryHttpHelmEnvVar() throws Exception {
+    K8sTaskHelperBase spyTaskHelperBase = spy(k8sTaskHelperBase);
+    HttpHelmStoreDelegateConfig httpStoreDelegateConfig = HttpHelmStoreDelegateConfig.builder()
+                                                              .repoName("repoName")
+                                                              .repoDisplayName("Repo Name")
+                                                              .httpHelmConnector(HttpHelmConnectorDTO.builder().build())
+                                                              .build();
+
+    HelmChartManifestDelegateConfig manifestDelegateConfig = HelmChartManifestDelegateConfig.builder()
+                                                                 .chartName("chartName")
+                                                                 .chartVersion("1.0.0")
+                                                                 .storeDelegateConfig(httpStoreDelegateConfig)
+                                                                 .helmVersion(HelmVersion.V3)
+                                                                 .build();
+
+    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).newGetWorkingDirFromEnv();
+    doReturn("/helm-working-dir/repoName").when(helmTaskHelperBase).newGetWorkingDirectory(any(), any());
+    doReturn(true).when(helmTaskHelperBase).newDoesChartExist(any(), any());
+    doNothing().when(spyTaskHelperBase).copyHelmChartFolderToWorkingDir(any(), any());
+    doReturn("list of files").when(spyTaskHelperBase).getManifestFileNamesInLogFormat("manifest");
+
+    boolean result = spyTaskHelperBase.fetchManifestFilesAndWriteToDirectory(
+        manifestDelegateConfig, "manifest", executionLogCallback, 9000L, "accountId");
+
+    assertThat(result).isTrue();
+    verify(spyTaskHelperBase, times(1)).getManifestFileNamesInLogFormat(anyString());
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
   public void testFetchManifestFilesAndWriteToDirectoryS3Helm() throws Exception {
     S3HelmStoreDelegateConfig s3HelmStoreDelegateConfig = S3HelmStoreDelegateConfig.builder().build();
     testFetchManifestFilesAndWriteToDirectoryUsingChartMuseum(s3HelmStoreDelegateConfig);

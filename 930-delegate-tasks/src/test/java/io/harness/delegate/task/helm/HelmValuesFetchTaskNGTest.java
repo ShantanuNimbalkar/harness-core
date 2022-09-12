@@ -244,6 +244,58 @@ public class HelmValuesFetchTaskNGTest extends CategoryTest {
   @Test
   @Owner(developers = ACASIAN)
   @Category(UnitTests.class)
+  public void shouldExecuteHelmValueFetchWorkingDirFromEnv() throws Exception {
+    String valuesYaml = "values-file-content";
+    HelmFetchFileResult valuesYamlList =
+        HelmFetchFileResult.builder().valuesFileContents(new ArrayList<>(Arrays.asList(valuesYaml))).build();
+    Map<String, HelmFetchFileResult> helmChartValuesFileMapContent = new HashMap<>();
+    helmChartValuesFileMapContent.put("manifest-identifier", valuesYamlList);
+    HttpHelmConnectorDTO connectorDTO =
+        HttpHelmConnectorDTO.builder()
+            .auth(HttpHelmAuthenticationDTO.builder()
+                      .authType(USER_PASSWORD)
+                      .credentials(
+                          HttpHelmUsernamePasswordDTO.builder()
+                              .username("test")
+                              .passwordRef(SecretRefData.builder().decryptedValue("password".toCharArray()).build())
+                              .build())
+                      .build())
+            .build();
+    HelmChartManifestDelegateConfig manifestDelegateConfig =
+        HelmChartManifestDelegateConfig.builder()
+            .storeDelegateConfig(HttpHelmStoreDelegateConfig.builder()
+                                     .encryptedDataDetails(Collections.emptyList())
+                                     .httpHelmConnector(connectorDTO)
+                                     .build())
+            .helmVersion(HelmVersion.V380)
+            .build();
+
+    doReturn("/helm-working-dir/${REPO_NAME}").when(helmTaskHelperBase).newGetWorkingDirFromEnv();
+    doReturn("/helm-working-dir/repoName").when(helmTaskHelperBase).newGetWorkingDirectory(any(), any());
+    doReturn(true).when(helmTaskHelperBase).newDoesChartExist(any(), any());
+    doReturn("workingDir").when(helmTaskHelperBase).createDirectory(any());
+
+    doNothing().when(helmValuesFetchTaskNG).printHelmBinaryPathAndVersion(any(), any());
+    doReturn(decryptableEntity).when(decryptionService).decrypt(any(), anyList());
+
+    HelmValuesFetchRequest request = HelmValuesFetchRequest.builder()
+                                         .timeout(DEFAULT_ASYNC_CALL_TIMEOUT)
+                                         .helmChartManifestDelegateConfig(manifestDelegateConfig)
+                                         .accountId("test")
+                                         .build();
+
+    HelmValuesFetchResponse response = (HelmValuesFetchResponse) helmValuesFetchTaskNG.run(request);
+    verify(helmValuesFetchTaskNG, times(1)).printHelmBinaryPathAndVersion(eq(HelmVersion.V380), any());
+    assertThat(response).isNotNull();
+    assertThat(response.getCommandExecutionStatus()).isEqualTo(SUCCESS);
+    assertThat(response.getValuesFileContent()).isNull();
+    assertThat(response.getHelmChartValuesFileMapContent().equals(helmChartValuesFileMapContent));
+    assertThat(response.getUnitProgressData()).isNotNull();
+  }
+
+  @Test
+  @Owner(developers = ACASIAN)
+  @Category(UnitTests.class)
   public void shouldReturnErrorResponse() throws Exception {
     HttpHelmConnectorDTO connectorDTO =
         HttpHelmConnectorDTO.builder()

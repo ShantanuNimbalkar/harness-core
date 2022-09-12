@@ -947,8 +947,7 @@ public class HelmTaskHelperBase {
           Paths.get(HELM_FETCH_OLD_WORKING_DIR_BASE.replace("${REPO_NAME}", repoName)).toString());
     } else {
       workingDirectory = newGetWorkingDirectory(newGetWorkingDirFromEnv(), repoName);
-      createDirectoryIfDoesNotExist(workingDirectory);
-      waitForDirectoryToBeAccessibleOutOfProcess(workingDirectory, 10);
+      createDirectory(workingDirectory);
       if (newDoesChartExist(workingDirectory, chartName)) {
         isChartPresent = true;
       }

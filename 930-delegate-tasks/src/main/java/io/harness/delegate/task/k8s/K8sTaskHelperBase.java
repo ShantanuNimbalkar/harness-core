@@ -2637,6 +2637,14 @@ public class K8sTaskHelperBase {
     executionLogCallback.saveExecutionLog(sb.toString());
   }
 
+  public void copyHelmChartFolderToWorkingDir(String workingDirectory, String localChartDirectory) throws IOException {
+    File dest = new File(workingDirectory);
+    File src = new File(localChartDirectory);
+    deleteDirectoryAndItsContentIfExists(dest.getAbsolutePath());
+    FileUtils.copyDirectory(src, dest);
+    FileIo.waitForDirectoryToBeAccessibleOutOfProcess(dest.getPath(), 10);
+  }
+
   public boolean downloadFilesFromChartRepo(ManifestDelegateConfig manifestDelegateConfig, String destinationDirectory,
       LogCallback logCallback, long timeoutInMillis) {
     if (!(manifestDelegateConfig instanceof HelmChartManifestDelegateConfig)) {
@@ -2651,7 +2659,7 @@ public class K8sTaskHelperBase {
       String repoName = helmTaskHelperBase.getRepoNameNG(manifestDelegateConfig.getStoreDelegateConfig());
       if (isEnvVarSet) {
         String localChartDirectory =
-            helmTaskHelperBase.newGetWorkingDirectory(HelmConstants.WORKING_DIR_BASE, repoName);
+            helmTaskHelperBase.newGetWorkingDirectory(helmTaskHelperBase.newGetWorkingDirFromEnv(), repoName);
         localChartDirectory = Paths.get(localChartDirectory).toAbsolutePath().toString();
         if (helmTaskHelperBase.newDoesChartExist(localChartDirectory, chartName)) {
           isChartPresent = true;
@@ -2665,11 +2673,7 @@ public class K8sTaskHelperBase {
             helmTaskHelperBase.createDirectory(Paths.get(destinationDirectory, chartName).toString());
         log.info("Copying locally present chart from directory: %s to current working directory: %s \n",
             localChartDirectory, workingDirectory);
-        File dest = new File(workingDirectory);
-        File src = new File(localChartDirectory);
-        deleteDirectoryAndItsContentIfExists(dest.getAbsolutePath());
-        FileUtils.copyDirectory(src, dest);
-        FileIo.waitForDirectoryToBeAccessibleOutOfProcess(dest.getPath(), 10);
+        copyHelmChartFolderToWorkingDir(workingDirectory, localChartDirectory);
         logCallback.saveExecutionLog(color("Successfully fetched following files:", White, Bold));
         logCallback.saveExecutionLog(getManifestFileNamesInLogFormat(destinationDirectory));
         logCallback.saveExecutionLog("Done.", INFO, SUCCESS);
