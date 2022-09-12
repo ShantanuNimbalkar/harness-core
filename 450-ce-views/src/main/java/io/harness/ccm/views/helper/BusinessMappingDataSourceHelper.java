@@ -37,13 +37,19 @@ public class BusinessMappingDataSourceHelper {
     final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
     for (final String businessMappingId : getBusinessMappingIds(viewRules)) {
       final BusinessMapping businessMapping = businessMappingService.get(businessMappingId, accountId);
-      if (Objects.nonNull(businessMapping)) {
-        if (!Lists.isNullOrEmpty(businessMapping.getCostTargets())) {
-          viewFieldIdentifiers.addAll(getCostTargetViewFieldIdentifiers(businessMapping.getCostTargets()));
-        }
-        if (!Lists.isNullOrEmpty(businessMapping.getSharedCosts())) {
-          viewFieldIdentifiers.addAll(getSharedCostViewFieldIdentifiers(businessMapping.getSharedCosts()));
-        }
+      viewFieldIdentifiers.addAll(getBusinessMappingViewFieldIdentifiers(businessMapping));
+    }
+    return viewFieldIdentifiers;
+  }
+
+  public Set<ViewFieldIdentifier> getBusinessMappingViewFieldIdentifiers(final BusinessMapping businessMapping) {
+    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
+    if (Objects.nonNull(businessMapping)) {
+      if (!Lists.isNullOrEmpty(businessMapping.getCostTargets())) {
+        viewFieldIdentifiers.addAll(getCostTargetViewFieldIdentifiers(businessMapping.getCostTargets()));
+      }
+      if (!Lists.isNullOrEmpty(businessMapping.getSharedCosts())) {
+        viewFieldIdentifiers.addAll(getSharedCostViewFieldIdentifiers(businessMapping.getSharedCosts()));
       }
     }
     return viewFieldIdentifiers;
@@ -79,7 +85,10 @@ public class BusinessMappingDataSourceHelper {
       if (Objects.nonNull(viewRule) && Objects.nonNull(viewRule.getViewConditions())) {
         viewRule.getViewConditions().forEach(viewCondition -> {
           final ViewIdCondition viewIdCondition = (ViewIdCondition) viewCondition;
-          viewFieldIdentifiers.add(viewIdCondition.getViewField().getIdentifier());
+          final ViewFieldIdentifier viewFieldIdentifier = viewIdCondition.getViewField().getIdentifier();
+          if (viewFieldIdentifier != ViewFieldIdentifier.COMMON && viewFieldIdentifier != ViewFieldIdentifier.LABEL) {
+            viewFieldIdentifiers.add(viewIdCondition.getViewField().getIdentifier());
+          }
         });
       }
     });

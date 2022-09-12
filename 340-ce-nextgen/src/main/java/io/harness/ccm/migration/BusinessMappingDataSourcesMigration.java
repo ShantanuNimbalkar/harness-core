@@ -58,15 +58,7 @@ public class BusinessMappingDataSourcesMigration implements NGMigration {
   }
 
   private void modifyBusinessMapping(final BusinessMapping businessMapping) {
-    businessMapping.setDataSources(getBusinessMappingDataSources(businessMapping));
-  }
-
-  private List<ViewFieldIdentifier> getBusinessMappingDataSources(final BusinessMapping businessMapping) {
-    final Set<ViewFieldIdentifier> viewFieldIdentifiers = new HashSet<>();
-    viewFieldIdentifiers.addAll(
-        businessMappingDataSourceHelper.getCostTargetViewFieldIdentifiers(businessMapping.getCostTargets()));
-    viewFieldIdentifiers.addAll(
-        businessMappingDataSourceHelper.getSharedCostViewFieldIdentifiers(businessMapping.getSharedCosts()));
-    return new ArrayList<>(viewFieldIdentifiers);
+    businessMapping.setDataSources(
+        new ArrayList<>(businessMappingDataSourceHelper.getBusinessMappingViewFieldIdentifiers(businessMapping)));
   }
 }
