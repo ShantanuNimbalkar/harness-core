@@ -53,7 +53,8 @@ public class ELKServiceImpl implements ELKService {
   @Override
   public List<LinkedHashMap> getSampleData(
       ProjectParams projectParams, String connectorIdentifier, String query, String index, String tracingId) {
-    DataCollectionRequest request = ELKSampleDataCollectionRequest.builder().query(query).index(index).build();
+    DataCollectionRequest request =
+        ELKSampleDataCollectionRequest.builder().query(getDSLQueryBody(query)).index(index).build();
 
     OnboardingRequestDTO onboardingRequestDTO = OnboardingRequestDTO.builder()
                                                     .dataCollectionRequest(request)
@@ -69,5 +70,11 @@ public class ELKServiceImpl implements ELKService {
     final Gson gson = new Gson();
     Type type = new TypeToken<List<LinkedHashMap>>() {}.getType();
     return gson.fromJson(JsonUtils.asJson(response.getResult()), type);
+  }
+
+  private String getDSLQueryBody(String query) {
+    return "\"query\": {\"bool\": {\"must\": [ {\"query_string\": {\"query\": "
+        + "\"" + query + "\""
+        + "}}]}}";
   }
 }

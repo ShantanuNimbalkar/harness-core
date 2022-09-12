@@ -1,16 +1,10 @@
 Var logsSearchUrl = concat(Env:baseUrl, Env:index)
 logsSearchUrl = concat(Var:logsSearchUrl, "/_search")
-
-Var queryMiddle = {}
-Var:queryMiddle.put("query", Env:query)
-
-Var queryString = {}
-Var:queryString.put("query_String", Var:queryMiddle)
-
+print Env:query
 Var body = {}
-Var:body.put("query", Var:queryString)
-
+Var:body.put("query",Env:query)
 Var logsResponse = sync-call(url=Var:logsSearchUrl, header=Env:commonHeaders)
+print Env:query
 Var logsData = extract(Var:logsResponse, $.hits)
 logsData = extract(Var:logsData, $.hits)
 return Var:logsData

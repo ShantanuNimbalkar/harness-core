@@ -7,7 +7,6 @@
 
 package io.harness.cvng.core.services.api;
 
-import io.harness.cvng.core.beans.TimeSeriesSampleDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 
 import java.util.LinkedHashMap;
