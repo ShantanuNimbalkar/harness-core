@@ -8,7 +8,6 @@
 package io.harness.steps.wait;
 
 import io.harness.plancreator.steps.AbstractStepPlanCreator;
-import io.harness.plancreator.steps.internal.PMSStepPlanCreatorV2;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.steps.StepSpecTypeConstants;
