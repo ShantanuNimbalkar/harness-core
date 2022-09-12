@@ -49,7 +49,7 @@ import org.springframework.data.annotation.TypeAlias;
 @JsonTypeName(AZURE_ARTIFACTS_NAME)
 @SimpleVisitorHelper(helperClass = ConnectorRefExtractorHelper.class)
 @TypeAlias("azureArtifactConfig")
-@OneOfField(fields = {"filePath", "filePathRegex"})
+@OneOfField(fields = {"version", "versionRegex"})
 @RecasterAlias("io.harness.cdng.artifact.bean.yaml.AzureArtifactConfig")
 public class AzureArtifactConfig implements ArtifactConfig, Visitable, WithConnectorRef {
   /**
