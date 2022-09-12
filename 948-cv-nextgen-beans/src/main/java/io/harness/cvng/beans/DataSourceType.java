@@ -27,8 +27,7 @@ public enum DataSourceType {
   ERROR_TRACKING("ErrorTracking", VerificationType.LOG, "splunk"),
   DYNATRACE("Dynatrace", VerificationType.TIME_SERIES, "prometheus"),
   CUSTOM_HEALTH_METRIC("CustomHealthMetric", VerificationType.TIME_SERIES, "prometheus"),
-  CUSTOM_HEALTH_LOG("CustomHealthLog", VerificationType.LOG, "splunk"),
-  ELK_LOG("ELKLog", VerificationType.LOG, "ELK");
+  CUSTOM_HEALTH_LOG("CustomHealthLog", VerificationType.LOG, "splunk");
 
   private String displayName;
   private VerificationType verificationType;

@@ -23,7 +23,6 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -52,7 +51,7 @@ public class ELKResource {
   @Timed
   @ExceptionMetered
   @ApiOperation(value = "get sample data for a query", nickname = "getELKLogSampleData")
-  public ResponseDTO<LinkedHashMap> getDatadogSampleData(@BeanParam ProjectParams projectParams,
+  public ResponseDTO<List<LinkedHashMap>> getDatadogSampleData(@BeanParam ProjectParams projectParams,
       @NotNull @QueryParam("connectorIdentifier") final String connectorIdentifier,
       @NotNull @QueryParam("tracingId") String tracingId, @NotNull @QueryParam("index") String index,
       @Body LogSampleRequestDTO logSampleRequestDTO) {
