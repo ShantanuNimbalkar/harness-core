@@ -150,9 +150,12 @@ if [[ $DEPLOY_MODE != "KUBERNETES" ]]; then
   fi
 fi
 
-if [ ! -e config-delegate.yml ]; then
-  echo "accountId: $ACCOUNT_ID" > config-delegate.yml
+if [ -e config-delegate.yml ]; then
+  echo > config-delegate.yml
 fi
+
+echo "accountId: $ACCOUNT_ID" > config-delegate.yml
+
 test "$(tail -c 1 config-delegate.yml)" && `echo "" >> config-delegate.yml`
 if ! `grep delegateToken config-delegate.yml > /dev/null`; then
   if [ ! -e $DELEGATE_TOKEN ]; then

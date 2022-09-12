@@ -240,9 +240,10 @@ if [[ $DEPLOY_MODE != "KUBERNETES" ]]; then
   fi
 fi
 
-if [ ! -e config-watcher.yml ]; then
-  echo "accountId: $ACCOUNT_ID" > config-watcher.yml
+if [ -e config-watcher.yml ]; then
+  echo > config-watcher.yml
 fi
+echo "accountId: $ACCOUNT_ID" > config-watcher.yml
 test "$(tail -c 1 config-watcher.yml)" && `echo "" >> config-watcher.yml`
 # delegateToken is a replacement of accountSecret. There is a possibility where pod is running with older yaml,
 # where ACCOUNT_SECRET is present in env variable, prefer using ACCOUNT_SECRET in those scenarios.
@@ -273,10 +274,14 @@ else
   sed -i.bak "s|^delegateCheckLocation:.*$|delegateCheckLocation: $DELEGATE_STORAGE_URL/$DELEGATE_CHECK_LOCATION|" config-watcher.yml
 fi
 
-if [ ! -e config-delegate.yml ]; then
-  echo "accountId: $ACCOUNT_ID" > config-delegate.yml
-  echo "delegateToken: $DELEGATE_TOKEN" >> config-delegate.yml
+
+if [ -e config-delegate.yml ]; then
+  echo > config-delegate.yml
 fi
+
+echo "accountId: $ACCOUNT_ID" > config-delegate.yml
+echo "delegateToken: $DELEGATE_TOKEN" >> config-delegate.yml
+
 test "$(tail -c 1 config-delegate.yml)" && `echo "" >> config-delegate.yml`
 if ! `grep managerUrl config-delegate.yml > /dev/null`; then
   echo "managerUrl: $MANAGER_HOST_AND_PORT/api/" >> config-delegate.yml
