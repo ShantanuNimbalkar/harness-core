@@ -5,10 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.service.impl.instance.stats.retention;
+package io.harness.timescale;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.timescaledb.retention.BaseRetentionHandler;
 import io.harness.timescaledb.retention.RetentionManager;
 
 import com.google.inject.Inject;
@@ -16,16 +17,17 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 @OwnedBy(HarnessTeam.CDP)
-public class InstanceStatsRetention {
+public class CDRetentionHandlerNG extends BaseRetentionHandler {
   private RetentionManager retentionManager;
-  private static final String INSTANCE_STATS = "instance_stats";
-  private static final String INSTANCE_STATS_DAY = "instance_stats_day";
-  private static final String INSTANCE_STATS_HOUR = "instance_stats_hour";
+  private static final String NG_INSTANCE_STATS = "ng_instance_stats";
+  private static final String NG_INSTANCE_STATS_DAY = "ng_instance_stats_day";
+  private static final String NG_INSTANCE_STATS_HOUR = "ng_instance_stats_hour";
   private static final String RETENTION_PERIOD = "7 months";
 
-  public void addRetentionPolicy() {
-    retentionManager.addPolicy(INSTANCE_STATS, RETENTION_PERIOD);
-    retentionManager.addPolicy(INSTANCE_STATS_DAY, RETENTION_PERIOD);
-    retentionManager.addPolicy(INSTANCE_STATS_HOUR, RETENTION_PERIOD);
+  @Override
+  public void configureRetentionPolicy() {
+    retentionManager.addPolicy(NG_INSTANCE_STATS, RETENTION_PERIOD);
+    retentionManager.addPolicy(NG_INSTANCE_STATS_DAY, RETENTION_PERIOD);
+    retentionManager.addPolicy(NG_INSTANCE_STATS_HOUR, RETENTION_PERIOD);
   }
 }
