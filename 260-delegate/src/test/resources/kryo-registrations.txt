@@ -1750,6 +1750,7 @@
 55421:io.harness.delegate.task.artifacts.gar.GarDelegateResponse
 55422:io.harness.delegate.task.azure.artifact.AwsS3AzureArtifactRequestDetails
 55470:io.harness.delegate.task.ssh.artifact.CustomArtifactDelegateConfig
+55500:io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsTestConnectionTaskParams
 55501:io.harness.delegate.beans.instancesync.info.PdcServerInstanceInfo
 55502:io.harness.delegate.beans.instancesync.info.AzureSshWinrmServerInstanceInfo
 55503:io.harness.delegate.beans.instancesync.info.AwsSshWinrmServerInstanceInfo
