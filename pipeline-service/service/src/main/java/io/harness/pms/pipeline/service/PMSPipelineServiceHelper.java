@@ -9,6 +9,7 @@ package io.harness.pms.pipeline.service;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+import static io.harness.pms.contracts.governance.ExpansionPlacementStrategy.APPEND;
 import static io.harness.telemetry.Destination.AMPLITUDE;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -46,6 +47,7 @@ import io.harness.opaclient.model.OpaConstants;
 import io.harness.pms.PmsFeatureFlagService;
 import io.harness.pms.contracts.governance.ExpansionRequestMetadata;
 import io.harness.pms.contracts.governance.ExpansionResponseBatch;
+import io.harness.pms.contracts.governance.ExpansionResponseProto;
 import io.harness.pms.filter.creation.FilterCreatorMergeService;
 import io.harness.pms.filter.creation.FilterCreatorMergeServiceResponse;
 import io.harness.pms.filter.utils.ModuleInfoFilterUtils;
@@ -76,6 +78,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -288,8 +291,24 @@ public class PMSPipelineServiceHelper {
         getRequestMetadata(accountId, orgIdentifier, projectIdentifier, pipelineYaml);
 
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
+    // Adding GitConfig to expanded Yaml
+
+    ExpansionResponseProto gitConfig = ExpansionResponseProto.newBuilder()
+                                           .setFqn("pipeline")
+                                           .setKey("gitConfig")
+                                           .setValue("{\"isMainBranch\": true}")
+                                           .setSuccess(true)
+                                           .setPlacement(APPEND)
+                                           .build();
+
+    ExpansionResponseBatch expansionResponseBatchForGitConfig =
+        ExpansionResponseBatch.newBuilder().addAllExpansionResponseProto(Arrays.asList(gitConfig)).build();
+
     Set<ExpansionResponseBatch> expansionResponseBatches =
         jsonExpander.fetchExpansionResponses(expansionRequests, expansionRequestMetadata);
+
+    expansionResponseBatches.add(expansionResponseBatchForGitConfig);
+
     String mergeExpansions = ExpansionsMerger.mergeExpansions(pipelineYaml, expansionResponseBatches);
     log.info("[PMS_GOVERNANCE] Pipeline Json Expansion took {}ms for projectId {}, orgId {}, accountId {}",
         System.currentTimeMillis() - start, projectIdentifier, orgIdentifier, accountId);
