@@ -10,10 +10,8 @@ package io.harness.timescale;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.timescaledb.retention.BaseRetentionHandler;
-import io.harness.timescaledb.retention.RetentionManager;
 
 import com.google.inject.Inject;
-import lombok.AllArgsConstructor;
 
 @OwnedBy(HarnessTeam.CDP)
 public class CDRetentionHandlerNG extends BaseRetentionHandler {
