@@ -14,9 +14,6 @@ import static io.harness.telemetry.Destination.AMPLITUDE;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.harness.ModuleType;
 import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
@@ -76,10 +73,14 @@ import io.harness.serializer.JsonUtils;
 import io.harness.telemetry.TelemetryReporter;
 import io.harness.yaml.validator.InvalidYamlException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.protobuf.ByteString;
+import io.serializer.HObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -296,8 +297,9 @@ public class PMSPipelineServiceHelper {
     Set<ExpansionRequest> expansionRequests = expansionRequestsExtractor.fetchExpansionRequests(pipelineYaml);
     // Adding GitConfig to expanded Yaml
     GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
-    ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
-    String json="";
+    ObjectMapper objectMapper = HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
+    ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+    String json = "";
     try {
       json = objectWriter.writeValueAsString(gitEntityInfo);
     } catch (JsonProcessingException e) {
