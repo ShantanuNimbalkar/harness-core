@@ -128,6 +128,11 @@ public class NGTemplateServiceImpl implements NGTemplateService {
     assureThatTheProjectAndOrgExists(
         templateEntity.getAccountId(), templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier());
 
+    if (TemplateRefHelper.hasTemplateRef(templateEntity.getYaml())) {
+      TemplateUtils.setupGitParentEntityDetails(templateEntity.getAccountIdentifier(),
+          templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier());
+    }
+
     if (!validateIdentifierIsUnique(templateEntity.getAccountId(), templateEntity.getOrgIdentifier(),
             templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(), templateEntity.getVersionLabel())) {
       throw new InvalidRequestException(String.format(
@@ -220,8 +225,6 @@ public class NGTemplateServiceImpl implements NGTemplateService {
     try {
       TemplateMergeResponseDTO templateMergeResponseDTO = null;
       if (TemplateRefHelper.hasTemplateRef(templateEntity.getYaml())) {
-        TemplateUtils.setupGitParentEntityDetails(templateEntity.getAccountIdentifier(),
-            templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier());
         templateMergeResponseDTO = templateMergeService.applyTemplatesToYamlV2(templateEntity.getAccountId(),
             templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(), templateEntity.getYaml(), false);
         populateLinkedTemplatesModules(templateEntity, templateMergeResponseDTO);
@@ -261,6 +264,10 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       TemplateEntity templateEntity, ChangeType changeType, boolean setDefaultTemplate, String comments) {
     enforcementClientService.checkAvailability(
         FeatureRestrictionName.TEMPLATE_SERVICE, templateEntity.getAccountIdentifier());
+    if (TemplateRefHelper.hasTemplateRef(templateEntity.getYaml())) {
+      TemplateUtils.setupGitParentEntityDetails(templateEntity.getAccountIdentifier(),
+          templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier());
+    }
     // apply templates to template yaml for validations and populating module info
     applyTemplatesToYamlAndValidateSchema(templateEntity);
     // update template references

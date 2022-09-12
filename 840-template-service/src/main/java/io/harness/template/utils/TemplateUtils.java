@@ -7,11 +7,13 @@
 
 package io.harness.template.utils;
 
+import io.harness.beans.FeatureName;
 import io.harness.beans.Scope;
 import io.harness.exception.ScmException;
 import io.harness.gitaware.helper.GitAwareContextHelper;
 import io.harness.gitsync.beans.StoreType;
 import io.harness.gitsync.interceptor.GitEntityInfo;
+import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.template.entity.TemplateEntity;
 
 import lombok.experimental.UtilityClass;
@@ -59,5 +61,23 @@ public class TemplateUtils {
       gitEntityInfo.setParentEntityAccountIdentifier(accountIdentifier);
       GitAwareContextHelper.updateGitEntityContext(gitEntityInfo);
     }
+  }
+
+  public boolean isNewGitXEnabled(TemplateEntity templateToSave, GitEntityInfo gitEntityInfo,
+      NGTemplateFeatureFlagHelperService ngTemplateFeatureFlagHelperService, GitSyncSdkService gitSyncSdkService) {
+    if (templateToSave.getProjectIdentifier() != null) {
+      return isGitSimplificationEnabled(templateToSave, gitEntityInfo, gitSyncSdkService);
+    } else {
+      return ngTemplateFeatureFlagHelperService.isEnabled(
+                 templateToSave.getAccountId(), FeatureName.NG_TEMPLATE_GITX_ACCOUNT_ORG)
+          && TemplateUtils.isRemoteEntity(gitEntityInfo);
+    }
+  }
+
+  public boolean isGitSimplificationEnabled(
+      TemplateEntity templateToSave, GitEntityInfo gitEntityInfo, GitSyncSdkService gitSyncSdkService) {
+    return gitSyncSdkService.isGitSimplificationEnabled(templateToSave.getAccountIdentifier(),
+               templateToSave.getOrgIdentifier(), templateToSave.getProjectIdentifier())
+        && TemplateUtils.isRemoteEntity(gitEntityInfo);
   }
 }

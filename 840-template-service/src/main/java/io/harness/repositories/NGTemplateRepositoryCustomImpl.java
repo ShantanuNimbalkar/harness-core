@@ -13,7 +13,6 @@ import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.beans.Scope;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
@@ -39,7 +38,6 @@ import io.harness.template.helpers.TemplateGitXHelper;
 import io.harness.template.utils.NGTemplateFeatureFlagHelperService;
 import io.harness.template.utils.TemplateUtils;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import java.util.Collections;
 import java.util.List;
@@ -96,7 +94,8 @@ public class NGTemplateRepositoryCustomImpl implements NGTemplateRepositoryCusto
       }
       return savedTemplateEntity;
     }
-    if (isNewGitXEnabled(templateToSave, gitEntityInfo)) {
+    if (TemplateUtils.isNewGitXEnabled(
+            templateToSave, gitEntityInfo, ngTemplateFeatureFlagHelperService, gitSyncSdkService)) {
       Scope scope = TemplateUtils.buildScope(templateToSave);
       String yamlToPush = templateToSave.getYaml();
       addGitParamsToTemplateEntity(templateToSave, gitEntityInfo);
@@ -296,7 +295,8 @@ public class NGTemplateRepositoryCustomImpl implements NGTemplateRepositoryCusto
       ChangeType changeType, String comments, TemplateUpdateEventType templateUpdateEventType, boolean skipAudits) {
     GitAwareContextHelper.initDefaultScmGitMetaData();
     GitEntityInfo gitEntityInfo = GitContextHelper.getGitEntityInfo();
-    if (isNewGitXEnabled(templateToUpdate, gitEntityInfo)) {
+    if (TemplateUtils.isNewGitXEnabled(
+            templateToUpdate, gitEntityInfo, ngTemplateFeatureFlagHelperService, gitSyncSdkService)) {
       Scope scope = TemplateUtils.buildScope(templateToUpdate);
       gitAwareEntityHelper.updateEntityOnGit(templateToUpdate, templateToUpdate.getYaml(), scope);
     } else if (templateToUpdate.getStoreType() == StoreType.REMOTE) {
@@ -489,23 +489,6 @@ public class NGTemplateRepositoryCustomImpl implements NGTemplateRepositoryCusto
     templateEntity.setConnectorRef(gitEntityInfo.getConnectorRef());
     templateEntity.setRepo(gitEntityInfo.getRepoName());
     templateEntity.setFilePath(gitEntityInfo.getFilePath());
-  }
-
-  @VisibleForTesting
-  boolean isNewGitXEnabled(TemplateEntity templateToSave, GitEntityInfo gitEntityInfo) {
-    if (templateToSave.getProjectIdentifier() != null) {
-      return isGitSimplificationEnabled(templateToSave, gitEntityInfo);
-    } else {
-      return ngTemplateFeatureFlagHelperService.isEnabled(
-                 templateToSave.getAccountId(), FeatureName.NG_TEMPLATE_GITX_ACCOUNT_ORG)
-          && TemplateUtils.isRemoteEntity(gitEntityInfo);
-    }
-  }
-
-  private boolean isGitSimplificationEnabled(TemplateEntity templateToSave, GitEntityInfo gitEntityInfo) {
-    return gitSyncSdkService.isGitSimplificationEnabled(templateToSave.getAccountIdentifier(),
-               templateToSave.getOrgIdentifier(), templateToSave.getProjectIdentifier())
-        && TemplateUtils.isRemoteEntity(gitEntityInfo);
   }
 
   private boolean isAuditEnabled(TemplateEntity templateEntity, boolean skipAudits) {

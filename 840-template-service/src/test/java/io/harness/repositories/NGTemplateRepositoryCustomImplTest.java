@@ -41,6 +41,7 @@ import io.harness.template.events.TemplateUpdateEventType;
 import io.harness.template.helpers.TemplateGitXHelper;
 import io.harness.template.services.NGTemplateServiceHelper;
 import io.harness.template.utils.NGTemplateFeatureFlagHelperService;
+import io.harness.template.utils.TemplateUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -230,7 +231,8 @@ public class NGTemplateRepositoryCustomImplTest {
                                    .filePath(filePath)
                                    .build();
 
-    boolean isNewGitXEnabled = ngTemplateRepositoryCustom.isNewGitXEnabled(templateToSave, branchInfo);
+    boolean isNewGitXEnabled = TemplateUtils.isNewGitXEnabled(
+        templateToSave, branchInfo, ngTemplateFeatureFlagHelperService, gitSyncSdkService);
     assertTrue(isNewGitXEnabled);
   }
 
@@ -253,7 +255,8 @@ public class NGTemplateRepositoryCustomImplTest {
                                    .filePath(filePath)
                                    .build();
 
-    boolean isNewGitXEnabled = ngTemplateRepositoryCustom.isNewGitXEnabled(templateToSave, branchInfo);
+    boolean isNewGitXEnabled = TemplateUtils.isNewGitXEnabled(
+        templateToSave, branchInfo, ngTemplateFeatureFlagHelperService, gitSyncSdkService);
     assertFalse(isNewGitXEnabled);
   }
 
@@ -279,7 +282,8 @@ public class NGTemplateRepositoryCustomImplTest {
     when(ngTemplateFeatureFlagHelperService.isEnabled(accountIdentifier, FeatureName.NG_TEMPLATE_GITX_ACCOUNT_ORG))
         .thenReturn(true);
 
-    boolean isNewGitXEnabled = ngTemplateRepositoryCustom.isNewGitXEnabled(templateToSave, branchInfo);
+    boolean isNewGitXEnabled = TemplateUtils.isNewGitXEnabled(
+        templateToSave, branchInfo, ngTemplateFeatureFlagHelperService, gitSyncSdkService);
     assertTrue(isNewGitXEnabled);
   }
 

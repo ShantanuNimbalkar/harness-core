@@ -65,6 +65,7 @@ import io.harness.template.helpers.TemplateMergeServiceHelper;
 import io.harness.template.helpers.TemplateReferenceHelper;
 import io.harness.template.mappers.NGTemplateDtoMapper;
 import io.harness.template.resources.NGTemplateResource;
+import io.harness.template.utils.TemplateUtils;
 import io.harness.utils.YamlPipelineUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -86,6 +87,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -540,6 +542,8 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
 
     String description = "Updated Description";
     TemplateEntity updateTemplate = entity.withDescription(description);
+    Mockito.mockStatic(TemplateUtils.class);
+    when(TemplateUtils.isNewGitXEnabled(any(), any(), any(), any())).thenReturn(false);
     TemplateEntity updatedTemplateEntity =
         templateService.updateTemplateEntity(updateTemplate, ChangeType.MODIFY, false, "");
     assertThat(updatedTemplateEntity).isNotNull();
@@ -685,6 +689,8 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
     assertThat(templateEntities.getContent().get(1).isLastUpdatedTemplate()).isTrue();
 
     // Call template scope change from project to org
+    Mockito.mockStatic(TemplateUtils.class);
+    when(TemplateUtils.isNewGitXEnabled(any(), any(), any(), any())).thenReturn(false);
     templateService.updateTemplateSettings(
         ACCOUNT_ID, ORG_IDENTIFIER, PROJ_IDENTIFIER, TEMPLATE_IDENTIFIER, Scope.PROJECT, Scope.ORG, "version3", false);
 
