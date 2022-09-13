@@ -644,7 +644,8 @@ public enum ErrorCode {
 
   AWS_ECS_CLIENT_ERROR,
 
-  AWS_STS_ERROR;
+  AWS_STS_ERROR,
+  DELEGATE_TASK_EXPIRED;
 
   private Status status = BAD_REQUEST;
   private String description;

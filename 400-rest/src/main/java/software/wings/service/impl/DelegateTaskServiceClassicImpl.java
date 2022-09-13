@@ -99,9 +99,11 @@ import io.harness.event.handler.impl.EventPublishHelper;
 import io.harness.eventframework.manager.ManagerObserverEventProducer;
 import io.harness.exception.CriticalExpressionEvaluationException;
 import io.harness.exception.DelegateNotAvailableException;
+import io.harness.exception.DelegateTaskExpiredException;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
+import io.harness.exception.WingsException;
 import io.harness.expression.ExpressionEvaluator;
 import io.harness.expression.ExpressionReflectionUtils;
 import io.harness.ff.FeatureFlagService;
@@ -533,7 +535,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
       } catch (Exception exception) {
         log.info("Task id {} failed with error {}", task.getUuid(), exception);
         printErrorMessageOnTaskFailure(task);
-        handleTaskFailureResponse(task, ExceptionUtils.getMessage(exception));
+        handleTaskFailureResponse(task, exception);
         if (!task.getData().isAsync()) {
           throw exception;
         }
@@ -553,12 +555,21 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
     return eligibleListOfDelegates.get(random.nextInt(eligibleListOfDelegates.size()));
   }
 
-  private void handleTaskFailureResponse(DelegateTask task, String errorMessage) {
+  private void handleTaskFailureResponse(DelegateTask task, Exception exception) {
     Query<DelegateTask> taskQuery = persistence.createQuery(DelegateTask.class)
                                         .filter(DelegateTaskKeys.accountId, task.getAccountId())
                                         .filter(DelegateTaskKeys.uuid, task.getUuid());
+    WingsException ex = null;
+    if (!(exception instanceof WingsException)) {
+      log.error("Encountered unknown exception and failing task", exception);
+    } else {
+      ex = ((WingsException) exception);
+    }
     DelegateTaskResponse response = DelegateTaskResponse.builder()
-                                        .response(ErrorNotifyResponseData.builder().errorMessage(errorMessage).build())
+                                        .response(ErrorNotifyResponseData.builder()
+                                                      .errorMessage(ExceptionUtils.getMessage(exception))
+                                                      .exception(ex)
+                                                      .build())
                                         .responseCode(ResponseCode.FAILED)
                                         .accountId(task.getAccountId())
                                         .build();
@@ -1148,7 +1159,11 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
           if (isNotBlank(delegateTask.getWaitId())) {
             waitNotifyEngine.doneWith(delegateTask.getWaitId(),
-                ErrorNotifyResponseData.builder().errorMessage(errorMessage).expired(true).build());
+                ErrorNotifyResponseData.builder()
+                    .errorMessage(errorMessage)
+                    .expired(true)
+                    .exception(new DelegateTaskExpiredException(delegateTaskId))
+                    .build());
           }
         }
       }

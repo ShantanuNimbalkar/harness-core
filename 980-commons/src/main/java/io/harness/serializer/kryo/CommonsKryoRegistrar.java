@@ -26,6 +26,7 @@ import io.harness.exception.ContextException;
 import io.harness.exception.DataProcessingException;
 import io.harness.exception.DelegateErrorHandlerException;
 import io.harness.exception.DelegateNotAvailableException;
+import io.harness.exception.DelegateTaskExpiredException;
 import io.harness.exception.EngineExpressionEvaluationException;
 import io.harness.exception.EngineFunctorException;
 import io.harness.exception.ExceptionHandlerNotFoundException;
@@ -157,5 +158,6 @@ public class CommonsKryoRegistrar implements KryoRegistrar {
     kryo.register(AzureAppServiceTaskException.class, 980032);
     kryo.register(TemplateInputsErrorDTO.class, 980033);
     kryo.register(TemplateInputsErrorMetadataDTO.class, 980034);
+    kryo.register(DelegateTaskExpiredException.class, 980035);
   }
 }
