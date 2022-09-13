@@ -63,6 +63,7 @@ public class NGRestUtils {
       return response.body().getData();
     }
 
+    log.error("Error response received: {}", response);
     String errorMessage = "";
     try {
       ErrorDTO restResponse = JsonUtils.asObject(response.errorBody().string(), new TypeReference<ErrorDTO>() {});
@@ -81,17 +82,15 @@ public class NGRestUtils {
         .handle(IOException.class)
         .handleResultIf(result -> !result.isSuccessful() && isRetryableHttpCode(result.code()))
         .withMaxAttempts(MAX_ATTEMPTS)
-        .onFailure(event -> handleFailure(event, failureMessage));
+        .onFailure(event -> handleFailure(event, failureMessage))
+        .onRetriesExceeded(event -> handleFailure(event, failureMessage));
   }
 
   private static <T> void handleFailure(
       ExecutionCompletedEvent<Response<ResponseDTO<T>>> event, String failureMessage) {
-    if (event.getResult() != null) {
-      log.warn("{}. Error response received: {} after {} attempts", failureMessage, event.getResult(),
-          event.getAttemptCount());
-    } else {
-      log.warn(String.format("%s. Attempts : %d", failureMessage, event.getAttemptCount()), event.getFailure());
-    }
+    log.warn(failureMessage + ". "
+            + "Attempts : {}",
+        event.getAttemptCount(), event.getFailure());
   }
 
   private static boolean isRetryableHttpCode(int httpCode) {
