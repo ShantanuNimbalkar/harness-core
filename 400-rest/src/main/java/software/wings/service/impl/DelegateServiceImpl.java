@@ -2493,13 +2493,12 @@ public class DelegateServiceImpl implements DelegateService {
 
   @Override
   public void handleDelegateHeartBeat(Delegate delegate) {
+    // TODO: add heartbeat metrics
     if (licenseService.isAccountDeleted(delegate.getAccountId())) {
       delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_DESTROYED);
       broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(SELF_DESTRUCT);
       log.warn("Sending self destruct command from register delegate because the account is deleted.");
       return;
-      //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
-      //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
     }
 
     if (isNotBlank(delegate.getDelegateGroupId())) {
@@ -2507,8 +2506,6 @@ public class DelegateServiceImpl implements DelegateService {
       if (delegateGroup == null || DelegateGroupStatus.DELETED == delegateGroup.getStatus()) {
         log.warn("Sending self destruct command from register delegate because the delegate group is deleted.");
         return;
-        //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
-        //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
       }
     }
 
@@ -2516,10 +2513,6 @@ public class DelegateServiceImpl implements DelegateService {
       String migrateMsg = MIGRATE + accountService.get(delegate.getAccountId()).getMigratedToClusterUrl();
       broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(migrateMsg);
       return;
-//      return DelegateRegisterResponse.builder()
-//          .action(DelegateRegisterResponse.Action.MIGRATE)
-//          .migrateUrl(accountService.get(delegate.getAccountId()).getMigratedToClusterUrl())
-//          .build();
     }
 
     // Here is different from finding existing delegate in the registration workflow. Here assumes the delegate uuid has
@@ -2538,9 +2531,7 @@ public class DelegateServiceImpl implements DelegateService {
           .broadcast(SELF_DESTRUCT + existingDelegate.getUuid());
       log.warn(
           "Sending self destruct command from register delegate because the existing delegate has status deleted.");
-      //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
       return;
-      //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
     }
 
     long delegateHeartbeat = delegate.getLastHeartBeat();
@@ -2567,7 +2558,7 @@ public class DelegateServiceImpl implements DelegateService {
     setUnset(updateOperations, DelegateKeys.validUntil, existingDelegate.getValidUntil());
     updateDelegate(existingDelegate, updateOperations);
 /*
-Plan to remove this but concern is whether the removal will break grouped delegates in CG
+Removed this but concern is whether the removal will break grouped delegates in CG
 We should update the group level metadata in only one entity instead of iterating and updating every delegate
     if (isGroupedCgDelegate(delegate)) {
       updateDelegateWithConfigFromGroup(delegate);
