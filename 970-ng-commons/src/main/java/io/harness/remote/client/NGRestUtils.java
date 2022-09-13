@@ -83,14 +83,12 @@ public class NGRestUtils {
         .handleResultIf(result -> !result.isSuccessful() && isRetryableHttpCode(result.code()))
         .withMaxAttempts(MAX_ATTEMPTS)
         .onFailure(event -> handleFailure(event, failureMessage))
-        .onRetriesExceeded(event -> handleFailure(event, failureMessage));
   }
 
   private static <T> void handleFailure(
       ExecutionCompletedEvent<Response<ResponseDTO<T>>> event, String failureMessage) {
-    log.warn(failureMessage + ". "
-            + "Attempts : {}",
-        event.getAttemptCount(), event.getFailure());
+    log.warn(String.format("%s. Attempt : %d. Response : %s, Exception : %s", failureMessage, event.getAttemptCount()),
+        event.getResult(), event.getFailure());
   }
 
   private static boolean isRetryableHttpCode(int httpCode) {
