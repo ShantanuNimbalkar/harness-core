@@ -14,12 +14,10 @@ import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.utils.IdentifierRefHelper;
 
 import com.google.inject.Inject;
-import io.fabric8.zjsonpatch.internal.guava.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
