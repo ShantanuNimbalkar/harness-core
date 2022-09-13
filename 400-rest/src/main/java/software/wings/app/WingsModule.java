@@ -80,6 +80,7 @@ import io.harness.ccm.views.service.impl.CEViewFolderServiceImpl;
 import io.harness.ccm.views.service.impl.CEViewServiceImpl;
 import io.harness.ccm.views.service.impl.ViewCustomFieldServiceImpl;
 import io.harness.ccm.views.service.impl.ViewsBillingServiceImpl;
+import io.harness.cd.timescale.CDRetentionPeriod;
 import io.harness.cdlicense.impl.CgCdLicenseUsageService;
 import io.harness.cdlicense.impl.CgCdLicenseUsageServiceImpl;
 import io.harness.config.PipelineConfig;
@@ -1771,9 +1772,10 @@ public class WingsModule extends AbstractModule implements ServersModule {
   public ObjectMapper getYamlSchemaObjectMapperWithoutNamed() {
     return Jackson.newObjectMapper();
   }
+
   @Provides
   @Singleton
-  public String cdRetentionPeriod() {
-    return String.format(RETENTION_PERIOD_FORMAT, configuration.getCdRetentionPeriod());
+  public CDRetentionPeriod cdRetentionPeriod() {
+    return new CDRetentionPeriod(String.format(RETENTION_PERIOD_FORMAT, configuration.getCdRetentionPeriod()));
   }
 }

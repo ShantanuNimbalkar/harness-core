@@ -267,6 +267,7 @@ import io.harness.telemetry.AbstractTelemetryModule;
 import io.harness.telemetry.TelemetryConfiguration;
 import io.harness.template.TemplateResourceClientModule;
 import io.harness.time.TimeModule;
+import io.harness.timescale.CDRetentionPeriodNG;
 import io.harness.timescaledb.JooqModule;
 import io.harness.timescaledb.TimeScaleDBConfig;
 import io.harness.timescaledb.TimeScaleDBService;
@@ -459,8 +460,8 @@ public class NextGenModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public String cdRetentionPeriod() {
-    return String.format(RETENTION_PERIOD_FORMAT, this.appConfig.getCdRetentionPeriod());
+  public CDRetentionPeriodNG cdRetentionPeriod() {
+    return new CDRetentionPeriodNG(String.format(RETENTION_PERIOD_FORMAT, this.appConfig.getCdRetentionPeriod()));
   }
 
   @Override

@@ -15,15 +15,15 @@ import com.google.inject.Inject;
 
 @OwnedBy(HarnessTeam.CDP)
 public class CDRetentionHandler extends BaseRetentionHandler {
-  @Inject private String cdRetentionPeriod;
+  @Inject private CDRetentionPeriod cdRetentionPeriod;
   private static final String INSTANCE_STATS = "instance_stats";
   private static final String INSTANCE_STATS_DAY = "instance_stats_day";
   private static final String INSTANCE_STATS_HOUR = "instance_stats_hour";
 
   @Override
   public void configureRetentionPolicy() {
-    getRetentionManager().addPolicy(INSTANCE_STATS, cdRetentionPeriod);
-    getRetentionManager().addPolicy(INSTANCE_STATS_DAY, cdRetentionPeriod);
-    getRetentionManager().addPolicy(INSTANCE_STATS_HOUR, cdRetentionPeriod);
+    getRetentionManager().addPolicy(INSTANCE_STATS, cdRetentionPeriod.getRetentionPeriod());
+    getRetentionManager().addPolicy(INSTANCE_STATS_DAY, cdRetentionPeriod.getRetentionPeriod());
+    getRetentionManager().addPolicy(INSTANCE_STATS_HOUR, cdRetentionPeriod.getRetentionPeriod());
   }
 }
