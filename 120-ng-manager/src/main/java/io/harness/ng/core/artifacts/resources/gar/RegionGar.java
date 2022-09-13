@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-public class regionGar {
+public class RegionGar {
   String name;
   String value;
-  public regionGar(String name, String value) {
+  public RegionGar(String name, String value) {
     this.name = name;
     this.value = value;
   }
