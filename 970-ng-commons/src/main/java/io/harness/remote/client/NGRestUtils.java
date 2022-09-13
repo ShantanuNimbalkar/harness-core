@@ -87,8 +87,9 @@ public class NGRestUtils {
 
   private static <T> void handleFailure(
       ExecutionCompletedEvent<Response<ResponseDTO<T>>> event, String failureMessage) {
-    log.warn(String.format("%s. Attempt : %d. Response : %s, Exception : %s", failureMessage, event.getAttemptCount()),
-        event.getResult(), event.getFailure());
+    log.warn(
+        String.format("%s. Attempt : %d. Response : %s", failureMessage, event.getAttemptCount(), event.getResult()),
+        event.getFailure());
   }
 
   private static boolean isRetryableHttpCode(int httpCode) {
