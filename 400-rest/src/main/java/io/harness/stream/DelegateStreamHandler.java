@@ -73,7 +73,6 @@ public class DelegateStreamHandler extends AtmosphereHandlerAdapter {
     String agentMtlsAuthority = req.getHeader(HEADER_AGENT_MTLS_AUTHORITY);
     boolean isConnectedUsingMtls = isAgentConnectedUsingMtls(agentMtlsAuthority);
 
-    // ??? can we remove one of POST or GET completely
     if (req.getMethod().equals("GET")) {
       String accountId;
       String delegateId;

@@ -1139,7 +1139,6 @@ public class DelegateServiceImpl implements DelegateService {
     handleDelegateHeartBeat(delegate);
     Delegate existingDelegate = delegateCache.get(delegate.getAccountId(), delegate.getUuid(), false);
 
-    // ??? why set status useCdn and jre version after reading from cache in a HB call.
     if (licenseService.isAccountDeleted(existingDelegate.getAccountId())) {
       existingDelegate.setStatus(DelegateInstanceStatus.DELETED);
     }
@@ -2523,24 +2522,25 @@ public class DelegateServiceImpl implements DelegateService {
 //          .build();
     }
 
-    final Delegate existingDelegate = getExistingDelegate(
-        delegate.getAccountId(), delegate.getHostName(), delegate.isNg(), delegate.getDelegateType(), delegate.getIp());
+    // Here is different from finding existing delegate in the registration workflow. Here assumes the delegate uuid has
+    // been assigned.
+    final Delegate existingDelegate = delegateCache.get(delegate.getAccountId(), delegate.getUuid(), true);
+    if (existingDelegate == null) {
+      log.info("Sending self destruct command from delegate heartbeat because" +
+              " the delegate {} account_id: {} does not exist",
+          delegate.getUuid(), delegate.getAccountId());
+      broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(SELF_DESTRUCT);
+      return;
+    }
 
     if (existingDelegate != null && existingDelegate.getStatus() == DelegateInstanceStatus.DELETED) {
       broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true)
           .broadcast(SELF_DESTRUCT + existingDelegate.getUuid());
       log.warn(
           "Sending self destruct command from register delegate because the existing delegate has status deleted.");
-      delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
+      //delegateMetricsService.recordDelegateMetrics(delegate, DELEGATE_REGISTRATION_FAILED);
       return;
       //return DelegateRegisterResponse.builder().action(DelegateRegisterResponse.Action.SELF_DESTRUCT).build();
-    }
-
-    if (existingDelegate != null) {
-      log.debug("Delegate {} already registered for Hostname with : {} IP: {}", delegate.getUuid(),
-          delegate.getHostName(), delegate.getIp());
-    } else {
-      log.info("Registering delegate for Hostname: {} IP: {}", delegate.getHostName(), delegate.getIp());
     }
 
     long delegateHeartbeat = delegate.getLastHeartBeat();
@@ -2553,6 +2553,9 @@ public class DelegateServiceImpl implements DelegateService {
       handleEcsDelegateRequest(delegate);
     } else {
       updateDelegateHeartBeatInfo(existingDelegate);
+    }
+    if (isDelegateWithoutPollingEnabled(delegate)) {
+      broadcastStreamingDelegateHeartResponse(delegate, existingDelegate);
     }
   }
 
@@ -2574,6 +2577,8 @@ We should update the group level metadata in only one entity instead of iteratin
 
   @Override
   public DelegateRegisterResponse register(final DelegateParams delegateParams, final boolean isConnectedUsingMtls) {
+    // TODO: remove broadcasts from the flow of this function. Because it's called only in the first registration,
+    // which is before the open of websocket connection.
     if (licenseService.isAccountDeleted(delegateParams.getAccountId())) {
       delegateMetricsService.recordDelegateMetrics(
           Delegate.builder().accountId(delegateParams.getAccountId()).version(delegateParams.getVersion()).build(),
@@ -2766,7 +2771,7 @@ We should update the group level metadata in only one entity instead of iteratin
   Delegate upsertDelegateOperation(
       Delegate existingDelegate, Delegate delegate, DelegateSetupDetails delegateSetupDetails) {
     long delegateHeartbeat = delegate.getLastHeartBeat();
-    long now = clock.millis();
+    long now = now();
     long skew = Math.abs(now - delegateHeartbeat);
     if (skew > TimeUnit.MINUTES.toMillis(2L)) {
       log.debug("Delegate {} has clock skew of {}", delegate.getUuid(), Misc.getDurationString(skew));
@@ -2807,19 +2812,25 @@ We should update the group level metadata in only one entity instead of iteratin
 
     // Not needed to be done when polling is enabled for delegate
     if (isDelegateWithoutPollingEnabled(delegate)) {
-      if (delegate.isHeartbeatAsObject()) {
-        broadcastDelegateHeartBeatResponse(delegate, registeredDelegate);
-      } else {
-        // Broadcast Message containing, DelegateId and SeqNum (if applicable)
-        StringBuilder message = new StringBuilder(128).append("[X]").append(delegate.getUuid());
-        updateBroadcastMessageIfEcsDelegate(message, delegate, registeredDelegate);
-        broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(message.toString());
-      }
+      broadcastStreamingDelegateHeartResponse(delegate, registeredDelegate);
     }
     return registeredDelegate;
   }
 
-  private void broadcastDelegateHeartBeatResponse(Delegate delegate, Delegate registeredDelegate) {
+  private void broadcastStreamingDelegateHeartResponse(final Delegate delegate, final Delegate registeredDelegate) {
+    // TODO: Use only one Delegate as the argument for this function. Keep it this way for now
+    //  because of ECS registration
+    if (delegate.isHeartbeatAsObject()) {
+      broadcastDelegateHeartBeatAsObjectResponse(delegate, registeredDelegate);
+    } else {
+      // Broadcast Message containing, DelegateId and SeqNum (if applicable)
+      StringBuilder message = new StringBuilder(128).append("[X]").append(delegate.getUuid());
+      updateBroadcastMessageIfEcsDelegate(message, delegate, registeredDelegate);
+      broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(message.toString());
+    }
+  }
+
+  private void broadcastDelegateHeartBeatAsObjectResponse(Delegate delegate, Delegate registeredDelegate) {
     DelegateHeartbeatResponseStreamingBuilder builder = DelegateHeartbeatResponseStreaming.builder()
                                                             .delegateId(delegate.getUuid())
                                                             .status(delegate.getStatus().toString())
@@ -2834,8 +2845,7 @@ We should update the group level metadata in only one entity instead of iteratin
       builder.delegateRandomToken(sequenceConfig.getDelegateToken())
           .sequenceNumber(sequenceConfig.getSequenceNum().toString());
     }
-    long now = clock.millis();
-    builder.responseSentAt(now);
+    builder.responseSentAt(now());
     DelegateHeartbeatResponseStreaming response = builder.build();
     broadcasterFactory.lookup(STREAM_DELEGATE + delegate.getAccountId(), true).broadcast(response);
   }
@@ -2965,7 +2975,7 @@ We should update the group level metadata in only one entity instead of iteratin
         persistence.createUpdateOperations(Delegate.class)
             .set(DelegateKeys.profileResult, fileId)
             .set(DelegateKeys.profileError, error)
-            .set(DelegateKeys.profileExecutedAt, clock.millis()));
+            .set(DelegateKeys.profileExecutedAt, now()));
 
     if (isNotBlank(previousProfileResult)) {
       fileService.deleteFile(previousProfileResult, FileBucket.PROFILE_RESULTS);
