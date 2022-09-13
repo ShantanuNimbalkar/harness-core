@@ -82,7 +82,7 @@ public class NGRestUtils {
         .handle(IOException.class)
         .handleResultIf(result -> !result.isSuccessful() && isRetryableHttpCode(result.code()))
         .withMaxAttempts(MAX_ATTEMPTS)
-        .onFailure(event -> handleFailure(event, failureMessage))
+        .onFailure(event -> handleFailure(event, failureMessage));
   }
 
   private static <T> void handleFailure(
