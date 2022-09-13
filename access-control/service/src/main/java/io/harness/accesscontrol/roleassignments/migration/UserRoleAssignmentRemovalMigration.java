@@ -45,7 +45,7 @@ public class UserRoleAssignmentRemovalMigration implements Migration {
 
     @Override
     public void migrate() {
-        log.info("AccountBasicRoleAssignmentAdditionMigration starts ...");
+        log.info("UserRoleAssignmentRemovalMigration starts ...");
 
         int pageSize = 1000;
         int pageIndex = 0;
@@ -59,7 +59,9 @@ public class UserRoleAssignmentRemovalMigration implements Migration {
                     .and(RoleAssignmentDBO.RoleAssignmentDBOKeys.scopeLevel)
                     .is(HarnessScopeLevel.ACCOUNT.getName())
                     .and(RoleAssignmentDBO.RoleAssignmentDBOKeys.principalType)
-                    .is(USER);
+                    .is(USER)
+                    .and(RoleAssignmentDBO.RoleAssignmentDBOKeys.managed)
+                    .is(true);
             pageIndex++;
 
             List<RoleAssignmentDBO> roleAssignmentList =
@@ -69,8 +71,11 @@ public class UserRoleAssignmentRemovalMigration implements Migration {
             if (isEmpty(roleAssignmentList)) {
                 break;
             }
+
+            roleAssignmentRepository.deleteAll(roleAssignmentList);
+
         } while (true);
-        log.info("AccountBasicRoleAssignmentAdditionMigration completed.");
+        log.info("UserRoleAssignmentRemovalMigration completed.");
 
     }
 }
