@@ -17,11 +17,15 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.StepSpecTypeConstants;
 import io.harness.cimanager.stages.IntegrationStageConfigImpl;
 import io.harness.plancreator.stages.stage.StageInfoConfig;
+import io.harness.yaml.core.failurestrategy.FailureStrategyConfig;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import javax.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,6 +45,7 @@ public class IntegrationStageNode extends IntegrationAbstractStageNode {
   @JsonProperty("spec")
   @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
   IntegrationStageConfigImpl integrationStageConfig;
+
   @Override
   public String getType() {
     return StepSpecTypeConstants.CI_STAGE;
@@ -57,5 +62,23 @@ public class IntegrationStageNode extends IntegrationAbstractStageNode {
     StepType(String name) {
       this.name = name;
     }
+  }
+
+  public List<FailureStrategyConfig> getFailureStrategies() {
+    return this.failureStrategies;
+  }
+
+  @Builder
+  public IntegrationStageNode(String uuid, String identifier, String name,
+      List<FailureStrategyConfig> failureStrategies, IntegrationStageConfigImpl integrationStageConfig, StepType type,
+      List<NGVariable> variables) {
+    this.failureStrategies = failureStrategies;
+    this.integrationStageConfig = integrationStageConfig;
+    this.type = type;
+    this.setVariables(variables);
+    this.setUuid(uuid);
+    this.setIdentifier(identifier);
+    this.setName(name);
+    this.setDescription(getDescription());
   }
 }
