@@ -25,6 +25,8 @@ import io.harness.beans.environment.BuildJobEnvInfo;
 import io.harness.beans.environment.VmBuildJobInfo;
 import io.harness.beans.executionargs.CIExecutionArgs;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
+import io.harness.beans.stages.IntegrationStageNode;
+import io.harness.beans.steps.CIAbstractStepNode;
 import io.harness.beans.steps.CIStepInfo;
 import io.harness.beans.steps.stepinfo.PluginStepInfo;
 import io.harness.beans.steps.stepinfo.RunStepInfo;
@@ -41,9 +43,7 @@ import io.harness.cimanager.stages.IntegrationStageConfig;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
-import io.harness.plancreator.stages.stage.StageElementConfig;
 import io.harness.plancreator.steps.ParallelStepElementConfig;
-import io.harness.plancreator.steps.StepElementConfig;
 import io.harness.plancreator.steps.StepGroupElementConfig;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.yaml.ParameterField;
@@ -65,12 +65,11 @@ public class VmInitializeStepUtils {
   @Inject CIFeatureFlagService featureFlagService;
   @Inject ValidationUtils validationUtils;
 
-  public BuildJobEnvInfo getInitializeStepInfoBuilder(StageElementConfig stageElementConfig,
-      Infrastructure infrastructure, CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps,
-      Ambiance ambiance) {
+  public BuildJobEnvInfo getInitializeStepInfoBuilder(IntegrationStageNode stageNode, Infrastructure infrastructure,
+      CIExecutionArgs ciExecutionArgs, List<ExecutionWrapperConfig> steps, Ambiance ambiance) {
     ArrayList<String> connectorIdentifiers = populateConnectorIdentifiers(steps);
 
-    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageElementConfig);
+    IntegrationStageConfig integrationStageConfig = IntegrationStageUtils.getIntegrationStageConfig(stageNode);
     List<DependencyElement> serviceDependencies = null;
     if (integrationStageConfig.getServiceDependencies() != null
         && integrationStageConfig.getServiceDependencies().getValue() != null) {
@@ -84,7 +83,7 @@ public class VmInitializeStepUtils {
         .ciExecutionArgs(ciExecutionArgs)
         .workDir(getStepMountPath(os))
         .connectorRefs(connectorIdentifiers)
-        .stageVars(stageElementConfig.getVariables())
+        .stageVars(stageNode.getVariables())
         .volToMountPath(volumeToMountPath)
         .serviceDependencies(serviceDependencies)
         .build();
@@ -94,9 +93,9 @@ public class VmInitializeStepUtils {
     ArrayList<String> connectorIdentifiers = new ArrayList<>();
     for (ExecutionWrapperConfig executionWrapper : wrappers) {
       if (executionWrapper.getStep() != null && !executionWrapper.getStep().isNull()) {
-        StepElementConfig stepElementConfig = IntegrationStageUtils.getStepElementConfig(executionWrapper);
-        validateStepConfig(stepElementConfig);
-        String identifier = getConnectorIdentifier(stepElementConfig);
+        CIAbstractStepNode stepNode = IntegrationStageUtils.getStepNode(executionWrapper);
+        validateStepConfig(stepNode);
+        String identifier = getConnectorIdentifier(stepNode);
         if (identifier != null) {
           connectorIdentifiers.add(identifier);
         }
@@ -150,9 +149,9 @@ public class VmInitializeStepUtils {
     return resolveOSType(vmPoolYaml.getSpec().getOs());
   }
 
-  private void validateStepConfig(StepElementConfig stepElementConfig) {
-    if (stepElementConfig.getStepSpecType() instanceof CIStepInfo) {
-      CIStepInfo ciStepInfo = (CIStepInfo) stepElementConfig.getStepSpecType();
+  private void validateStepConfig(CIAbstractStepNode stepNode) {
+    if (stepNode.getStepSpecType() instanceof CIStepInfo) {
+      CIStepInfo ciStepInfo = (CIStepInfo) stepNode.getStepSpecType();
       switch (ciStepInfo.getNonYamlInfo().getStepInfoType()) {
         case RUN:
           validateRunStepConnector((RunStepInfo) ciStepInfo);
@@ -194,7 +193,7 @@ public class VmInitializeStepUtils {
     }
   }
 
-  private String getConnectorIdentifier(StepElementConfig stepElementConfig) {
+  private String getConnectorIdentifier(CIAbstractStepNode stepElementConfig) {
     if (stepElementConfig.getStepSpecType() instanceof CIStepInfo) {
       CIStepInfo ciStepInfo = (CIStepInfo) stepElementConfig.getStepSpecType();
       switch (ciStepInfo.getNonYamlInfo().getStepInfoType()) {
