@@ -42,6 +42,7 @@ public class EntityYamlRootNames {
   public static final String DELEGATE_CONFIGURATION = "delegateConfigurations";
   public static final String CV_VERIFICATION_JOB = "cvVerificationJob";
   public static final String INTEGRATION_STAGE = "integrationStage";
+
   public static final String INTEGRATION_STEP = "integrationSteps";
   public static final String CV_KUBERNETES_ACTIVITY_SOURCE = "cvKubernetesActivitySource";
   public static final String DEPLOYMENT_STEP = "deploymentSteps";
@@ -91,6 +92,7 @@ public class EntityYamlRootNames {
   public static final String SECURITY_STAGE = "securityStage";
   public static final String SECURITY_STEP = "securitySteps";
   public static final String GIT_CLONE = "GitClone";
+  public static final String INITIALIZE = "Initialize";
   public static final String RESTORE_CACHE_GCS = "RestoreCacheGCS";
   public static final String RESTORE_CACHE_S3 = "RestoreCacheS3";
   public static final String SAVE_CACHE_GCS = "SaveCacheGCS";
